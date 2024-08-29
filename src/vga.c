@@ -35,8 +35,8 @@ void vga_init(){
     col = 0;
     term_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
     buffer = (uint16_t*) 0xB8000;
-    for (int i = 0; i < VGA_WIDTH; i++) {
-        for (int j = 0; j < VGA_WIDTH; j++) {
+    for (size_t i = 0; i < VGA_WIDTH; i++) {
+        for (size_t j = 0; j < VGA_WIDTH; j++) {
             buffer[j * VGA_WIDTH + i] = vga_entry(' ', term_color);
         }
     }
@@ -51,14 +51,20 @@ void vga_put_entry_at(char ch, uint8_t color, size_t x, size_t y) {
 }
 
 void vga_putch(char ch) {
-    vga_put_entry_at(ch, term_color, col, row);
-    col++;
-    if (col % VGA_WIDTH == 0) {
-        col = 0;
-        row++;
-    }
-    if (row % VGA_HEIGHT == 0) {
-        row = 0;
+    switch (ch) {
+        case '\n': row++; col=0; break;
+        case '\r': col=0; break;
+        case '\t': row+=4; break;
+        default:
+            vga_put_entry_at(ch, term_color, col, row);
+            col++;
+            if (col % VGA_WIDTH == 0) {
+                col = 0;
+                row++;
+            }
+            if (row % VGA_HEIGHT == 0) {
+                row = 0;
+            }
     }
 }
 
