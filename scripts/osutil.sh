@@ -28,7 +28,7 @@ function usage {
     # build subcommand
     echo "================================================";
     echo "osutil build <args>";
-    echo "  macos           : Build on macos";
+    echo "  macos           : Build on macos (automatically runs the grub commands)";
 }
 
 function command_exists {
@@ -58,11 +58,14 @@ function handle_qemu {
 
 function handle_build {
     case "$1" in
-        macos ) make clean build -f $(eval echo '$script_folder')/macos.Makefile ;;
+        macos ) echo "bear" ; bear -- make clean build -f $(eval echo '$script_folder')/macos.Makefile ;;
         linux ) echo "Untested" ;;
         * ) usage ;;
     esac
+    handle_grub create-config
 }
+
+mkdir -p out
 
 # handle docker setup
 case "$1" in
