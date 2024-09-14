@@ -1,15 +1,15 @@
 .global gdt_flush
-.extern gp
+.extern gdt_ptr
 
 gdt_flush:
-    lgdt [gp]      /* load the gdt in 'gp' to the gdt register */
-    mov $0x10, %ax   /* offset to data segment */
+    cli
+    lgdt [gdt_ptr]
+    mov $0x10, %eax
     mov %ax, %ds
     mov %ax, %es
     mov %ax, %fs
     mov %ax, %gs
     mov %ax, %ss
-    jmp $0x08,$flush2 /* far jump to the code segment */
-
-flush2:
+    jmp $0x08,$flush
+flush:
     ret

@@ -1,4 +1,4 @@
 from i386/alpine
 env CONTAINER=docker
 
-run apk add grub xorriso
+run apk add grub xorriso wget bash gcc

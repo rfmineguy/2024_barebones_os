@@ -11,13 +11,14 @@ S_STDLIB_SOURCE := $(wildcard $(STDLIB_SRC)/*.s)
 C_SOURCES := $(C_KERNEL_SOURCE) $(C_STDLIB_SOURCE)
 S_SOURCES := $(S_KERNEL_SOURCE) $(S_STDLIB_SOURCE)
 
-C_OBJECTS := $(patsubst $(SRC)/%.c, $(OUT)/%.c.o, $(C_SOURCES))
-S_OBJECTS := $(patsubst $(SRC)/%.s, $(OUT)/%.s.o, $(S_SOURCES))
+C_OBJECTS := $(patsubst $(KERNEL_SRC)/%.c, $(OUT)/%.c.o, $(C_KERNEL_SOURCE)) $(patsubst $(STDLIB_SRC)/%.c, $(OUT)/%.c.o, $(C_STDLIB_SOURCE))
+S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) $(patsubst $(STDLIB_SRC)/%.s, $(OUT)/%.s.o, $(S_STDLIB_SOURCE))
 
 BIN := os.bin
 
 .PHONY: always clean build
 always:
+	echo $(C_OBJECTS) $(S_OBJECTS)
 	mkdir -p $(OUT)
 
 clean:
@@ -25,10 +26,16 @@ clean:
 
 build: always $(OUT)/$(BIN)
 
-$(OUT)/%.c.o: $(SRC)/%.c
-	i686-elf-gcc -c $^ -o $@ -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
+$(OUT)/%.c.o: $(KERNEL_SRC)/%.c
+	i686-elf-gcc -c $^ -o $@ -std=gnu99 -ffreestanding -m32 -O2 -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
 
-$(OUT)/%.s.o: $(SRC)/%.s
+$(OUT)/%.c.o: $(STDLIB_SRC)/%.c
+	i686-elf-gcc -c $^ -o $@ -std=gnu99 -ffreestanding -m32 -O2 -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
+
+$(OUT)/%.s.o: $(KERNEL_SRC)/%.s
+	i686-elf-as $^ -o $@
+
+$(OUT)/%.s.o: $(STDLIB_SRC)/%.s
 	i686-elf-as $^ -o $@
 
 $(OUT)/$(BIN): $(C_OBJECTS) $(S_OBJECTS)

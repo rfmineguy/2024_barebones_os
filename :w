@@ -9,7 +9,7 @@ struct gdt_entry {
     uint16_t baselo;
     uint8_t  basemid;
     uint8_t  access;
-    uint8_t  flags_limit;
+    uint8_t  flags;
     uint8_t  basehi;
 } __attribute__((packed));
 

@@ -1,46 +1,33 @@
-// http://www.osdever.net/bkerndev/Docs/gdt.htm
 #include "gdt.h"
-
-struct gdt_entry gdt[3];
-struct gdt_ptr   gp;
 
 extern void gdt_flush();
 
-void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran) {
-    /* Setup the descriptor base address */
-    gdt[num].base_low = (base & 0xFFFF);
-    gdt[num].base_middle = (base >> 16) & 0xFF;
-    gdt[num].base_high = (base >> 24) & 0xFF;
+struct gdt_entry gdt_entries[5];
+struct gdt_ptr gdt_ptr;
 
-    /* Setup the descriptor limits */
-    gdt[num].limit_low = (limit & 0xFFFF);
-    gdt[num].granularity = ((limit >> 16) & 0x0F);
+void gdt_init(){
+    gdt_ptr.limit = (sizeof (struct gdt_entry) * 5) - 1;
+    gdt_ptr.base = (unsigned int)&gdt_entries[0];
 
-    /* Finally, set up the granularity and access flags */
-    gdt[num].granularity |= (gran & 0xF0);
-    gdt[num].access = access;
+    // see https://wiki.osdev.org/Global_Descriptor_Table for the access explanation
+    gdt_set_gate(0, 0, 0, 0, 0);                // null segment
+    gdt_set_gate(1, 0, 0xffffffff, 0x9A, 0xCF); // kernel code segment
+    gdt_set_gate(2, 0, 0xffffffff, 0x92, 0xCF); // kernel data segment
+    gdt_set_gate(3, 0, 0xffffffff, 0xFA, 0xCF); // user   code segment
+    gdt_set_gate(4, 0, 0xffffffff, 0xF2, 0xCF); // user   data segment
+
+    gdt_flush();
 }
 
-void gdt_install() {
-    /* Setup the GDT pointer and limit */
-    gp.limit = (sizeof(struct gdt_entry) * 3) - 1;
-    gp.base = (uint32_t)&gdt; // warning on 64 bit host
+void gdt_set_gate(uint32_t n, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran){
+    struct gdt_entry* e = &gdt_entries[n];
+    e->baselo  = base & 0xffff;
+    e->basemid = (base >> 16) & 0xff;
+    e->basehi  = (base >> 24) & 0xff;
 
-    /* Our NULL descriptor */
-    gdt_set_gate(0, 0, 0, 0, 0);
+    e->limit = limit & 0xffff;
+    e->flags_limit = (limit >> 16) & 0x0f;
+    e->flags_limit |= (gran & 0xf0);
 
-    /* The second entry is our Code Segment. The base address
-    *  is 0, the limit is 4GBytes, it uses 4KByte granularity,
-    *  uses 32-bit opcodes, and is a Code Segment descriptor.
-    *  Please check the table above in the tutorial in order
-    *  to see exactly what each value means */
-    gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
-
-    /* The third entry is our Data Segment. It's EXACTLY the
-    *  same as our code segment, but the descriptor type in
-    *  this entry's access byte says it's a Data Segment */
-    gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
-
-    /* Flush out the old GDT and install the new changes! */
-    gdt_flush();
+    e->access = access;
 }

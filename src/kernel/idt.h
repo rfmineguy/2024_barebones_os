@@ -19,4 +19,7 @@ extern void idt_load();
 void idt_set_descriptor(uint8_t vector, void* isr, uint8_t flags);
 void idt_install();
 
+extern void idt_cli();
+extern void idt_sti();
+
 #endif

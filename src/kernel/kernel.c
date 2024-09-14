@@ -1,13 +1,18 @@
 #include "vga.h"
 #include "gdt.h"
 #include "idt.h"
+#include "serial.h"
 
 void kernel_main(void) {
+    serial_init();
+    serial_write_ch('a');
     vga_init();
-    gdt_install();
+
+    idt_cli();
+    gdt_init();
     vga_writestring("Installed gdt\n");
+
     idt_install();
-    vga_writestring("Installed idt\n");
 
     vga_writestring("Hello\n");
     vga_writestring("Hello 2\n");

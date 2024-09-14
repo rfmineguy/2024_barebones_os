@@ -53,7 +53,7 @@ function handle_grub {
 }
 
 function handle_qemu {
-    qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin
+    qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log
 }
 
 function handle_build {
