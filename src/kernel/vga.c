@@ -46,6 +46,19 @@ void vga_set_color(uint8_t color) {
     term_color = color;
 }
 
+void vga_save_cursor(size_t* x, size_t* y) {
+    if (x != NULL) *x = col;
+    if (y != NULL) *y = row;
+}
+
+int vga_put_cursor_at(size_t x, size_t y) {
+    if (x >= VGA_WIDTH) return -1;
+    if (y >= VGA_HEIGHT) return -1;
+    row = y;
+    col = x;
+    return 0;
+}
+
 void vga_put_entry_at(char ch, uint8_t color, size_t x, size_t y) {
     buffer[y * VGA_WIDTH + x] = vga_entry(ch, color);
 }
