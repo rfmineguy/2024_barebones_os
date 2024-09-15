@@ -42,24 +42,43 @@ int print_base(int i, int base) {
     return digit;
 }
 
-int printf(const char* fmt, ...) {
+char* sprint_ch(char* buf, char c) {
+    *buf = c;
+    return buf + 1;
+}
+
+char* sprint_base(char* buf, int i, int base) {
+    char buf2[20] = {0};
+    int digit = 0;
+
+    if (i == 0) buf2[digit++] = '0';
+    while (i != 0) {
+        int v = i % base;
+        buf2[digit++] = base_chars[v];
+        i /= base;
+    }
+    for (int i = digit - 1; i >= 0; i--) {
+        *(buf++) = buf2[i];
+    }
+    return buf;
+}
+
+int vsprintf(char* buf, const char* fmt, va_list alist) {
     const char* cursor = fmt;
+    char *buf_orig = buf;
     int state = 0;
-    int chars_printed = 0;
-    va_list alist;
-    va_start(alist, fmt);
     while (*cursor) {
         if (state == NORMAL) {
             if (*cursor == '%') state = PARSE;
-            else vga_putch(*cursor);
+            else buf = sprint_ch(buf, *cursor);
         }
         else if (state == PARSE) {
             switch (*cursor) {
-                case '%': chars_printed++; vga_putch('%'); break;
-                case 'c': chars_printed++; vga_putch(va_arg(alist, int)); break;
-                case 'd': chars_printed += print_base(va_arg(alist, int), 10); break;
-                case 'x': chars_printed += print_base(va_arg(alist, int), 16); break;
-                case 'b': chars_printed += print_base(va_arg(alist, int), 2); break;
+                case '%': buf = sprint_ch(buf, '%'); break;
+                case 'c': buf = sprint_ch(buf, '%'); break;
+                case 'd': buf = sprint_base(buf, va_arg(alist, int), 10); break;
+                case 'x': buf = sprint_base(buf, va_arg(alist, int), 16); break;
+                case 'b': buf = sprint_base(buf, va_arg(alist, int), 2); break;
                 default: break;
             }
             state = NORMAL;
@@ -67,6 +86,24 @@ int printf(const char* fmt, ...) {
         cursor++;
     }
     
+    return buf - buf_orig;
+}
+
+int sprintf(char* buf, const char* fmt, ...) {
+    va_list alist;
+    va_start(alist, fmt);
+    int x = vsprintf(buf, fmt, alist);
     va_end(alist);
-    return chars_printed;
+    return x;
+}
+
+int printf(const char* fmt, ...) {
+    static char buf[1000] = {0};
+    va_list alist;
+    va_start(alist, fmt);
+    int x = vsprintf(buf, fmt, alist);
+    va_end(alist);
+    buf[x] = 0;
+    vga_writestring(buf);
+    return x;
 }

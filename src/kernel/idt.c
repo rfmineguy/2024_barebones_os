@@ -3,6 +3,7 @@
 #include "vga.h"
 #include "serial.h"
 #include "io.h"
+#include "../stdlib/printf.h"
 #include "../stdlib/memset.h"
 #include <stdbool.h>
 

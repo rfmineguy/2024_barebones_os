@@ -12,11 +12,8 @@ void kernel_main(void) {
     gdt_init();
     printf("Installed gdt\n");
 
-    uint8_t b = 0x0;
-    printf("PIC: %d\n", b);
     idt_install();
     printf("Installed idt\n");
-
 
     vga_putch(1/0);
 
