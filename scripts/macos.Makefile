@@ -27,10 +27,10 @@ clean:
 build: always $(OUT)/$(BIN)
 
 $(OUT)/%.c.o: $(KERNEL_SRC)/%.c
-	i686-elf-gcc -c $^ -o $@ -std=gnu99 -ffreestanding -m32 -O2 -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
+	i686-elf-gcc -c $^ -o $@ -g -std=gnu99 -ffreestanding -m32 -O2 -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
 
 $(OUT)/%.c.o: $(STDLIB_SRC)/%.c
-	i686-elf-gcc -c $^ -o $@ -std=gnu99 -ffreestanding -m32 -O2 -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
+	i686-elf-gcc -c $^ -o $@ -g -std=gnu99 -ffreestanding -m32 -O2 -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
 
 $(OUT)/%.s.o: $(KERNEL_SRC)/%.s
 	i686-elf-as $^ -o $@
