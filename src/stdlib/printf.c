@@ -30,6 +30,7 @@ int print_base(int i, int base) {
     char buf[20] = {0};
     int digit = 0;
 
+    if (i == 0) buf[digit++] = '0';
     while (i != 0) {
         int v = i % base;
         buf[digit++] = base_chars[v];
