@@ -12,6 +12,7 @@ function usage {
     echo "  docker          : Docker related commands";
     echo "  grub            : Grub related commands";
     echo "  qemu            : Run qemu with os.bin";
+    echo "  qemu-debug      : Run qemu in debug mode with os.bin";
     echo "  build           : Build the kernel";
 
     # docker subcommand
@@ -52,8 +53,12 @@ function handle_grub {
     esac
 }
 
-function handle_qemu {
+function handle_qemu_normal {
     qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log
+}
+
+function handle_qemu_debug {
+    qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log -s -S
 }
 
 function handle_build {
@@ -82,7 +87,8 @@ docker_image_installed
 if [ $exit_code -eq 0 ]; then
     case "$1" in
         grub ) shift 1; handle_grub $@ ;;
-        qemu ) shift 1; handle_qemu $@ ;;
+        qemu ) shift 1; handle_qemu_normal $@ ;;
+        qemu_debug ) shift 1; handle_qemu_debug $@ ;;
         build ) shift 1; handle_build $@ ;;
         * ) usage ;;
     esac
