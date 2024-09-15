@@ -11,7 +11,6 @@ void kernel_main(void) {
 
     idt_cli();
     gdt_init();
-    printf("hello%% %c number: %d\n", 'a', 0x6444);
 
     vga_writestring("Installed gdt\n");
 

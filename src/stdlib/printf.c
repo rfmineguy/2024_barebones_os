@@ -58,6 +58,7 @@ int printf(const char* fmt, ...) {
                 case 'c': chars_printed++; vga_putch(va_arg(alist, int)); break;
                 case 'd': chars_printed += print_base(va_arg(alist, int), 10); break;
                 case 'x': chars_printed += print_base(va_arg(alist, int), 16); break;
+                case 'b': chars_printed += print_base(va_arg(alist, int), 2); break;
                 default: break;
             }
             state = NORMAL;
