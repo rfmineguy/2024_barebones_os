@@ -1,6 +1,7 @@
 #include "idt.h"
 #include "pic.h"
 #include "vga.h"
+#include "serial.h"
 #include "io.h"
 #include "../stdlib/memset.h"
 #include <stdbool.h>

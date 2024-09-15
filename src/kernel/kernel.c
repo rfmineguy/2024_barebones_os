@@ -2,6 +2,7 @@
 #include "gdt.h"
 #include "idt.h"
 #include "serial.h"
+#include "printf.h"
 
 void kernel_main(void) {
     serial_init();
@@ -10,6 +11,8 @@ void kernel_main(void) {
 
     idt_cli();
     gdt_init();
+    printf("hello%% %c number: %d\n", 'a', 0x6444);
+
     vga_writestring("Installed gdt\n");
 
     idt_install();
