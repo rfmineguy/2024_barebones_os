@@ -13,6 +13,8 @@ void kernel_main(void) {
     vga_writestring("Installed gdt\n");
 
     idt_install();
+    vga_writestring("Installed idt\n");
+    vga_putch(1/0);
 
     vga_writestring("Hello\n");
     vga_writestring("Hello 2\n");

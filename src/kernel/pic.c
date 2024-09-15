@@ -19,22 +19,22 @@ void pic_send_eoi(uint8_t irq) {
     io_outb(PIC1_COMMAND, PIC_EOI);
 }
 
-void pic_remap(int offset1, int offset2) {
-    uint8_t a1, a2;
+void pic_remap() {
+    // uint8_t a1, a2;
 
     // Save pic masks
-    a1 = io_inb(PIC1_DATA);
-    a2 = io_inb(PIC2_DATA);
+    // a1 = io_inb(PIC1_DATA);
+    // a2 = io_inb(PIC2_DATA);
 
     // Start initialize sequence
-    io_outb(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4); io_wait();
-    io_outb(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4); io_wait();
+    io_outb(PIC1_COMMAND, 0x11); io_wait();
+    io_outb(PIC2_COMMAND, 0x11); io_wait();
 
     // PIC vector offset
     //   1 - master
     //   2 - slave
-    io_outb(PIC1_DATA, offset1); io_wait();
-    io_outb(PIC2_DATA, offset2); io_wait();
+    io_outb(PIC1_DATA, 0x20); io_wait();
+    io_outb(PIC2_DATA, 0x28); io_wait();
 
     // tell master pic there is a slave pic at IRQ2 (0000 0100)
     io_outb(PIC1_DATA, 0x04); io_wait();
@@ -43,12 +43,12 @@ void pic_remap(int offset1, int offset2) {
     io_outb(PIC2_DATA, 0x02); io_wait();
 
     // 8086 mode
-    io_outb(PIC1_DATA, ICW4_8086); io_wait();
-    io_outb(PIC2_DATA, ICW4_8086); io_wait();
+    io_outb(PIC1_DATA, 0x01); io_wait();
+    io_outb(PIC2_DATA, 0x01); io_wait();
 
     // restore flags
-    io_outb(PIC1_DATA, a1); io_wait();
-    io_outb(PIC2_DATA, a2); io_wait();
+    io_outb(PIC1_DATA, 0x00); io_wait();
+    io_outb(PIC2_DATA, 0x00); io_wait();
 }
 
 void pic_setflags(uint8_t pic1, uint8_t pic2) {

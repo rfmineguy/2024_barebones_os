@@ -1,4 +1,5 @@
 .global gdt_flush
+.global tss_flush
 .extern gdt_ptr
 
 gdt_flush:
@@ -12,4 +13,9 @@ gdt_flush:
     mov %ax, %ss
     jmp $0x08,$flush
 flush:
+    ret
+
+tss_flush:
+    mov $0x2B, %ax //tss offset
+    ltr %ax
     ret

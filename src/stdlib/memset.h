@@ -1,7 +1,6 @@
 #ifndef MEMSET_H
 #define MEMSET_H
-#include <stddef.h>
 
-void *memset(void* data, int c, size_t len);
+void *memset(void* data, char c, int count);
 
 #endif

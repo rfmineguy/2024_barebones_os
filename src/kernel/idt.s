@@ -1,9 +1,10 @@
-.global idt_load
+.global idt_flush
 .global idt_cli
 .global idt_sti
 .extern idtp
-idt_load:
+idt_flush:
     lidt [idtp]  // load new idt
+    sti
     ret
 
 idt_cli:
@@ -13,3 +14,5 @@ idt_cli:
 idt_sti:
     sti
     ret
+
+// isr definitions in isr.s

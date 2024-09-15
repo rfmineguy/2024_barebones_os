@@ -12,7 +12,7 @@
 #define PIC_EOI      0x20 // command code for End-Of-Interrupt
 
 void pic_send_eoi(uint8_t irq);
-void pic_remap(int offset1, int offset2);
+void pic_remap();
 void pic_setflags(uint8_t pic1, uint8_t pic2);
 
 #endif

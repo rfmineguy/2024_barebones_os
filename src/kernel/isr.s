@@ -1,80 +1,83 @@
-.macro isr_err_stub name
-isr_stub_\name:
-    call exception_handler
-    iret
+.macro isr_err name
+.global isr\name
+isr\name:
+    cli
+    pushl \name
+    call isr_common_stub
 .endm
 
-.macro isr_no_err_stub name
-isr_stub_\name:
-    call exception_handler
-    iret
+.macro isr_no_err name
+.global isr\name
+isr\name:
+    cli
+    pushl 0
+    pushl \name
+    call isr_common_stub
 .endm
 
 .extern exception_handler
-isr_no_err_stub 0
-isr_no_err_stub 1
-isr_no_err_stub 2
-isr_no_err_stub 3
-isr_no_err_stub 4
-isr_no_err_stub 5
-isr_no_err_stub 6
-isr_no_err_stub 7
-isr_err_stub    8
-isr_no_err_stub 9
-isr_err_stub    10
-isr_err_stub    11
-isr_err_stub    12
-isr_err_stub    13
-isr_err_stub    14
-isr_no_err_stub 15
-isr_no_err_stub 16
-isr_err_stub    17
-isr_no_err_stub 18
-isr_no_err_stub 19
-isr_no_err_stub 20
-isr_no_err_stub 21
-isr_no_err_stub 22
-isr_no_err_stub 23
-isr_no_err_stub 24
-isr_no_err_stub 25
-isr_no_err_stub 26
-isr_no_err_stub 27
-isr_no_err_stub 28
-isr_no_err_stub 29
-isr_err_stub    30
-isr_no_err_stub 31
+isr_no_err 0
+isr_no_err 1
+isr_no_err 2
+isr_no_err 3
+isr_no_err 4
+isr_no_err 5
+isr_no_err 6
+isr_no_err 7
 
-.global isr_stub_table
-isr_stub_table:
-    .long isr_stub_0 // "isr_stub_0" comes from the macros above
-    .long isr_stub_1
-    .long isr_stub_2
-    .long isr_stub_3
-    .long isr_stub_4
-    .long isr_stub_5
-    .long isr_stub_6
-    .long isr_stub_7
-    .long isr_stub_8
-    .long isr_stub_9
-    .long isr_stub_10
-    .long isr_stub_11
-    .long isr_stub_12
-    .long isr_stub_13
-    .long isr_stub_14
-    .long isr_stub_15
-    .long isr_stub_16
-    .long isr_stub_17
-    .long isr_stub_18
-    .long isr_stub_19
-    .long isr_stub_20
-    .long isr_stub_21
-    .long isr_stub_22
-    .long isr_stub_23
-    .long isr_stub_24
-    .long isr_stub_25
-    .long isr_stub_26
-    .long isr_stub_27
-    .long isr_stub_28
-    .long isr_stub_29
-    .long isr_stub_30
-    .long isr_stub_31
+isr_err    8
+isr_no_err 9
+isr_err    10
+isr_err    11
+isr_err    12
+isr_err    13
+isr_err    14
+
+isr_no_err 15
+isr_no_err 16
+isr_no_err 17
+isr_no_err 18
+isr_no_err 19
+isr_no_err 20
+isr_no_err 21
+isr_no_err 22
+isr_no_err 23
+isr_no_err 24
+isr_no_err 25
+isr_no_err 26
+isr_no_err 27
+isr_no_err 28
+isr_no_err 29
+isr_no_err 30
+isr_no_err 31
+isr_no_err 128
+isr_no_err 177
+
+isr_common_stub:
+    pusha
+    mov %ds, %eax
+    pushl %eax
+    mov %cr2, %eax
+    pushl %eax
+    mov $10, %ax
+    
+    mov $0x10, %ax
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
+    
+    pushl %esp
+    call isr_handler
+    
+    add $8, %esp
+    pop %ebx
+    mov %bx, %ds
+    mov %bx, %es
+    mov %bx, %fs
+    mov %bx, %gs
+    
+    popa
+    add $8, %esp
+    sti
+    iret
