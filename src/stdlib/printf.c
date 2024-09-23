@@ -48,6 +48,7 @@ char* sprint_ch(char* buf, char c) {
 }
 
 char* sprint_base(char* buf, int i, int base) {
+    const char* bufSave = buf;
     char buf2[20] = {0};
     int digit = 0;
 
@@ -59,6 +60,14 @@ char* sprint_base(char* buf, int i, int base) {
     }
     for (int i = digit - 1; i >= 0; i--) {
         *(buf++) = buf2[i];
+    }
+    return buf;
+}
+
+char* sprint_str(char* buf, const char* str) {
+    while (*str) {
+        *(buf++) = *str;
+        str++;
     }
     return buf;
 }
@@ -76,9 +85,19 @@ int vsprintf(char* buf, const char* fmt, va_list alist) {
             switch (*cursor) {
                 case '%': buf = sprint_ch(buf, '%'); break;
                 case 'c': buf = sprint_ch(buf, '%'); break;
-                case 'd': buf = sprint_base(buf, va_arg(alist, int), 10); break;
-                case 'x': buf = sprint_base(buf, va_arg(alist, int), 16); break;
-                case 'b': buf = sprint_base(buf, va_arg(alist, int), 2); break;
+                case 's': buf = sprint_str(buf, va_arg(alist, const char*)); break;
+                case 'x': {
+                          unsigned int v = va_arg(alist, unsigned int);
+                          buf = sprint_base(buf, v, 16); break;
+                          }
+                case 'd': {
+                          unsigned int v = va_arg(alist, unsigned int);
+                          buf = sprint_base(buf, v, 10); break;
+                          }
+                case 'b': {
+                          unsigned int v = va_arg(alist, unsigned int);
+                          buf = sprint_base(buf, v, 2); break;
+                          }
                 default: break;
             }
             state = NORMAL;
