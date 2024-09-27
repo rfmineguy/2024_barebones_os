@@ -1,5 +1,6 @@
 #include "munit.h"
 #include "printf_t.h"
+#include "memset_t.h"
 
 void* setup(const MunitParameter params[], void* userdata) {
   return NULL;
@@ -18,8 +19,19 @@ MunitTest printf_tests[] = {
     { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
 };
 
+MunitTest memset_tests[] = {
+    {"/memset", memset_t, setup, teardown, MUNIT_TEST_OPTION_NONE, NULL},
+    { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
+};
+
+MunitSuite suites[] = {
+    { "/sprintf", printf_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE },
+    { "/string",  memset_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE },
+    { NULL, NULL, NULL, 0, MUNIT_SUITE_OPTION_NONE }
+};
+
 MunitSuite suite = {
-    "sprintf", printf_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE
+    "tests", NULL, suites, 1, MUNIT_SUITE_OPTION_NONE
 };
 
 int main(int argc, char** argv) {
