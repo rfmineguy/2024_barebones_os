@@ -2,3 +2,4 @@ out/
 ./**/*.swp
 tags
 output
+serial.log
