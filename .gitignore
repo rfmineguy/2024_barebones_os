@@ -3,6 +3,7 @@ out/
 tags
 output
 serial.log
+compile_commands.json
 
 # Vim swap files
 *.swp
