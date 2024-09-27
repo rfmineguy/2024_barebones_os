@@ -5,6 +5,10 @@ output
 serial.log
 compile_commands.json
 
+# Test files
+tests/a.out
+tests/out*
+
 # Vim swap files
 *.swp
 *.swo
