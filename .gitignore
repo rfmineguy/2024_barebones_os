@@ -3,3 +3,8 @@ out/
 tags
 output
 serial.log
+
+# Vim swap files
+*.swp
+*.swo
+*.swm
