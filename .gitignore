@@ -1,5 +1,5 @@
+# General project files
 out/
-./**/*.swp
 tags
 output
 serial.log
@@ -8,3 +8,6 @@ serial.log
 *.swp
 *.swo
 *.swm
+
+# Mac files
+.DS_Store
