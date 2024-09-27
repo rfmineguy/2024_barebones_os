@@ -1,5 +1,6 @@
 #include "serial.h"
 #include "io.h"
+#include "printf.h"
 
 #define PORT 0x3f8 // com1
 
@@ -22,6 +23,7 @@ int serial_init() {
    // If serial is not faulty set it in normal operation mode
    // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
    io_outb(PORT + 4, 0x0F);
+   serial_printf("Serial port initialized\n");
    return 0;
 }
 
@@ -29,7 +31,7 @@ char serial_read(){
     while (serial_received() == 0);
     return io_inb(PORT);
 }
-int  serial_is_transmit_empty(){
+int serial_is_transmit_empty(){
     return io_inb(PORT + 5) & 0x20;
 }
 
@@ -42,6 +44,15 @@ void serial_write_str(char* ch){
         serial_write_ch(*ch);
         ch++;
     }
+}
+void serial_printf(const char* fmt, ...) {
+    static char buf[1000] = {0};
+    va_list alist;
+    va_start(alist, fmt);
+    int x = k_vsprintf(buf, fmt, alist);
+    va_end(alist);
+    buf[x] = 0;
+    serial_write_str(buf);
 }
 int  serial_received(){
     return io_inb(PORT);
