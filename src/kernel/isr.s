@@ -2,7 +2,9 @@
 .global isr\name
 isr\name:
     cli
-    pushl \name
+    mov $\name, %eax
+    pushl %eax
+    // pushl \name
     call isr_common_stub
 .endm
 
@@ -10,8 +12,12 @@ isr\name:
 .global isr\name
 isr\name:
     cli
-    pushl 0
-    pushl \name
+    mov $0, %eax
+    pushl %eax
+    mov $\name, %eax
+    pushl %eax
+    // pushl 0
+    // pushl \name
     call isr_common_stub
 .endm
 

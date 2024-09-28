@@ -2,6 +2,7 @@
 #include "pic.h"
 #include "vga.h"
 #include "serial.h"
+#include "log.h"
 #include "io.h"
 #include "../stdlib/printf.h"
 #include "../stdlib/memset.h"
@@ -20,9 +21,11 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags) {
     e->always0 = 0;
     e->sel = sel;
     e->flags = flags | 0x60;
+    log_info("IDT SetGate", "#%d, base: %x, sel: %d, flags: %b\n", num, base, sel, flags);
 }
 
 void idt_install() {
+    log_info("IDT Install", "Begin");
     idtp.limit = (sizeof (struct idt_entry) * 256) - 1;
     idtp.base = (uint32_t) &idt_entries;
     memset(&idt_entries, 0, sizeof(struct idt_entry) * 256);
@@ -62,16 +65,16 @@ void idt_install() {
     idt_set_gate(30, (uint32_t) isr30, 0x08, 0x8E);
     idt_set_gate(31, (uint32_t) isr31, 0x08, 0x8E);
     
-    idt_set_gate(32, (uint32_t) irq0, 0x08, 0x8E);
-    idt_set_gate(33, (uint32_t) irq1, 0x08, 0x8E);
-    idt_set_gate(34, (uint32_t) irq2, 0x08, 0x8E);
-    idt_set_gate(35, (uint32_t) irq3, 0x08, 0x8E);
-    idt_set_gate(36, (uint32_t) irq4, 0x08, 0x8E);
-    idt_set_gate(37, (uint32_t) irq5, 0x08, 0x8E);
-    idt_set_gate(38, (uint32_t) irq6, 0x08, 0x8E);
-    idt_set_gate(39, (uint32_t) irq7, 0x08, 0x8E);
-    idt_set_gate(40, (uint32_t) irq8, 0x08, 0x8E);
-    idt_set_gate(41, (uint32_t) irq9, 0x08, 0x8E);
+    idt_set_gate(32, (uint32_t) irq0,  0x08, 0x8E);
+    idt_set_gate(33, (uint32_t) irq1,  0x08, 0x8E);
+    idt_set_gate(34, (uint32_t) irq2,  0x08, 0x8E);
+    idt_set_gate(35, (uint32_t) irq3,  0x08, 0x8E);
+    idt_set_gate(36, (uint32_t) irq4,  0x08, 0x8E);
+    idt_set_gate(37, (uint32_t) irq5,  0x08, 0x8E);
+    idt_set_gate(38, (uint32_t) irq6,  0x08, 0x8E);
+    idt_set_gate(39, (uint32_t) irq7,  0x08, 0x8E);
+    idt_set_gate(40, (uint32_t) irq8,  0x08, 0x8E);
+    idt_set_gate(41, (uint32_t) irq9,  0x08, 0x8E);
     idt_set_gate(42, (uint32_t) irq10, 0x08, 0x8E);
     idt_set_gate(43, (uint32_t) irq11, 0x08, 0x8E);
     idt_set_gate(44, (uint32_t) irq12, 0x08, 0x8E);
@@ -83,7 +86,7 @@ void idt_install() {
     idt_set_gate(177, (uint32_t) isr177, 0x08, 0x8E);
 
     idt_flush();
-    serial_write_str("Idt setup finished");
+    log_info("IDT Install", "Finished");
 }
 
 const char* exception_messages[] = {
@@ -121,6 +124,7 @@ const char* exception_messages[] = {
 };
 
 void isr_handler(struct interrupt_registers* regs) {
+    k_printf("isr: \n");
     if (regs->int_no < 32) {
         vga_writestring(exception_messages[regs->int_no]);
         vga_writestring("\n");
