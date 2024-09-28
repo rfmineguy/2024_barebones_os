@@ -3,6 +3,7 @@ out/
 tags
 output
 serial.log
+qemu_log.txt
 compile_commands.json
 
 # Test files
