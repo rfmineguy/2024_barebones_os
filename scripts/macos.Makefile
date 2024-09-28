@@ -18,7 +18,6 @@ BIN := os.bin
 
 .PHONY: always clean build
 always:
-	echo $(C_OBJECTS) $(S_OBJECTS)
 	mkdir -p $(OUT)
 
 clean:
