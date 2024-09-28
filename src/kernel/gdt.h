@@ -20,14 +20,18 @@ struct gdt_ptr {
     uint32_t base;
 } __attribute__((packed));
 
+// https://wiki.osdev.org/Task_State_Segment
 struct tss_entry {
-    uint32_t prev_tss;
+    uint32_t prev_tss; // linked list
+
+    // stack segments
     uint32_t esp0;
     uint32_t ss0;
     uint32_t esp1;
     uint32_t ss1;
     uint32_t esp2;
     uint32_t ss2;
+
     uint32_t cr3;
     uint32_t eip;
     uint32_t eflags;
@@ -46,13 +50,14 @@ struct tss_entry {
     uint32_t ds;
     uint32_t fs;
     uint32_t gs;
+
     uint32_t ldt;
     uint32_t trap;
     uint32_t iomap_base;
 } __attribute__((packed));
 
-void gdt_init();
+void gdt_init    ();
 void gdt_set_gate(uint32_t n, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran);
-void write_tss(uint32_t n, uint16_t ss0, uint32_t esp0);
+void write_tss   (uint32_t n, uint16_t ss0, uint32_t esp0);
 
 #endif

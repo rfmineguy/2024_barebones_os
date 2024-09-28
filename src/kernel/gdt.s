@@ -17,5 +17,5 @@ flush:
 
 tss_flush:
     mov $0x2B, %ax //tss offset
-    ltr %ax
+    ltr %ax        //load task state register
     ret
