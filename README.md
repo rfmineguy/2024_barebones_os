@@ -8,6 +8,13 @@ make an OS that performs some simple operations.
 - I realized early on a simple Makefile wasn't going to be enough for this project so I opted for a bash script that contained
   all the build commands (see [osutil.sh](https://github.com/rfmineguy/2024_barebones_os/blob/master/scripts/osutil.sh)).
 
+# Uncomprehensive feature list
+- Global Descriptor Table
+- Interrupt Descriptor Table
+- Printf
+- Serial port communication
+- Simple VGA Driver
+
 # Building
 - Required software
    + A i386-elf C cross compiler
