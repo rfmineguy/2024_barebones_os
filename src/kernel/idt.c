@@ -127,12 +127,10 @@ const char* exception_messages[] = {
 };
 
 void isr_handler(struct interrupt_registers_test* regs) {
-    k_printf("isr: %d\n", regs->int_no);
     log_info("ISR Handler", "#%d\n", regs->int_no);
     if (regs->int_no < 32) {
-        vga_writestring(exception_messages[regs->int_no]);
-        vga_writestring("\n");
-        vga_writestring("Exception! System halted.\n");
+        k_printf("isr%d   : %s\n", regs->int_no, exception_messages[regs->int_no]);
+        k_printf("System halted\n");
         for(;;);
     }
 }

@@ -14,7 +14,6 @@ char* sprint_ch(char* buf, char c) {
 
 char* base_chars = "0123456789abcdef";
 char* sprint_base(char* buf, uint32_t i, int base, bool uppercase) {
-    const char* bufSave = buf;
     char buf2[20] = {0};
     int digit = 0;
 

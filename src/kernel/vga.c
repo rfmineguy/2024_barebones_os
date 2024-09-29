@@ -1,4 +1,5 @@
 #include "vga.h"
+#include "log.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -40,6 +41,7 @@ void vga_init(){
             buffer[j * VGA_WIDTH + i] = vga_entry(' ', term_color);
         }
     }
+    log_info("VGA Init   ", "Initialized the vga buffer\n");
 }
 
 void vga_set_color(uint8_t color) {
@@ -67,17 +69,17 @@ void vga_putch(char ch) {
     switch (ch) {
         case '\n': row++; col=0; break;
         case '\r': col=0; break;
-        case '\t': row+=4; break;
+        case '\t': col+=4; break;
         default:
-            vga_put_entry_at(ch, term_color, col, row);
-            col++;
-            if (col % VGA_WIDTH == 0) {
-                col = 0;
-                row++;
-            }
-            if (row % VGA_HEIGHT == 0) {
-                row = 0;
-            }
+           vga_put_entry_at(ch, term_color, col, row);
+           col++;
+           break;
+    }
+    if (row % VGA_HEIGHT == 0) {
+        row = 0;
+    }
+    if (col % VGA_WIDTH == 0) {
+        col = 0;
     }
 }
 
@@ -88,4 +90,8 @@ void vga_write(const char* str, size_t len) {
 
 void vga_writestring(const char* str){
     vga_write(str, strlen(str));
+}
+
+void vga_scroll(int scroll) {
+    (void)(scroll);
 }
