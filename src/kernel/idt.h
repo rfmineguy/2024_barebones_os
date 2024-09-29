@@ -25,6 +25,9 @@ extern void idt_cli();
 extern void idt_sti();
 
 void isr_handler(struct interrupt_registers_test*);
+void irq_install_handler(int, void(*)(struct interrupt_registers_test*));
+void irq_uninstall_handler(int);
+void irq_handler(struct interrupt_registers_test*);
 
 extern void isr0();
 extern void isr1();

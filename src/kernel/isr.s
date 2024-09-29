@@ -86,20 +86,20 @@ isr_common_stub:
 isr_common_stub_test:
     pusha
 
-    mov $0x10, %ax
-    mov %ax, %ds
-    mov %ax, %es
-    mov %ax, %fs
-    mov %ax, %gs
+    // mov $0x10, %ax
+    // mov %ax, %ds
+    // mov %ax, %es
+    // mov %ax, %fs
+    // mov %ax, %gs
 
     call isr_handler
 
-    add $8, %esp
-    pop %ebx
-    mov %bx, %ds
-    mov %bx, %es
-    mov %bx, %fs
-    mov %bx, %gs
+    // add $8, %esp
+    // pop %ebx
+    // mov %bx, %ds
+    // mov %bx, %es
+    // mov %bx, %fs
+    // mov %bx, %gs
 
     popa
     add $8, %esp

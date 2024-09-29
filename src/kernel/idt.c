@@ -127,7 +127,7 @@ const char* exception_messages[] = {
 };
 
 void isr_handler(struct interrupt_registers_test* regs) {
-    log_info("ISR Handler", "#%d\n", regs->int_no);
+    // log_info("ISR Handler", "#%d\n", regs->int_no);
     if (regs->int_no < 32) {
         k_printf("isr%d   : %s\n", regs->int_no, exception_messages[regs->int_no]);
         k_printf("System halted\n");
@@ -140,16 +140,18 @@ void *irq_routines[16] = {
     0, 0, 0, 0, 0, 0, 0, 0
 };
 
-void irq_install_handler(int irq, void (*handler_func)(struct interrupt_registers*)) {
+void irq_install_handler(int irq, void (*handler_func)(struct interrupt_registers_test*)) {
     irq_routines[irq] = handler_func;
+    log_info("IRQ Install", "Installed irq handler #%d, %x\n", irq, handler_func);
 }
 
 void irq_uninstall_handler(int irq) {
     irq_routines[irq] = 0;
 }
 
-void irq_handler(struct interrupt_registers* regs) {
-    void (*handler)(struct interrupt_registers* regs);
+void irq_handler(struct interrupt_registers_test* regs) {
+    log_info("IRQ Handler", "irq%d\n", regs->int_no);
+    void (*handler)(struct interrupt_registers_test* regs);
     handler = irq_routines[regs->int_no - 32];
     if (handler) handler(regs);
     if (regs->int_no >= 40) {

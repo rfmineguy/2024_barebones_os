@@ -2,6 +2,7 @@
 #include "gdt.h"
 #include "idt.h"
 #include "serial.h"
+#include "timer.h"
 #include "../stdlib/printf.h"
 
 #define R(x) #x
@@ -24,6 +25,8 @@ void kernel_main(void) {
     idt_cli();
     gdt_init();    k_printf("Installed GDT\n");
     idt_install(); k_printf("Installed IDT\n");
+    timer_init();  k_printf("Initialized timer\n");
+    // k_printf("%d\n", 1/0);
 
-    k_printf("%d\n", 1/0);
+    for(;;);
 }
