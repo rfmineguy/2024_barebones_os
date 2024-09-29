@@ -2,23 +2,28 @@
 #include "gdt.h"
 #include "idt.h"
 #include "serial.h"
-#include "printf.h"
+#include "../stdlib/printf.h"
+
+#define R(x) #x
 
 void kernel_main(void) {
     serial_init();
     vga_init();
 
+    k_printf(R("+=====================================+") "\n");
+    k_printf(R("|          ___  ________  ____        |") "\n");
+    k_printf(R("|         / _ \/ __/ __ \/ __/        |") "\n");
+    k_printf(R("|        / , _/ _// /_/ /\ \          |") "\n");
+    k_printf(R("|       /_/|_/_/  \____/___/          |") "\n");
+    k_printf(R("|                                     |") "\n");
+    k_printf(R("+=====================================+") "\n");
+
+    int x = 972656;
+    k_printf("%d, %d, %d, %d\n", x, x, x, 972656);
+
     idt_cli();
-    gdt_init();
-    printf("Installed gdt\n");
+    gdt_init();    k_printf("Installed GDT\n");
+    idt_install(); k_printf("Installed IDT\n");
 
-    idt_install();
-    printf("Installed idt\n");
-
-    vga_putch(1/0);
-
-
-    // vga_writestring("Hello\n");
-    // vga_writestring("Hello 2\n");
-    // vga_putch('d');
+    k_printf("%d\n", 1/0);
 }
