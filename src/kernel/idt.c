@@ -25,13 +25,15 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags) {
 }
 
 void idt_install() {
-    log_info("IDT Install", "Begin");
+    log_info("IDT Install", "Begin\n");
     idtp.limit = (sizeof (struct idt_entry) * 256) - 1;
     idtp.base = (uint32_t) &idt_entries;
     memset(&idt_entries, 0, sizeof(struct idt_entry) * 256);
 
     pic_remap();
 
+    // 0x8E = 1000 1110
+    // 0x08 = 0000 1000 ; code segment
     idt_set_gate(0,  (uint32_t) isr0,  0x08, 0x8E);
     idt_set_gate(1,  (uint32_t) isr1,  0x08, 0x8E);
     idt_set_gate(2,  (uint32_t) isr2,  0x08, 0x8E);
@@ -86,13 +88,14 @@ void idt_install() {
     idt_set_gate(177, (uint32_t) isr177, 0x08, 0x8E);
 
     idt_flush();
-    log_info("IDT Install", "Finished");
+    log_info("IDT Install", "Finished\n");
 }
 
+// https://wiki.osdev.org/Exceptions
 const char* exception_messages[] = {
     [0] = "Division by zero",
     "Debug",
-    "Non Maskable",
+    "Non Maskable Interrupt",
     "Breakpoint",
     "Into dectected overflow",
     "Out of bounds",
@@ -123,12 +126,13 @@ const char* exception_messages[] = {
     "Reserved",
 };
 
-void isr_handler(struct interrupt_registers* regs) {
-    k_printf("isr: \n");
+void isr_handler(struct interrupt_registers_test* regs) {
+    k_printf("isr: %d\n", regs->int_no);
+    log_info("ISR Handler", "#%d\n", regs->int_no);
     if (regs->int_no < 32) {
         vga_writestring(exception_messages[regs->int_no]);
         vga_writestring("\n");
-        vga_writestring("Halted\n");
+        vga_writestring("Exception! System halted.\n");
         for(;;);
     }
 }
@@ -138,11 +142,11 @@ void *irq_routines[16] = {
     0, 0, 0, 0, 0, 0, 0, 0
 };
 
-void install_handler(int irq, void (*handler_func)(struct interrupt_registers*)) {
+void irq_install_handler(int irq, void (*handler_func)(struct interrupt_registers*)) {
     irq_routines[irq] = handler_func;
 }
 
-void uninstall_handler(int irq) {
+void irq_uninstall_handler(int irq) {
     irq_routines[irq] = 0;
 }
 

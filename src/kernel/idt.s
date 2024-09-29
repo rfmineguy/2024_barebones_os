@@ -2,6 +2,7 @@
 .global idt_cli
 .global idt_sti
 .extern idtp
+
 idt_flush:
     lidt [idtp]  // load new idt
     sti

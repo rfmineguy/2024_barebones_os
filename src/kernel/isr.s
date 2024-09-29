@@ -1,27 +1,22 @@
-.macro isr_err name
-.global isr\name
-isr\name:
-    cli
-    mov $\name, %eax
-    pushl %eax
-    // pushl \name
-    call isr_common_stub
-.endm
+// http://www.osdever.net/bkerndev/Docs/isrs.htm
 
 .macro isr_no_err name
 .global isr\name
 isr\name:
     cli
-    mov $0, %eax
-    pushl %eax
-    mov $\name, %eax
-    pushl %eax
-    // pushl 0
-    // pushl \name
-    call isr_common_stub
+    pushl 0
+    pushl \name
+    jmp isr_common_stub_test
 .endm
 
-.extern exception_handler
+.macro isr_err name
+.global isr\name
+isr\name:
+    cli
+    pushl \name
+    jmp isr_common_stub_test
+.endm
+
 isr_no_err 0
 isr_no_err 1
 isr_no_err 2
@@ -59,21 +54,21 @@ isr_no_err 31
 isr_no_err 128
 isr_no_err 177
 
+.extern isr_handler
 isr_common_stub:
-    pusha
-    mov %ds, %eax
-    pushl %eax
-    mov %cr2, %eax
-    pushl %eax
-    mov $10, %ax
+    pusha           // eax, ecx, edx, ex, esp, ebp, esi, edi
+    mov %ds, %eax   // 
+    pushl %eax      // ds
+    mov %cr2, %eax  // 
+    pushl %eax      // cr2
     
     mov $0x10, %ax
-    mov %ax, %ds
-    mov %ax, %es
-    mov %ax, %fs
-    mov %ax, %gs
+    mov %ax, %ds    // ds = 0x10
+    mov %ax, %es    // es = 0x10
+    mov %ax, %fs    // fs = 0x10
+    mov %ax, %gs    // fs = 0x10
     
-    pushl %esp
+    pushl %esp      // esp
     call isr_handler
     
     add $8, %esp
@@ -83,6 +78,29 @@ isr_common_stub:
     mov %bx, %fs
     mov %bx, %gs
     
+    popa
+    add $8, %esp
+    sti
+    iret
+
+isr_common_stub_test:
+    pusha
+
+    mov $0x10, %ax
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
+
+    call isr_handler
+
+    add $8, %esp
+    pop %ebx
+    mov %bx, %ds
+    mov %bx, %es
+    mov %bx, %fs
+    mov %bx, %gs
+
     popa
     add $8, %esp
     sti

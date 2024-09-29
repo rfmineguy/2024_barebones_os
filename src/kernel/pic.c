@@ -1,6 +1,7 @@
 #include "pic.h"
 #include "io.h"
 #include "printf.h"
+#include "log.h"
 
 #define ICW1_ICW4	0x01		/* Indicates that ICW4 will be present */
 #define ICW1_SINGLE	0x02		/* Single (cascade) mode */
@@ -47,12 +48,12 @@ void pic_remap() {
     io_outb(PIC2_DATA, 0x01); io_wait();
 
     // restore flags
-    pic_setflags(0xff, 0xff);
+    pic_setflags(0x00, 0x00);
 }
 
 void pic_setflags(uint8_t pic1, uint8_t pic2) {
     io_outb(PIC1_DATA, pic1); io_wait();
     io_outb(PIC2_DATA, pic2); io_wait();
-    printf("PIC1: %b\n", pic1);
-    printf("PIC2: %b\n", pic2);
+    log_info("PIC SetFlag", "pic1: %b\n", pic1);
+    log_info("PIC SetFlag", "pic2: %b\n", pic2);
 }
