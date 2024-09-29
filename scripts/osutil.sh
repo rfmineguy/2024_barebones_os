@@ -63,7 +63,9 @@ function handle_qemu_debug {
 
 function handle_build {
     case "$1" in
-        macos ) make clean; bear -- make build -f $(eval echo '$script_folder')/macos.Makefile ;;
+        macos ) 
+            makefile="$(eval echo '$script_folder';)/macos.Makefile" ;
+            make clean -f $makefile; bear -- make build -f $makefile ;;
         linux ) echo "Untested" ;;
         * ) usage ;;
     esac

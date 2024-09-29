@@ -16,6 +16,7 @@ S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) $(p
 
 BIN := os.bin
 OPTIMIZATION_FLAGS := # none
+CFLAGS := -std=gnu99 -ffreestanding -m32 -ggdb
 
 .PHONY: always clean build
 always:
@@ -27,10 +28,10 @@ clean:
 build: always $(OUT)/$(BIN)
 
 $(OUT)/%.c.o: $(KERNEL_SRC)/%.c
-	i686-elf-gcc -c $^ -o $@ -g -std=gnu99 -ffreestanding -m32 $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
+	i686-elf-gcc -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
 
 $(OUT)/%.c.o: $(STDLIB_SRC)/%.c
-	i686-elf-gcc -c $^ -o $@ -g -std=gnu99 -ffreestanding -m32 $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
+	i686-elf-gcc -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
 
 $(OUT)/%.s.o: $(KERNEL_SRC)/%.s
 	i686-elf-as $^ -o $@
