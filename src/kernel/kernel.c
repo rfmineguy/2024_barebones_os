@@ -4,11 +4,13 @@
 #include "serial.h"
 #include "timer.h"
 #include "keyboard.h"
+#include "multiboot.h"
+#include "memory.h"
 #include "../stdlib/printf.h"
 
 #define R(x) #x
 
-void kernel_main(void) {
+void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
     serial_init();
     vga_init();
 
@@ -32,6 +34,8 @@ void kernel_main(void) {
     k_printf("Initialized timer\n");
     keyboard_init();
     k_printf("Initialized keyboard\n");
+    memory_init(bootinfo);
+
 
     k_printf("Everything initialized!\n");
 

@@ -34,6 +34,9 @@ _start:
     /* should setup paging here */
 
     /* enter high-level kernel */
+    /* ebx and eax contain multiboot header flags */
+    pushl %ebx
+    pushl %eax
     call kernel_main
 
     /* loop infinitely */
