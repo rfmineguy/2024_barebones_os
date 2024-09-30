@@ -54,7 +54,8 @@ function handle_grub {
 }
 
 function handle_qemu_normal {
-    qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log -d int -D qemu_log.txt --no-reboot --no-shutdown
+    # qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log -d int -D qemu_log.txt --no-reboot --no-shutdown
+    qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log --no-reboot --no-shutdown
 }
 
 function handle_qemu_debug {
@@ -65,7 +66,7 @@ function handle_build {
     case "$1" in
         macos ) 
             makefile="$(eval echo '$script_folder';)/macos.Makefile" ;
-            make clean -f $makefile; bear -- make build -f $makefile ;;
+            make clean -f $makefile; make build -f $makefile ;;
         linux ) echo "Untested" ;;
         * ) usage ;;
     esac

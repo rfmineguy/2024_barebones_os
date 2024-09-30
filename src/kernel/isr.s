@@ -103,5 +103,5 @@ isr_common_stub_test:
 
     popa
     add $8, %esp
-    sti
+    // sti
     iret

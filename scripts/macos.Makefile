@@ -17,6 +17,7 @@ S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) $(p
 BIN := os.bin
 OPTIMIZATION_FLAGS := # none
 CFLAGS := -std=gnu99 -ffreestanding -m32 -ggdb
+ASFLAGS := -g
 
 .PHONY: always clean build
 always:
@@ -34,10 +35,10 @@ $(OUT)/%.c.o: $(STDLIB_SRC)/%.c
 	i686-elf-gcc -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC)
 
 $(OUT)/%.s.o: $(KERNEL_SRC)/%.s
-	i686-elf-as $^ -o $@
+	i686-elf-as $(ASFLAGS) $^ -o $@
 
 $(OUT)/%.s.o: $(STDLIB_SRC)/%.s
-	i686-elf-as $^ -o $@
+	i686-elf-as $(ASFLAGS) $^ -o $@
 
 $(OUT)/$(BIN): $(C_OBJECTS) $(S_OBJECTS)
 	i686-elf-gcc -T linker.ld -o $@ -ffreestanding $(OPTIMIZATION_FLAGS) -nostdlib $(S_OBJECTS) $(C_OBJECTS) -lgcc -I$(KERNEL_SRC) -I$(STDLIB_SRC)

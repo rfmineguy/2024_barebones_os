@@ -150,7 +150,7 @@ void irq_uninstall_handler(int irq) {
 }
 
 void irq_handler(struct interrupt_registers_test* regs) {
-    log_info("IRQ Handler", "irq%d\n", regs->int_no);
+    // log_info("IRQ Handler", "irq%d\n", regs->int_no);
     void (*handler)(struct interrupt_registers_test* regs);
     handler = irq_routines[regs->int_no - 32];
     if (handler) handler(regs);
