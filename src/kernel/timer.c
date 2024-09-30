@@ -1,10 +1,7 @@
 #include "timer.h"
 #include <stdint.h>
-// #include "memory.h"
-#include "printf.h"
-#include "log.h"
 #include "idt.h"
-#include "io.h"
+#include "vga.h"
 
 #define DATA_0 0x40         // Channel 0 data port (read/write)
 #define DATA_2 0x42         // Channel 2 data port (read/write)
@@ -50,5 +47,8 @@ void timer_onirq0(struct interrupt_registers_test* regs) {
     ticks++;
     if (ticks % 10 == 0) {
         //log_info("TimerIRQ0", "Ticks: %d\n", ticks);
+    }
+    if (ticks % 10 == 0) {
+        vga_toggle_cursor_blink();
     }
 }

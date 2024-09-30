@@ -31,9 +31,12 @@ size_t row, col;
 uint8_t term_color;
 uint16_t* buffer;
 
+int cursor_blink_status;
+
 void vga_init(){
     row = 0;
     col = 0;
+    cursor_blink_status = 1;
     term_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
     buffer = (uint16_t*) 0xB8000;
     for (size_t i = 0; i < VGA_WIDTH; i++) {
@@ -101,4 +104,10 @@ void vga_writestring(const char* str){
 
 void vga_scroll(int scroll) {
     (void)(scroll);
+}
+
+void vga_toggle_cursor_blink() {
+    cursor_blink_status = cursor_blink_status == 0 ? 1 : 0;
+    if (cursor_blink_status == 0) vga_put_entry_at((char)219, term_color, col, row);
+    if (cursor_blink_status == 1) vga_put_entry_at(' ', term_color, col, row);
 }

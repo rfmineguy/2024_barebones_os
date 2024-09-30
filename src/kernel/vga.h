@@ -35,4 +35,7 @@ void vga_writestring(const char*);
 
 void vga_scroll(int);
 
+// 1 = on, 0 = off
+void vga_toggle_cursor_blink();
+
 #endif
