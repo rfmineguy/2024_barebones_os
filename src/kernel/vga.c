@@ -67,9 +67,16 @@ void vga_put_entry_at(char ch, uint8_t color, size_t x, size_t y) {
 
 void vga_putch(char ch) {
     switch (ch) {
-        case '\n': row++; col=0; break;
-        case '\r': col=0; break;
-        case '\t': col+=4; break;
+        case '\n': row++;
+                   col=0;
+                   break;
+        case '\r': col=0;
+                   break;
+        case '\b': col--;
+                   vga_put_entry_at(' ', term_color, col, row);
+                   break;
+        case '\t': col+=4; 
+                   break;
         default:
            vga_put_entry_at(ch, term_color, col, row);
            col++;
