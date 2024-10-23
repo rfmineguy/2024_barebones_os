@@ -29,6 +29,7 @@ void vga_set_color(uint8_t);
 void vga_save_cursor(size_t*, size_t*);
 int  vga_put_cursor_at(size_t, size_t);
 void vga_put_entry_at(char, uint8_t, size_t, size_t);
+void vga_put_ch_at(char, size_t, size_t);
 void vga_putch(char);
 void vga_write(const char*, size_t);
 void vga_writestring(const char*);

@@ -57,8 +57,8 @@ void vga_save_cursor(size_t* x, size_t* y) {
 }
 
 int vga_put_cursor_at(size_t x, size_t y) {
-    if (x >= VGA_WIDTH) return -1;
-    if (y >= VGA_HEIGHT) return -1;
+    if (x >= VGA_WIDTH) x = 0;
+    if (y >= VGA_HEIGHT) y = 0;
     row = y;
     col = x;
     return 0;
@@ -66,6 +66,10 @@ int vga_put_cursor_at(size_t x, size_t y) {
 
 void vga_put_entry_at(char ch, uint8_t color, size_t x, size_t y) {
     buffer[y * VGA_WIDTH + x] = vga_entry(ch, color);
+}
+
+void vga_put_ch_at(char ch, size_t x, size_t y) {
+    buffer[y * VGA_WIDTH + x] = vga_entry(ch, term_color);
 }
 
 void vga_putch(char ch) {

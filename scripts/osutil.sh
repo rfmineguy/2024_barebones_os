@@ -13,6 +13,7 @@ function usage {
     echo "  grub            : Grub related commands";
     echo "  qemu            : Run qemu with os.bin";
     echo "  qemu-debug      : Run qemu in debug mode with os.bin";
+    echo "  qemu-log        : Run qemu and create log file";
     echo "  build           : Build the kernel";
 
     # docker subcommand
@@ -54,12 +55,15 @@ function handle_grub {
 }
 
 function handle_qemu_normal {
-    # qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log -d int -D qemu_log.txt --no-reboot --no-shutdown
     qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log --no-reboot --no-shutdown
 }
 
 function handle_qemu_debug {
-    qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log -s -S -d int -D qemu_log.txt --no-reboot --no-shutdown
+    qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log -s -S --no-reboot --no-shutdown
+}
+
+function handle_qemu_log {
+    qemu-system-i386 -kernel $(eval echo '$script_folder')/../out/os.bin -serial file:serial.log -d int -D qemu_log.txt --no-reboot --no-shutdown
 }
 
 function handle_build {
@@ -92,6 +96,7 @@ if [ $exit_code -eq 0 ]; then
         grub ) shift 1; handle_grub $@ ;;
         qemu ) shift 1; handle_qemu_normal $@ ;;
         qemu_debug ) shift 1; handle_qemu_debug $@ ;;
+        qemu_log ) shift 1; handle_qemu_log $@ ;;
         build ) shift 1; handle_build $@ ;;
         * ) usage ;;
     esac

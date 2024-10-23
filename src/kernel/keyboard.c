@@ -66,6 +66,7 @@ const uint32_t uppercase[128] = {
 
 
 void keyboard_init() {
+    idt_cli();
     caps_on = false;
     capslock = false;
     irq_install_handler(1, &keyboard_irq);
@@ -74,7 +75,7 @@ void keyboard_irq(struct interrupt_registers_test* regs) {
     (void)(regs);
     char scancode = io_inb(0x60) & 0x7F; // scancode of key
     char press    = io_inb(0x60) & 0x80;
-    log_info("Key IRQ", "Press: %d, Scan code: %d\n", press, scancode);
+    // log_info("Key IRQ", "Press: %d, Scan code: %d\n", press, scancode);
 
     switch (scancode) {
         case 1:
@@ -103,8 +104,8 @@ void keyboard_irq(struct interrupt_registers_test* regs) {
             break;
         default:
             if (press == 0) {
-                if (caps_on || capslock) k_printf("%c", uppercase[scancode]);
-                else k_printf("%c", lowercase[scancode]);
+                if (caps_on || capslock) vga_putch(uppercase[(int)scancode]);
+                else vga_putch(lowercase[(int)scancode]);
             }
     }
 }

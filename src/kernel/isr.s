@@ -56,7 +56,7 @@ isr_no_err 177
 
 .extern isr_handler
 isr_common_stub:
-    pusha           // eax, ecx, edx, ex, esp, ebp, esi, edi
+    pusha           // eax, ecx, edx, ebx, esp, ebp, esi, edi
     mov %ds, %eax   // 
     pushl %eax      // ds
     mov %cr2, %eax  // 
@@ -84,14 +84,16 @@ isr_common_stub:
     iret
 
 isr_common_stub_test:
+    mov %eax, %eax
     pusha
 
-    // mov $0x10, %ax
-    // mov %ax, %ds
-    // mov %ax, %es
-    // mov %ax, %fs
-    // mov %ax, %gs
+    mov $0x10, %ax
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
 
+    // pushl %esp
     call isr_handler
 
     // add $8, %esp
@@ -103,5 +105,4 @@ isr_common_stub_test:
 
     popa
     add $8, %esp
-    // sti
     iret

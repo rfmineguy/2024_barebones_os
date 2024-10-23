@@ -48,6 +48,8 @@ void pic_remap() {
     io_outb(PIC2_DATA, 0x01); io_wait();
 
     // restore flags
+    // 1 means disabled
+    // 0 means enabled
     pic_setflags(0x00, 0x00);
 }
 

@@ -1,7 +1,9 @@
 #include "timer.h"
 #include <stdint.h>
 #include "idt.h"
+#include "io.h"
 #include "vga.h"
+#include "serial.h"
 
 #define DATA_0 0x40         // Channel 0 data port (read/write)
 #define DATA_2 0x42         // Channel 2 data port (read/write)
@@ -12,7 +14,7 @@ uint64_t ticks;
 const uint32_t frequency = 100;
 
 void timer_init() {
-    // log_info("TimerInit", "Begin\n");
+    idt_cli();
     ticks = 0;
     irq_install_handler(0, &timer_onirq0);
 
@@ -30,25 +32,18 @@ void timer_init() {
     // 11   = access mode (lo and hi byte)
     // 011  = square wave generator (denotes when we tick)
     // 0    = 16-bit binary mode
-    // io_outb(MODE_CMD, 0x36); 
-    // io_wait();
-
-    // set the frequency
-    // io_outb(DATA_0, (uint8_t)(divisor & 0xff));
-    // io_wait();
-    // io_outb(DATA_0, (uint8_t)((divisor >> 8) & 0xff));
-    // io_wait();
-
-    // log_info("TimerInit", "Finished\n");
+    io_outb(MODE_CMD, 0x36);
+    io_outb(DATA_0, (uint8_t)(divisor & 0xff));
+    io_outb(DATA_0, (uint8_t)((divisor >> 8) & 0xff));
 }
 void timer_onirq0(struct interrupt_registers_test* regs) {
     (void)(regs);   // not used in timer irq
     
     ticks++;
-    if (ticks % 10 == 0) {
-        //log_info("TimerIRQ0", "Ticks: %d\n", ticks);
-    }
-    if (ticks % 10 == 0) {
+    if (ticks % 50 == 0) {
         vga_toggle_cursor_blink();
     }
+}
+uint64_t timer_ticks() {
+    return ticks;
 }

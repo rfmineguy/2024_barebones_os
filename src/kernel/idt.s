@@ -5,7 +5,6 @@
 
 idt_flush:
     lidt [idtp]  // load new idt
-    sti
     ret
 
 idt_cli:

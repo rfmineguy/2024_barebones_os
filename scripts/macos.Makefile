@@ -15,8 +15,8 @@ C_OBJECTS := $(patsubst $(KERNEL_SRC)/%.c, $(OUT)/%.c.o, $(C_KERNEL_SOURCE)) $(p
 S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) $(patsubst $(STDLIB_SRC)/%.s, $(OUT)/%.s.o, $(S_STDLIB_SOURCE))
 
 BIN := os.bin
-OPTIMIZATION_FLAGS := # none
-CFLAGS := -std=gnu99 -ffreestanding -m32 -ggdb
+OPTIMIZATION_FLAGS := -O0
+CFLAGS := -std=gnu99 -ffreestanding -nostdlib -m32 -ggdb
 ASFLAGS := -g
 
 .PHONY: always clean build

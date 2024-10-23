@@ -16,4 +16,6 @@ struct interrupt_registers_test {
     uint32_t eip, cs, eflags, useresp, ss;           // pushed by cpu
 };
 
+void int_regs_show_serial(struct interrupt_registers_test*);
+
 #endif
