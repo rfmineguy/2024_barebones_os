@@ -1,7 +1,6 @@
 #include "printf.h"
-#include <stdarg.h>
-#include <limits.h>
-#include <stdbool.h>
+#include "stdarg.h"
+#include "stdbool.h"
 #include "ctype.h"
 
 #define NORMAL 0
