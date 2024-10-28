@@ -2,6 +2,9 @@
 out/
 tags
 output
+output.txt
+isodir
+grub.cfg
 serial.log
 qemu_log.txt
 compile_commands.json
