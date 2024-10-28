@@ -11,26 +11,30 @@ function usage {
 }
 
 function handle_build {
-    eval $docker_cmd 'sh -c "make build -f scripts/alpine.Makefile"'
+    mkdir -p out
+    eval $docker_cmd 'sh -c "make build -f scripts/debian.Makefile"'
 }
 
 function handle_clean {
-    eval $docker_cmd 'sh -c "make clean -f scripts/alpine.Makefile"'
+    eval $docker_cmd 'sh -c "make clean -f scripts/debian.Makefile"'
 }
 
 function handle_checkmboot {
-    eval $docker_cmd 'sh -c "make grub_check_multiboot -f scripts/alpine.Makefile"'
+    eval $docker_cmd 'sh -c "make grub_check_multiboot -f scripts/debian.Makefile"'
 }
 
 function handle_docker_get {
     cd docker
-    docker build -f alpine.Dockerfile -t alpine2-test . --platform=linux/amd64
+    docker build -f debian.Dockerfile -t debian-test . --platform=linux/amd64
 }
 
 function handle_qemu {
-    qemu-system-i386 -cdrom out/os.iso -boot d -vga std
+    qemu-system-i386 -cdrom out/os.iso -boot d -vga std -serial file:output.txt
 }
 
+function handle_qemu_debug {
+    qemu-system-i386 -cdrom out/os.iso -boot d -vga std -serial file:output.txt -S -s
+}
 
 case "$1" in
     docker_get ) shift 1; handle_docker_get $@ ;;
@@ -38,6 +42,7 @@ case "$1" in
     clean )      shift 1; handle_clean $@ ;;
     checkmboot ) shift 1; handle_checkmboot $@ ;;
     qemu )       shift 1; handle_qemu $@ ;;
+    qemu_debug ) shift 1; handle_qemu_debug $@ ;;
     help )       usage ;;
     * ) echo "Incorrect usage"; usage ;;
 esac
