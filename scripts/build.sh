@@ -28,8 +28,7 @@ function handle_docker_get {
 }
 
 function handle_qemu {
-    echo "Implement later"
-    # qemu-system-i386 ..
+    qemu-system-i386 -cdrom out/os.iso -boot d -vga std
 }
 
 
