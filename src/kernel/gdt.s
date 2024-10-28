@@ -4,7 +4,7 @@
 
 gdt_flush:
     cli
-    lgdt [gdt_ptr]
+    lgdt gdt_ptr
     mov $0x10, %eax
     mov %ax, %ds
     mov %ax, %es

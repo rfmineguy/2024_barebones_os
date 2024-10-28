@@ -1,4 +1,4 @@
-docker_cmd='docker run --rm -it -w /root/workspace -v $(pwd):/root/workspace alpine2-test'
+docker_cmd='docker run --rm -it -w /root/workspace -v $(pwd):/root/workspace debian-test'
 
 function usage {
     echo "usage: build <subcommand>";
@@ -12,7 +12,6 @@ function usage {
 
 function handle_build {
     eval $docker_cmd 'sh -c "make build -f scripts/alpine.Makefile"'
-    eval $docker_cmd 'sh -c "make grub_gen_rescue -f scripts/alpine.Makefile"'
 }
 
 function handle_clean {

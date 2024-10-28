@@ -4,7 +4,7 @@
 .extern idtp
 
 idt_flush:
-    lidt [idtp]  // load new idt
+    lidt idtp  // load new idt
     ret
 
 idt_cli:

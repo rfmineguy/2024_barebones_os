@@ -1,8 +1,5 @@
 #ifndef SERIAL_H
 #define SERIAL_H
-#define bool int
-#define true 1
-#define false 0
 
 int  serial_init();
 
