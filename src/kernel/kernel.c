@@ -6,6 +6,7 @@
 #include "keyboard.h"
 #include "multiboot.h"
 #include "memory.h"
+#include "fat_test.h"
 #include "../stdlib/printf.h"
 
 #define R(x) #x
@@ -38,13 +39,18 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
     // Setup irq handlers
     timer_init();          k_printf("Initialized timer\n");
     keyboard_init();       k_printf("Initialized keyboard\n");
-    // memory_init(bootinfo); k_printf("Initialized memory\n");
+    memory_init(bootinfo); k_printf("Initialized memory\n");
 
     idt_sti();
     k_printf("Everything initialized!\n");
 
-    int bank = 0;
-    int cursorx = 0, cursory = 0;
+    if (bootinfo->mods_count > 0) {
+        struct module_s *mods = (struct module_s*) bootinfo->mods_addr;
+        k_printf("Modules : {string=%s, start=%x, end=%x}\n", (char*)mods[0].string, mods[0].mod_start, mods[0].mod_end);
+        fat_test(mods[0].mod_start);
+    }
+
+
     for(;;) {
         if (timer_ticks() % 20 == 0) {
             if (i % 3 == 0) vga_put_ch_at('-', 20, 20);

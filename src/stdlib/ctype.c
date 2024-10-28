@@ -4,3 +4,7 @@ int toupper(int ch) {
     if (ch >= 'a' && ch <= 'z') return ch + 'A' - 'a';
     return ch;
 }
+
+int isprint(int ch) {
+    return ch > 0x1f && ch < 0x7f;
+}

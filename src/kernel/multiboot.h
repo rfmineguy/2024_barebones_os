@@ -114,5 +114,11 @@ struct multiboot_mmap_entry
   uint32_t type;
 } __attribute__((packed));
 
+struct module_s {
+    uint32_t mod_start;   // The starting address of the module in memory
+    uint32_t mod_end;     // The ending address of the module in memory
+    uint32_t string;      // The command line string associated with the module
+    uint32_t reserved;    // Reserved for future use
+} __attribute__((packed));
 
 #endif
