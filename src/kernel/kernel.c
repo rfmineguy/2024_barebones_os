@@ -7,6 +7,7 @@
 #include "multiboot.h"
 #include "memory.h"
 #include "fat_test.h"
+#include "fat.h"
 #include "../stdlib/printf.h"
 
 #define R(x) #x
@@ -48,8 +49,13 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
         struct module_s *mods = (struct module_s*) bootinfo->mods_addr;
         k_printf("Modules : {string=%s, start=%x, end=%x}\n", (char*)mods[0].string, mods[0].mod_start, mods[0].mod_end);
         fat_test(mods[0].mod_start);
-    }
 
+        // start reading the fat "drive"
+        fat_init(mods[0].mod_start, mods[0].mod_end);
+        fat_read_header();
+        fat_debug();
+    }
+    
 
     for(;;) {
         if (timer_ticks() % 20 == 0) {
