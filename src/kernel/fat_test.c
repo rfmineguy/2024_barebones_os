@@ -16,6 +16,6 @@ void fat_test(uint32_t start) {
         }
     }
     serial_printf("\n");
-    log_info("FatTest", "End");
+    log_info("FatTest", "End\n");
     k_printf("fat_test complete. see serial output...\n");
 }
