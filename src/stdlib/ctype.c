@@ -8,3 +8,7 @@ int toupper(int ch) {
 int isprint(int ch) {
     return ch > 0x1f && ch < 0x7f;
 }
+
+int isdigit(int ch) {
+    return ch >= '0' && ch <= '9';
+}

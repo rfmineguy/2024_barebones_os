@@ -3,5 +3,6 @@
 
 int toupper(int);
 int isprint(int);
+int isdigit(int);
 
 #endif
