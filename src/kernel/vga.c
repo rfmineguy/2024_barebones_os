@@ -107,6 +107,16 @@ void vga_writestring(const char* str){
     vga_write(str, strlen(str));
 }
 
+void vga_clearline() {
+    size_t x, y;
+    vga_save_cursor(&x, &y);
+    vga_put_cursor_at(row, 0);
+    for (int i = 0; i < VGA_WIDTH; i++) {
+        vga_putch(' ');
+    }
+    vga_put_cursor_at(x, y);
+}
+
 void vga_scroll(int scroll) {
     (void)(scroll);
 }

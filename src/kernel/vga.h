@@ -33,6 +33,7 @@ void vga_put_ch_at(char, size_t, size_t);
 void vga_putch(char);
 void vga_write(const char*, size_t);
 void vga_writestring(const char*);
+void vga_clearline();
 
 void vga_scroll(int);
 
