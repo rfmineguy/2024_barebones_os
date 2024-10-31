@@ -17,17 +17,14 @@ make an OS that performs some simple operations.
 
 # Building
 - Required software
-   + A i386-elf C cross compiler
-   + Docker
-   + Grub
-   + make
+   + docker
    + qemu (or some other virtualization software)
 
 - Optional software
    + A host C compiler (for tests)
 
 ```bash
-./scripts/osutil.sh docker setup
+./scripts/osutil.sh docker setup         # install docker image and software required for build
 ./scripts/osutil.sh grub create-config
 ./scripts/osutil.sh grub check-multiboot # not required
 ./scripts/osutil.sh build macos          # currently the only well defined build host (Linux will come eventually)
@@ -35,4 +32,4 @@ make an OS that performs some simple operations.
 
 # Resources
 [OliveStem OS Playlist](https://youtube.com/playlist?list=PL2EF13wm-hWAglI8rRbdsCPq_wRpYvQQy&si=q2oYblMfOZJexLc9)<br>
-[osdev-wiki](https://wiki.osdev.org/Expanded_Main_Page)
+[osdev-wiki](https://wiki.osdev.org/Expanded_Main_Page)<br>
