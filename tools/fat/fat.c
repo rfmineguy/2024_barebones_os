@@ -53,12 +53,28 @@ typedef struct
     uint32_t Size;
 } __attribute__((packed)) DirectoryEntry;
 
-
 BootSector g_BootSector;
 uint8_t* g_Fat = NULL;
 DirectoryEntry* g_RootDirectory = NULL;
 uint32_t g_RootDirectoryEnd;
 
+void fat_debug() {
+    char* oem = (char*)g_BootSector.OemIdentifier;
+    printf("OemId=\"%c%c%c%c%c%c%c%c\"\n", 
+            oem[0], oem[1], oem[2], oem[3], oem[4], oem[5], oem[6], oem[7]);
+    printf("BytesPerSector      =%x\n", g_BootSector.BytesPerSector);
+    printf("SectorsPerCluster   =%x\n", g_BootSector.SectorsPerCluster);
+    printf("ReservedSectors     =%x\n", g_BootSector.ReservedSectors);
+    printf("FatCount            =%x\n", g_BootSector.FatCount);
+    printf("DirEntryCount       =%x\n", g_BootSector.DirEntryCount);
+    printf("TotalSectors        =%x\n", g_BootSector.TotalSectors);
+    printf("MediaDescriptorType =%x\n", g_BootSector.MediaDescriptorType);
+    printf("SectorsPerFat       =%x\n", g_BootSector.SectorsPerFat);
+    printf("SectorsPerTrack     =%x\n", g_BootSector.SectorsPerTrack);
+    printf("Heads               =%x\n", g_BootSector.Heads);
+    printf("HiddenSectors       =%x\n", g_BootSector.HiddenSectors);
+    printf("LargeSectorCount    =%x\n", g_BootSector.LargeSectorCount);
+}
 
 bool readBootSector(FILE* disk)
 {
@@ -68,6 +84,9 @@ bool readBootSector(FILE* disk)
 bool readSectors(FILE* disk, uint32_t lba, uint32_t count, void* bufferOut)
 {
     bool ok = true;
+    printf("ReadSectors :: lba: %x, BytesPerSector: %x\n", lba, g_BootSector.BytesPerSector);
+    printf("ReadSectors :: offset: %x\n", (uint32_t)lba * g_BootSector.BytesPerSector);
+
     ok = ok && (fseek(disk, lba * g_BootSector.BytesPerSector, SEEK_SET) == 0);
     ok = ok && (fread(bufferOut, g_BootSector.BytesPerSector, count, disk) == count);
     return ok;
@@ -75,6 +94,7 @@ bool readSectors(FILE* disk, uint32_t lba, uint32_t count, void* bufferOut)
 
 bool readFat(FILE* disk)
 {
+    printf("readFat: Allocating %d bytes\n", g_BootSector.SectorsPerFat * g_BootSector.BytesPerSector);
     g_Fat = (uint8_t*) malloc(g_BootSector.SectorsPerFat * g_BootSector.BytesPerSector);
     return readSectors(disk, g_BootSector.ReservedSectors, g_BootSector.SectorsPerFat, g_Fat);
 }
@@ -87,7 +107,11 @@ bool readRootDirectory(FILE* disk)
     if (size % g_BootSector.BytesPerSector > 0)
         sectors++;
 
+    printf("lba: %d\n", lba);
+    printf("size: %d\n", size);
+    printf("sectors: %d\n", sectors);
     g_RootDirectoryEnd = lba + sectors;
+    printf("readRootDirectory: Allocating %d bytes\n", sectors * g_BootSector.BytesPerSector);
     g_RootDirectory = (DirectoryEntry*) malloc(sectors * g_BootSector.BytesPerSector);
     return readSectors(disk, lba, sectors, g_RootDirectory);
 }
@@ -141,6 +165,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "Could not read boot sector!\n");
         return -2;
     }
+    fat_debug();
 
     if (!readFat(disk)) {
         fprintf(stderr, "Could not read FAT!\n");
@@ -163,6 +188,10 @@ int main(int argc, char** argv)
         return -5;
     }
 
+    printf("Size: %d, Name: %s, FirstClusterLow: %d, FirstClusterHigh: %d\n",
+            fileEntry->Size, fileEntry->Name, fileEntry->FirstClusterLow, fileEntry->FirstClusterHigh);
+
+    printf("main: Allocating %d bytes\n", fileEntry->Size + g_BootSector.BytesPerSector);
     uint8_t* buffer = (uint8_t*) malloc(fileEntry->Size + g_BootSector.BytesPerSector);
     if (!readFile(fileEntry, disk, buffer)) {
         fprintf(stderr, "Could not read file %s!\n", argv[2]);
