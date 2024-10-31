@@ -6,40 +6,6 @@
 #include "../stdlib/stdbool.h"
 #include "../stdlib/stdint.h"
 
-#define UNKNOWN  0xFFFFFFFF
-#define ESC  0xFFFFFFFF - 1
-#define CTRL  0xFFFFFFFF - 2
-#define LSHFT  0xFFFFFFFF - 3
-#define RSHFT  0xFFFFFFFF - 4
-#define ALT  0xFFFFFFFF - 5
-#define F1  0xFFFFFFFF - 6
-#define F2  0xFFFFFFFF - 7
-#define F3  0xFFFFFFFF - 8
-#define F4  0xFFFFFFFF - 9
-#define F5  0xFFFFFFFF - 10
-#define F6  0xFFFFFFFF - 11
-#define F7  0xFFFFFFFF - 12
-#define F8  0xFFFFFFFF - 13
-#define F9  0xFFFFFFFF - 14
-#define F10  0xFFFFFFFF - 15
-#define F11  0xFFFFFFFF - 16
-#define F12  0xFFFFFFFF - 17
-#define SCRLCK  0xFFFFFFFF - 18
-#define HOME  0xFFFFFFFF - 19
-#define UP  0xFFFFFFFF - 20
-#define LEFT  0xFFFFFFFF - 21
-#define RIGHT  0xFFFFFFFF - 22
-#define DOWN  0xFFFFFFFF - 23
-#define PGUP  0xFFFFFFFF - 24
-#define PGDOWN  0xFFFFFFFF - 25
-#define END  0xFFFFFFFF - 26
-#define INS  0xFFFFFFFF - 27
-#define DEL  0xFFFFFFFF - 28
-#define CAPS  0xFFFFFFFF - 29
-#define NONE  0xFFFFFFFF - 30
-#define ALTGR  0xFFFFFFFF - 31
-#define NUMLCK  0xFFFFFFFF - 32
-
 const uint32_t lowercase[128] = {
     UNKNOWN,ESC,'1','2','3','4','5','6','7','8',
     '9','0','-','=','\b','\t','q','w','e','r',
@@ -62,13 +28,27 @@ const uint32_t uppercase[128] = {
     UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN
 };
 
+// array of listeners
+int (*listeners[10])(char ch);
+int listeners_count;
 
 bool caps_on, capslock;
+void keyboard_add_listener(int(* listener)(char)) {
+    if (listeners_count >= 10) {
+        log_crit("KeyboardAddListener", "Couldn't add new keyboard listener");
+        return;
+    }
+    listeners[listeners_count] = listener;
+    listeners_count++;
+}
 void keyboard_init() {
     idt_cli();
     caps_on = false;
     capslock = false;
     irq_install_handler(1, &keyboard_irq);
+
+    for (int i = 0; i < 10; i++) listeners[i] = (void*)0;
+    listeners_count = 0;
 }
 void keyboard_irq(struct interrupt_registers_test* regs) {
     (void)(regs);
@@ -102,9 +82,16 @@ void keyboard_irq(struct interrupt_registers_test* regs) {
             // else if (capslock && press == 0) capslock = false;
             break;
         default:
-            if (press == 0) {
-                if (caps_on || capslock) vga_putch(uppercase[(int)scancode]);
-                else vga_putch(lowercase[(int)scancode]);
+            for (int i = 0; i < listeners_count; i++) {
+                if (press == 0) {
+                    if (caps_on || capslock) listeners[i](uppercase[(int)scancode]);
+                    else listeners[i](lowercase[(int)scancode]);
+                }
             }
+            break;
+            // if (press == 0) {
+            //     if (caps_on || capslock) vga_putch(uppercase[(int)scancode]);
+            //     else vga_putch(lowercase[(int)scancode]);
+            // }
     }
 }
