@@ -14,6 +14,9 @@ make an OS that performs some simple operations.
 - Printf
 - Serial port communication
 - Simple VGA Driver
+- Simple FAT driver
+   - [X] File reading
+   - [ ] File writing
 
 # Building
 - Required software
@@ -33,3 +36,4 @@ make an OS that performs some simple operations.
 # Resources
 [OliveStem OS Playlist](https://youtube.com/playlist?list=PL2EF13wm-hWAglI8rRbdsCPq_wRpYvQQy&si=q2oYblMfOZJexLc9)<br>
 [osdev-wiki](https://wiki.osdev.org/Expanded_Main_Page)<br>
+[Nanobyte FAT Driver](https://www.youtube.com/watch?v=7o3qx66uLz8)<br>
