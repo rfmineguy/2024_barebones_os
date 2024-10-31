@@ -7,13 +7,12 @@ uint32_t    g_fat_start_addr, g_fat_end_addr;
 boot_sector g_boot_sector;
 uint8_t*    g_Fat            = (void*)0;
 dir_entry*  g_root_directory = (void*)0;
-uint32_t    g_RootDirectory_end;
+uint32_t    g_root_directory_end;
+
+arena*      karena;
 
 void fat_debug() {
-    char* oem = (char*)g_boot_sector.OemIdentifier;
     log_info("FatRead", "Begin---\n");
-    // log_info("FatRead", "OemId=\"%c%c%c%c%c%c%c%c\"\n",
-    //         oem[0], oem[1], oem[2], oem[3], oem[4], oem[5], oem[6], oem[7]);
     log_info("FatRead", "BytesPerSector      =0x%X\n", g_boot_sector.BytesPerSector);
     log_info("FatRead", "SectorsPerCluster   =0x%X\n", g_boot_sector.SectorsPerCluster);
     log_info("FatRead", "ReservedSectors     =0x%X\n", g_boot_sector.ReservedSectors);
@@ -29,9 +28,10 @@ void fat_debug() {
     log_info("FatRead", "End---\n");
 }
 
-void fat_init(uint32_t start, uint32_t end) {
-    g_fat_start_addr = start;
-    g_fat_end_addr = end;
+void fat_init(uint32_t fat_start, uint32_t fat_end, arena* arena) {
+    g_fat_start_addr = fat_start;
+    g_fat_end_addr = fat_end;
+    karena = arena;
 }
 
 uint32_t swap32(uint32_t val) {
@@ -45,7 +45,10 @@ bool fat_read_header() {
     g_boot_sector.SectorsPerCluster = fat_ptr[13];
     g_boot_sector.ReservedSectors = fat_ptr[14] | (fat_ptr[15] << 8);
     g_boot_sector.FatCount = fat_ptr[16];
-    g_boot_sector.DirEntryCount = fat_ptr[17] | (fat_ptr[18] << 8);
+
+    // NOTE: This masking is kind of hacky for now, without it for some reason i get the wrong%
+    //       value
+    g_boot_sector.DirEntryCount = (fat_ptr[17] | (fat_ptr[18] << 8)) & 0xff;
     g_boot_sector.TotalSectors = fat_ptr[19] | (fat_ptr[20] << 8);
     g_boot_sector.MediaDescriptorType = fat_ptr[21];
     g_boot_sector.SectorsPerFat = fat_ptr[22] | (fat_ptr[23] << 8);
@@ -53,23 +56,80 @@ bool fat_read_header() {
     g_boot_sector.Heads = fat_ptr[26] | (fat_ptr[27] << 8);
     g_boot_sector.HiddenSectors = fat_ptr[28] | (fat_ptr[29] << 8) | (fat_ptr[30] << 16) | (fat_ptr[31] << 24);
 
-    // memcpy(&g_boot_sector, fat_ptr, sizeof(g_boot_sector));
-    // char* oem = (char*)g_boot_sector.OemIdentifier;
     return true;
 }
-bool fat_read_sectors() {
 
+bool fat_read_sectors(uint32_t lba, uint32_t count, void* bufferOut) {
+    char* fat_ptr = (char*)g_fat_start_addr;
+    int offset = lba * g_boot_sector.BytesPerSector;
+    if (offset + (count * g_boot_sector.BytesPerSector) > g_fat_end_addr) {
+        return false;
+    }
+    memcpy(bufferOut, (char*)fat_ptr + offset, count * g_boot_sector.BytesPerSector);
+    log_info("ReadSectors", "lba: %x, BytesPerSector: %x\n", lba, g_boot_sector.BytesPerSector);
+    log_info("ReadSectors", "offset: %x\n", (uint32_t)offset);
+    log_info("ReadSectors", "Copy {from: %x, to: %x}\n", (uint32_t)(char*)(fat_ptr + offset), (uint32_t)bufferOut);
+    return true;
 }
-bool fat_read() {
 
+bool fat_read() {
+    g_Fat = arena_alloc(karena, g_boot_sector.SectorsPerFat * g_boot_sector.BytesPerSector);
+    log_info("FatRead", "Allocating %d bytes, at %x\n", g_boot_sector.SectorsPerFat * g_boot_sector.BytesPerSector, &g_Fat);
+    return fat_read_sectors(g_boot_sector.ReservedSectors, g_boot_sector.SectorsPerFat, g_Fat);
 }
 
 bool fat_read_root_dir() {
+    uint32_t lba = g_boot_sector.ReservedSectors + g_boot_sector.SectorsPerFat * g_boot_sector.FatCount;
+    uint32_t size = sizeof(dir_entry) * g_boot_sector.DirEntryCount;
+    uint32_t sectors = (size / g_boot_sector.BytesPerSector);
+    if (size % g_boot_sector.BytesPerSector > 0)
+        sectors++;
 
+    log_info("FatReadRoot", "lba: %d\n", lba);
+    log_info("FatReadRoot", "size: %d\n", size);
+    log_info("FatReadRoot", "sectors: %d\n", sectors);
+    g_root_directory_end = lba + sectors;
+    log_info("FatReadRoot", "Allocating %d bytes\n", sectors * g_boot_sector.BytesPerSector);
+    g_root_directory = (dir_entry*) arena_alloc(karena, sectors * g_boot_sector.BytesPerSector);
+    return fat_read_sectors(lba, sectors, g_root_directory);
 }
+
 dir_entry* fat_find_file(const char* name) {
+    for (uint32_t i = 0; i < g_boot_sector.DirEntryCount; i++) {
+        if (memcmp(name, g_root_directory[i].Name, 11) == 0)
+            return &g_root_directory[i];
+    }
 
+    return (void*)0;
 }
-bool fat_read_file(dir_entry* entry, uint8_t* outBuff) {
 
+bool fat_read_file(dir_entry* entry, uint8_t* outBuff) {
+    bool ok = true;
+    uint16_t current_cluster = entry->FirstClusterLow;
+
+    do {
+        uint32_t lba = (g_root_directory_end + (current_cluster - 2)) * g_boot_sector.SectorsPerCluster;
+        ok = ok && fat_read_sectors(lba, g_boot_sector.SectorsPerCluster, outBuff);
+        outBuff += g_boot_sector.SectorsPerCluster * g_boot_sector.BytesPerSector;
+
+        uint32_t fatIndex = current_cluster * 3 / 2;
+        if (current_cluster % 2== 0)
+            current_cluster = (*(uint16_t*)(g_Fat + fatIndex)) & 0x0fff;
+        else
+            current_cluster = (*(uint16_t*)(g_Fat + fatIndex)) >> 4;
+    } while (ok && current_cluster < 0x0ff8);
+
+    return ok;
+}
+
+uint8_t* fat_read_entry(dir_entry* entry, arena* a) {
+    if (entry == (void*)0) return (void*)0;
+    uint8_t* buf = arena_alloc(a, entry->Size + g_boot_sector.BytesPerSector);
+    if (!fat_read_file(entry, buf)) {
+        // Note: Buf is now a dangling pointer...
+        //       Not sure how to deal with that
+        //       No notion of freeing a single allocation in arena
+        return (void*)0;
+    }
+    return buf;
 }

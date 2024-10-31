@@ -2,8 +2,21 @@
 #define FAT_H
 #include "../stdlib/stdbool.h"
 #include "../stdlib/stdint.h"
+#include "arena.h"
 
 typedef struct {
+    uint8_t Name[11];
+    uint8_t Attributes;
+    uint8_t _Reserved;
+    uint8_t CreatedTimeTenths;
+    uint16_t CreatedTime;
+    uint16_t CreatedDate;
+    uint16_t AccessedDate;
+    uint16_t FirstClusterHigh;
+    uint16_t ModifiedTime;
+    uint16_t ModifiedDate;
+    uint16_t FirstClusterLow;
+    uint32_t Size;
 } dir_entry;
 
 typedef struct {
@@ -33,14 +46,16 @@ typedef struct {
 
 void       fat_debug();
 
-void       fat_init(uint32_t, uint32_t);
+void       fat_init(uint32_t, uint32_t, arena*);
 
 bool       fat_read_header();
-bool       fat_read_sectors();
+bool       fat_read_sectors(uint32_t, uint32_t, void*);
 bool       fat_read();
 
 bool       fat_read_root_dir();
 dir_entry* fat_find_file(const char* name);
 bool       fat_read_file(dir_entry*, uint8_t* outBuff);
+
+uint8_t*   fat_read_entry(dir_entry*, arena*);
 
 #endif
