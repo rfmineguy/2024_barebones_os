@@ -22,3 +22,24 @@ int memcmp(const void *s1, const void *s2, int n) {
     }
     return 0; // Blocks are equal
 }
+
+int strcmp(const char* str1, const char* str2) {
+    int len1 = strlen(str1);
+    int len2 = strlen(str2);
+    int minl = len1 < len2 ? len1 : len2;
+    int sum1 = 0, sum2 = 0;
+    for (int i = 0; i < minl; i++) {
+        sum1 += str1[i];
+        sum2 += str2[i];
+    }
+    return sum1 - sum2;
+}
+
+int strlen(const char* str) {
+    int len = 0;
+    while (*str) {
+        len ++;
+        str ++;
+    }
+    return len;
+}
