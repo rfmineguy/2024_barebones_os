@@ -12,17 +12,17 @@ int shell_buffer_i = 0;
 int shell_keyboard_listener(char ch) {
    return_pressed = false;
    switch (ch) {
-       case '\n': log_info("ShellKbd", "Return key\n");
+       case '\n': // log_info("ShellKbd", "Return key\n");
                   return_pressed = true;
                   break;
-       case 8:    log_info("ShellKbd", "Delete key\n");
+       case 8:    // log_info("ShellKbd", "Delete key\n");
                   if (shell_buffer_i <= 0) {
                       return ch;
                   }
                   shell_buffer_i--;
                   shell_buffer[shell_buffer_i] = 0;
                   break;
-       default:   log_info("ShellKbd", "Got key %d\n", ch);
+       default:   // log_info("ShellKbd", "Got key %d\n", ch);
                   if (shell_buffer_i > 1024) {
                     log_crit("ShellKbd", "Shell buffer full");
                     break;
