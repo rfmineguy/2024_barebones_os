@@ -53,6 +53,9 @@ int shell_run() {
             // process command
             log_info("ShellRun", "Processing '%s'\n", shell_buffer);
             int ret = shell_process(shell_buffer);
+            if (ret == -1) {
+                // invalid command
+            }
 
             // clear buffer
             shell_buffer_i = 0;
@@ -62,11 +65,6 @@ int shell_run() {
     }
     return exit_code;
 }
-
-struct argument_ctx {
-    const char* args[30];
-    int arg_counter;
-};
 
 void tokenize_args(char* str, struct argument_ctx* ctx) {
     ctx->arg_counter = 0;
@@ -92,6 +90,9 @@ int shell_process(const char* buf) {
     for (int i = 0; i < ctx.arg_counter; i++) {
         log_info("ShellProc", "Arg #%d = %s\n", i, ctx.args[i]);
     }
+    if (strcmp(ctx.args[0], "read") == 0) return shell_read_builtin(&ctx);
+
+    return -1; // invalid command supplied
 }
 
 // shell command
@@ -100,6 +101,6 @@ int shell_process(const char* buf) {
 //   0 = success
 //   1 = file not found
 //   2 = failed to read
-int shell_read_builtin(const char* argument) {
-
+int shell_read_builtin(const struct argument_ctx* arg_ctx) {
+    log_info("ShellBuiltin", "Read file\n");
 }
