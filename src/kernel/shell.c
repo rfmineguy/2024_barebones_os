@@ -1,6 +1,7 @@
 #include "shell.h"
 #include "log.h"
 #include "../stdlib/stdbool.h"
+#include "../stdlib/string.h"
 #include "vga.h"
 #include "keyboard.h"
 
@@ -50,7 +51,8 @@ int shell_run() {
             return_pressed = false;
             vga_putch('\n');
             // process command
-            log_info("Shell", "Processing '%s'\n", shell_buffer);
+            log_info("ShellRun", "Processing '%s'\n", shell_buffer);
+            int ret = shell_process(shell_buffer);
 
             // clear buffer
             shell_buffer_i = 0;
@@ -59,4 +61,45 @@ int shell_run() {
         }
     }
     return exit_code;
+}
+
+struct argument_ctx {
+    const char* args[30];
+    int arg_counter;
+};
+
+void tokenize_args(char* str, struct argument_ctx* ctx) {
+    ctx->arg_counter = 0;
+
+    const char* start = str;
+    while (*str != 0) {
+        if (*str == ' ') {
+            *str = 0;
+            ctx->args[ctx->arg_counter++] = start;
+            start = str + 1;
+        }
+        str++;
+    }
+    ctx->args[ctx->arg_counter++] = start;
+}
+
+// shell command format
+//    <command> <args(space separated)>
+int shell_process(const char* buf) {
+    struct argument_ctx ctx = {0};
+    tokenize_args(buf, &ctx);
+
+    for (int i = 0; i < ctx.arg_counter; i++) {
+        log_info("ShellProc", "Arg #%d = %s\n", i, ctx.args[i]);
+    }
+}
+
+// shell command
+//    read <filename>
+// return:
+//   0 = success
+//   1 = file not found
+//   2 = failed to read
+int shell_read_builtin(const char* argument) {
+
 }
