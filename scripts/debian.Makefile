@@ -124,3 +124,4 @@ create_fat_fs:
 	dd if=/dev/zero of=out/main.img bs=512 count=2880
 	mkfs.fat -F 12 -n "RFOS" out/main.img
 	mcopy -i out/main.img fatfiles/test.txt "::test.txt"
+	mcopy -i out/main.img fatfiles/a.txt "::a.txt"
