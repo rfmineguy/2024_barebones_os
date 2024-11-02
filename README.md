@@ -1,4 +1,4 @@
-# 2024 Operating System
+# 2024 Operating [System](System)
 This project is a fun OS excursion inspired by my college operating systems class. The professor put forth a challenge to 
 make an OS that performs some simple operations.
 
@@ -27,10 +27,11 @@ make an OS that performs some simple operations.
    + A host C compiler (for tests)
 
 ```bash
-./scripts/osutil.sh docker setup         # install docker image and software required for build
-./scripts/osutil.sh grub create-config
-./scripts/osutil.sh grub check-multiboot # not required
-./scripts/osutil.sh build macos          # currently the only well defined build host (Linux will come eventually)
+./scripts/build.sh docker_get    # setup required docker image for build
+./scripts/build.sh build         # run all build commands to generate iso
+./scripts/build.sh clean         # clean up build files (including iso)
+./scripts/build.sh checkmboot    # check to ensure that the kernel binary is multiboot enabled
+./scripts/build.sh qemu          # run qemu with the built iso file
 ```
 
 # Resources
