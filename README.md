@@ -1,4 +1,4 @@
-# 2024 Operating [System](System)
+# 2024 Operating System
 This project is a fun OS excursion inspired by my college operating systems class. The professor put forth a challenge to 
 make an OS that performs some simple operations.
 
