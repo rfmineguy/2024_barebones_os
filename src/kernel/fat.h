@@ -44,6 +44,8 @@ typedef struct {
     uint8_t SystemId[8];
 } boot_sector;
 
+int        fat_filename_to_8_3(const char*, char*);
+
 void       fat_debug();
 
 void       fat_init(uint32_t, uint32_t, arena*);

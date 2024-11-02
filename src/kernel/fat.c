@@ -1,6 +1,7 @@
 #include "fat.h"
 #include "log.h"
 #include "../stdlib/string.h"
+#include "../stdlib/ctype.h"
 
 uint32_t    g_fat_start_addr, g_fat_end_addr;
 
@@ -26,6 +27,44 @@ void fat_debug() {
     log_info("FatRead", "HiddenSectors       =0x%X\n", g_boot_sector.HiddenSectors);
     log_info("FatRead", "LargeSectorCount    =0x%X\n", g_boot_sector.LargeSectorCount);
     log_info("FatRead", "End---\n");
+}
+
+bool fat_isvalid_filename(const char* filename) {
+    int dot_count = 0;
+    for (int i = 0; i < strlen(filename); i++) {
+        if (filename[i] == '.') {
+            dot_count++;
+        }
+    }
+
+    if (dot_count != 1) return false;
+    if (strlen(filename) - 1 > 11) return false;
+    return true;
+}
+
+// 8.3 format
+//
+//
+// ________===
+//
+// _ -> filename
+// _ -> extension
+int fat_filename_to_8_3(const char* filename, char* name_8_3) {
+    if (!fat_isvalid_filename(filename)) return -1;
+    int dot_loc = 0;
+
+    // find dot
+    for (int i = 0; i < strlen(filename); i++)
+        if (filename[i] == '.') dot_loc = i;
+
+    // copy up to the first 8 chars of filename
+    int copy_to = dot_loc > 8 ? 8 : dot_loc;
+    for (int i = 0; i < copy_to; i++)
+        name_8_3[i] = toupper(filename[i]);
+
+    // copy the first 3 chars of extension
+    for (int i = 0; i < 3; i++)
+        name_8_3[8 + i] = toupper(filename[dot_loc + i + 1]);
 }
 
 void fat_init(uint32_t fat_start, uint32_t fat_end, arena* arena) {
@@ -129,6 +168,7 @@ uint8_t* fat_read_entry(dir_entry* entry, arena* a) {
         // Note: Buf is now a dangling pointer...
         //       Not sure how to deal with that
         //       No notion of freeing a single allocation in arena
+        //       Though this theoretically should never happen due to the null check of the entry
         return (void*)0;
     }
     return buf;
