@@ -6,7 +6,7 @@ make an OS that performs some simple operations.
 - As I am developing this on my Mac, I had to setup quite a bit of build steps to get a functioning kernel binary out of it.
   Docker is used to run all the commands that are not supported on macos such as grub.
 - I realized early on a simple Makefile wasn't going to be enough for this project so I opted for a bash script that contained
-  all the build commands (see [osutil.sh](https://github.com/rfmineguy/2024_barebones_os/blob/master/scripts/osutil.sh)).
+  all the build commands (see [build.sh](https://github.com/rfmineguy/2024_barebones_os/blob/master/scripts/build.sh)).
 
 # Uncomprehensive feature list
 - Global Descriptor Table
@@ -27,7 +27,7 @@ make an OS that performs some simple operations.
    + A host C compiler (for tests)
 
 ```bash
-./scripts/build.sh docker_get    # setup required docker image for build
+./scripts/build.sh docker_get    # setup required docker image for build (this image will contain all software required to build)
 ./scripts/build.sh build         # run all build commands to generate iso
 ./scripts/build.sh clean         # clean up build files (including iso)
 ./scripts/build.sh checkmboot    # check to ensure that the kernel binary is multiboot enabled
