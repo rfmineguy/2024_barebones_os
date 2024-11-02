@@ -17,6 +17,8 @@ make an OS that performs some simple operations.
 - Simple FAT driver
    - [X] File reading
    - [ ] File writing
+- Simple shell
+   - `read <filename>` - read the file from the fat system with name of 'filename'
 
 # Building
 - Required software
