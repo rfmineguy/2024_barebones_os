@@ -1,5 +1,6 @@
 #include "vga.h"
 #include "log.h"
+#include "../stdlib/string.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -17,12 +18,6 @@ static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
 
 static inline uint16_t vga_entry(unsigned char ch, uint8_t color) {
     return (uint16_t) ch | (uint16_t) color << 8;
-}
-
-size_t strlen(const char* str) {
-    size_t len = 0;
-    while (str[len]) len++;
-    return len;
 }
 
 static const size_t VGA_WIDTH = 80;
