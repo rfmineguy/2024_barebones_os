@@ -47,6 +47,8 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
     serial_init();
     vga_init();
 
+    multiboot_verify(magic, bootinfo);
+
     k_printf(R("+=====================================+") "\n");
     k_printf(R("|          ___  ________  ____        |") "\n");
     k_printf(R("|         / _ \/ __/ __ \/ __/        |") "\n");
@@ -73,7 +75,7 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
 
     // Initialize fat filesystem
     if (bootinfo->mods_count > 0) {
-        struct module_s *mods = (struct module_s*) bootinfo->mods_addr;
+        struct multiboot_module_s *mods = (struct multiboot_module_s*) bootinfo->mods_addr;
         fat_test(mods[0].mod_start);
 
         kernel_arena = arena_new(0x100000, 0x100000 + 0x7ee0000);

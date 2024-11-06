@@ -11,6 +11,16 @@
 .long MAGIC
 .long FLAGS
 .long CHECKSUM
+.long 0
+.long 0
+.long 0
+.long 0
+.long 0
+.long 0
+.long 1024
+.long 768
+.long 32
+
 
 /* STACK AREA */
 .section .bss
