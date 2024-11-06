@@ -29,11 +29,12 @@ function handle_docker_get {
 }
 
 function handle_qemu {
-    qemu-system-i386 -cdrom out/os.iso -boot d -vga std -serial file:output.txt
+    # qemu-system-i386 -drive file=out/main.img,format=raw -cdrom out/os.iso -boot d -vga std -serial file:output.txt
+    qemu-system-i386 -cdrom out/os.iso -drive file=out/main.img,format=raw,if=virtio -boot d -vga std -serial file:output.txt
 }
 
 function handle_qemu_debug {
-    qemu-system-i386 -cdrom out/os.iso -boot d -vga std -serial file:output.txt -S -s
+    qemu-system-i386 -drive file=out/main.img,format=raw -cdrom out/os.iso -boot d -vga std -serial file:output.txt -S -s
 }
 
 case "$1" in

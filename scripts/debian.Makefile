@@ -38,7 +38,7 @@ LIBDIR := /home/build/lib/gcc/i686-elf/7.1.0/
 .PHONY: grub_gen_cfg grub_gen_rescue grub_check_multiboot
 .PHONY: create_fat_fs
 .PHONY: always clean build
-always: create_fat_fs
+always: create_fat_fs create_qcow
 	mkdir -p $(OUT)
 
 clean:
@@ -63,20 +63,7 @@ $(OUT)/$(BIN): $(C_OBJECTS) $(S_OBJECTS)
 	$(LD) -T linker.ld -o $@ -nostdlib $(S_OBJECTS) $(C_OBJECTS) -L$(LIBDIR) -lgcc
 
 # Grub related targets
-#
-# set timeout=5 
-# set default=0 
-#  
-# menuentry "myos\" {
-#     insmod fat 
-#     set root=(cd) 
-#     # fatload ${root} /main.img 0x80000000 
-#     multiboot /boot/os.bin 
-#     boot 
-# } 
 grub_gen_cfg_fs:
-	# echo "    fatload ${root} /main.img 0x80000000";
-	# echo "    cat /main.img 0x01000000";
 	@{ \
 		echo "set timeout=5"; \
 		echo "set default=0"; \
@@ -108,15 +95,23 @@ grub_gen_rescue: grub_gen_cfg_fs
 	dd if=grub.cfg of=isodir/boot/grub/grub.cfg
 	dd if=out/main.img of=isodir/main.img
 	grub-mkrescue -o out/os.iso isodir
-	#rm grub.cfg
-	#rm -r isodir
+	rm grub.cfg
+	rm -r isodir
 
-grub_check_multiboot:
+grub_check_multiboot: checkmboot1 checkmboot2
+checkmboot1:
 	@echo "Checking multiboot"
 	@if grub-file --is-x86-multiboot out/os.bin; then \
 		echo "Multiboot confirmed"; \
 	else \
 		echo "Multiboot not present "; \
+	fi
+checkmboot2:
+	@echo "Checking multiboot"
+	@if grub-file --is-x86-multiboot2 out/os.bin; then \
+		echo "Multiboot2 confirmed"; \
+	else \
+		echo "Multiboot2 not present "; \
 	fi
 
 # File system targets
@@ -125,3 +120,10 @@ create_fat_fs:
 	mkfs.fat -F 12 -n "RFOS" out/main.img
 	mcopy -i out/main.img fatfiles/test.txt "::test.txt"
 	mcopy -i out/main.img fatfiles/a.txt "::a.txt"
+
+create_qcow:
+	qemu-img create -f qcow2 out/main.qcow2 50M
+	mkfs.fat -F 12 -n "RFOS" out/main.qcow2
+	mcopy -i out/main.qcow2 fatfiles/test.txt "::test.txt"
+	mcopy -i out/main.qcow2 fatfiles/a.txt "::a.txt"
+	qemu-img info out/main.qcow2
