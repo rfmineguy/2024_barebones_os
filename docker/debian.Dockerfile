@@ -7,6 +7,7 @@ run apt update
 run apt install -y grub-pc
 run apt install -y grub xorriso wget bash make
 run apt install -y mtools dosfstools unzip
+run apt install -y qemu-utils
 
 # Setup cross compilers
 run wget https://github.com/lordmilko/i686-elf-tools/releases/download/7.1.0/i686-elf-tools-linux.zip
