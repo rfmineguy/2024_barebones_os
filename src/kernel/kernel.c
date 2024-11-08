@@ -13,8 +13,8 @@
 #include "shell.h"
 #include "../stdlib/printf.h"
 #include "../stdlib/ctype.h"
+#include "rfos_splash.h"
 
-#define R(x) #x
 #define UNUSED(x) (void)(x)
 
 arena kernel_arena;
@@ -43,35 +43,34 @@ void test_fat_read() {
 static int i = 0;
 void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
     UNUSED(magic);
+    ui_box splashbox, infobox, shell_box;
+    splashbox = ui_box_new(0, 0, 29, 10);
+    infobox = ui_box_new(50, 0, 29, 10);
+    shell_box = ui_box_new(0, 11, 79, 13);
+
 
     serial_init();
     vga_init();
 
     multiboot_verify(magic, bootinfo);
-
-    k_printf(R("+=====================================+") "\n");
-    k_printf(R("|          ___  ________  ____        |") "\n");
-    k_printf(R("|         / _ \/ __/ __ \/ __/        |") "\n");
-    k_printf(R("|        / , _/ _// /_/ /\ \          |") "\n");
-    k_printf(R("|       /_/|_/_/  \____/___/          |") "\n");
-    k_printf(R("|                                     |") "\n");
-    k_printf(R("+=====================================+") "\n");
+    rfos_splash(&splashbox);
 
     idt_cli();
 
+    ui_box_draw(&infobox);
     // Initialize hardware (sets up exception handlers as well)
-    gdt_init();            k_printf("Installed GDT\n");
-    idt_install();         k_printf("Installed IDT\n");
+    gdt_init();            ui_box_printf(&infobox, 0, 0, "Installed GDT");
+    idt_install();         ui_box_printf(&infobox, 0, 1, "Installed IDT");
 
     // Setup irq handlers
-    timer_init();          k_printf("Initialized timer\n");
-    keyboard_init();       k_printf("Initialized keyboard\n");
+    timer_init();          ui_box_printf(&infobox, 0, 2, "Initialized timer");
+    keyboard_init();       ui_box_printf(&infobox, 0, 3, "Initialized keyboard");
 
     // Initialize memory
-    memory_init(bootinfo); k_printf("Initialized memory\n");
+    memory_init(bootinfo); ui_box_printf(&infobox, 0, 4, "Initialized memory");
 
     idt_sti();
-    k_printf("Everything initialized!\n");
+    //ui_box_printf(&infobox, "Everything initialized!\n");
 
     // Initialize fat filesystem
     if (bootinfo->mods_count > 0) {
@@ -90,7 +89,7 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
 
     // Initialize shell stuff
     keyboard_add_listener(shell_keyboard_listener);
-    shell_run(&kernel_arena);
+    shell_run(&kernel_arena, &shell_box);
 
     for(;;) {
         if (timer_ticks() % 20 == 0) {
