@@ -85,17 +85,21 @@ void vga_putch(char ch) {
            col++;
            break;
     }
-    if (row % VGA_HEIGHT == 0) {
+    if (row != 0 && row % VGA_HEIGHT == 0) {
         row = 0;
     }
-    if (col % VGA_WIDTH == 0) {
+    if (col != 0 && col % VGA_WIDTH == 0) {
         col = 0;
+        row++;
     }
 }
 
 void vga_write(const char* str, size_t len) {
-    for (size_t i = 0; i < len; i++)
+    for (size_t i = 0; i < len; i++) {
+        if (col == VGA_WIDTH)
+            vga_putch('\n');
         vga_putch(str[i]);
+    }
 }
 
 void vga_writestring(const char* str){
