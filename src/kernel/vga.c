@@ -42,8 +42,19 @@ void vga_init(){
     log_info("VGA Init   ", "Initialized the vga buffer\n");
 }
 
+uint16_t vga_get_entry(int x, int y) {
+    return buffer[y * VGA_WIDTH + x];
+}
+
 void vga_set_color(uint8_t color) {
     term_color = color;
+}
+
+void vga_advance_colby(int n) {
+    col+=n;
+}
+void vga_advance_rowby(int n) {
+    row+=n;
 }
 
 void vga_save_cursor(size_t* x, size_t* y) {
@@ -61,6 +72,10 @@ int vga_put_cursor_at(size_t x, size_t y) {
 
 void vga_put_entry_at(char ch, uint8_t color, size_t x, size_t y) {
     buffer[y * VGA_WIDTH + x] = vga_entry(ch, color);
+}
+
+void vga_put_entry_at_v(uint16_t entry, size_t x, size_t y) {
+    buffer[y * VGA_WIDTH + x] = entry;
 }
 
 void vga_put_ch_at(char ch, size_t x, size_t y) {
