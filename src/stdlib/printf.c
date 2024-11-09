@@ -6,11 +6,6 @@
 #define NORMAL 0
 #define PARSE  1
 
-char* sprint_ch(char* buf, char c) {
-    *buf = c;
-    return buf + 1;
-}
-
 char* base_chars = "0123456789abcdef";
 char* sprint_base(char* buf, uint32_t i, int base, bool uppercase) {
     char buf2[20] = {0};
@@ -30,6 +25,18 @@ char* sprint_base(char* buf, uint32_t i, int base, bool uppercase) {
     return buf;
 }
 
+char* sprint_ch(char* buf, char c) {
+    *buf = c;
+    return buf + 1;
+}
+
+char* sprint_ch_n(char* buf, char c, int n) {
+    for (int i = 0; i < n; i++) {
+        buf[i] = c;
+    }
+    return buf + n;
+}
+
 char* sprint_str(char* buf, const char* str) {
     while (*str) {
         *(buf++) = *str;
@@ -42,15 +49,30 @@ int k_vsprintf(char* buf, const char* fmt, va_list alist) {
     const char* cursor = fmt;
     char *buf_orig = buf;
     int state = 0;
+    int number = 0;
+    char c = ' ';
     while (*cursor) {
         if (state == NORMAL) {
+            number = 0;
             if (*cursor == '%') state = PARSE;
             else buf = sprint_ch(buf, *cursor);
         }
         else if (state == PARSE) {
+            while (isdigit(*cursor)) {
+                number = number * 10 + (*cursor - '0');
+                cursor++;
+            }
             switch (*cursor) {
                 case '%': buf = sprint_ch(buf, '%'); break;
-                case 'c': buf = sprint_ch(buf, va_arg(alist, int)); break;
+                case 'c': {
+                              c = va_arg(alist, unsigned char);
+                              if (number != 10000) {
+                                buf = sprint_ch_n(buf, c, number);
+                              } else {
+                                buf = sprint_ch(buf, c);
+                              }
+                              break;
+                          }
                 case 's': buf = sprint_str(buf, va_arg(alist, const char*)); break;
                 case 'X': {
                           uint32_t v = va_arg(alist, uint32_t);
@@ -91,11 +113,16 @@ int k_sprintf(char* buf, const char* fmt, ...) {
 // Dont compile this function if -DTESTING
 #ifndef TESTING
 int k_printf(const char* fmt, ...) {
-    static char buf[1000] = {0};
     va_list alist;
     va_start(alist, fmt);
-    int x = k_vsprintf(buf, fmt, alist);
+    int x = k_vprintf(fmt, alist);
     va_end(alist);
+    return x;
+}
+
+int k_vprintf(const char* fmt, va_list alist) {
+    static char buf[1000] = {0};
+    int x = k_vsprintf(buf, fmt, alist);
     vga_writestring(buf);
     return x;
 }

@@ -7,5 +7,6 @@ int k_vsprintf(char* buf, const char* fmt, va_list);
 int k_sprintf(char* buf, const char* fmt, ...);
 
 int k_printf(const char* fmt, ...);
+int k_vprintf(const char* fmt, va_list);
 
 #endif
