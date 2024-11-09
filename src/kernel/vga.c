@@ -20,8 +20,13 @@ static inline uint16_t vga_entry(unsigned char ch, uint8_t color) {
     return (uint16_t) ch | (uint16_t) color << 8;
 }
 
-static const size_t VGA_WIDTH = 80;
-static const size_t VGA_HEIGHT = 25;
+uint16_t vga_make_entry(unsigned char ch, uint8_t color) {
+    return (uint16_t) ch | (uint16_t) color << 8;
+}
+uint16_t vga_make_entry_color(enum vga_color fg, enum vga_color bg) {
+    return fg | bg << 4;
+}
+
 size_t row, col;
 uint8_t term_color;
 uint16_t* buffer;
