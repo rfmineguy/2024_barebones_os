@@ -39,6 +39,29 @@ make an OS that performs some simple operations.
 ./scripts/build.sh qemu          # run qemu with the built iso file
 ```
 
+# Step By Step
+```bash
+# 1. Clone the repo with depth 1 (we dont need the git history here)
+$ git clone https://github.com/rfmineguy/2024_barebones_os.git --depth=1
+```
+```bash
+# 2. Retrieve and setup the docker image require to build this project
+$ ./scripts/build.sh docker_get 
+```
+```bash
+# 3. Build the iso file
+$ ./scripts/build.sh build
+```
+```bash
+# 4. Verify that the iso file is multiboot1 compatible (multiboot2 might be in the future) 
+#    If this indicates that its not multiboot compatible, I broke something (oops)
+$ ./scripts/build.sh checkmboot
+```
+```bash
+# 5. Finally run the kernel in qemu
+$ ./scripts/build.sh qemu
+```
+
 # Resources
 [OliveStem OS Playlist](https://youtube.com/playlist?list=PL2EF13wm-hWAglI8rRbdsCPq_wRpYvQQy&si=q2oYblMfOZJexLc9)<br>
 [osdev-wiki](https://wiki.osdev.org/Expanded_Main_Page)<br>
