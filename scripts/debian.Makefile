@@ -38,7 +38,7 @@ LIBDIR := /home/build/lib/gcc/i686-elf/7.1.0/
 .PHONY: grub_gen_cfg grub_gen_rescue grub_check_multiboot
 .PHONY: create_fat_fs
 .PHONY: always clean build
-always: create_fat_fs create_qcow
+always: create_fat_fs
 	mkdir -p $(OUT)
 
 clean:
