@@ -33,6 +33,10 @@ make an OS that performs some simple operations.
    + A host C compiler (for tests)
 
 # Step By Step
+================================================================
+**NOTE: IT IS ALWAYS WISE TO VERIFY SCRIPT CONTENTS BEFORE RUNNING**
+================================================================
+
 ```bash
 # 1. Clone the repo with depth 1 (we dont need the git history here)
 $ git clone https://github.com/rfmineguy/2024_barebones_os.git --depth=1
