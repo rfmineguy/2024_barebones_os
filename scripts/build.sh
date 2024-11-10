@@ -9,6 +9,7 @@ function usage {
     echo "  clean               : Use the container to clean the build files"
     echo "  checkmboot          : Check if the generated binary is multiboot"
     echo "  qemu                : Run generated kernel in qemu"
+    echo "  help                : Display this menu"
 }
 
 function handle_build {
