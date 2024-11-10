@@ -1,7 +1,7 @@
 #ifndef EXT_ASCII_H
 #define EXT_ASCII_H
 
-#define EXTASCII(n) (char)n
+#define EXTASCII(n) (unsigned char)n
 #define CBR EXTASCII(188) // corner bottom right
 #define CTR EXTASCII(187) // corner top right
 #define CBL EXTASCII(200) // corner bottom left
