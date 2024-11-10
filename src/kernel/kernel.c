@@ -113,6 +113,7 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
 
     // Initialize shell stuff
     keyboard_add_listener(shell_keyboard_listener);
+    // timer_add_listener(shell_timer_listener, 20);
     shell_run(&kernel_arena, &shellbox);
 
     for(;;) {

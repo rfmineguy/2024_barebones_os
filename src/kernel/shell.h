@@ -1,7 +1,7 @@
 #ifndef SHELL_H
 #define SHELL_H
 #include "arena.h"
-#include "ui.h"
+#include "ui_v2.h"
 
 struct argument_ctx {
     char* args[30];
@@ -15,10 +15,11 @@ struct builtin_result {
 #define BUILTIN_RESULT(_code, _str) (struct builtin_result) {.code=_code,.string_result=_str}
 
 int shell_keyboard_listener(char);
+int shell_timer_listener(int);
 
 int shell_print_result(char*);
-int shell_run(arena*, ui_box*);
-struct builtin_result shell_process(const char*);
+int shell_run(arena*, ui_box2*);
+struct builtin_result shell_process(char*);
 
 struct builtin_result shell_read_builtin(const struct argument_ctx*);
 struct builtin_result shell_dir_builtin(const struct argument_ctx*);
