@@ -2,6 +2,8 @@
 This project is a fun OS excursion inspired by my college operating systems class. The professor put forth a challenge to 
 make an OS that performs some simple operations.
 
+![Image](images/rfos.jpg)
+
 # Context and technologies used
 - As I am developing this on my Mac, I had to setup quite a bit of build steps to get a functioning kernel binary out of it.
   Docker is used to run all the commands that are not supported on macos such as grub.
@@ -19,6 +21,7 @@ make an OS that performs some simple operations.
    - [ ] File writing
 - Simple shell
    - `read <filename>` - read the file from the fat system with name of 'filename'
+- Terminal User Interface
 
 # Building
 - Required software
