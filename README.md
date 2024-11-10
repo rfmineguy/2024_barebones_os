@@ -27,17 +27,10 @@ make an OS that performs some simple operations.
 - Required software
    + docker
    + qemu (or some other virtualization software)
+      * specifically we need `qemu-system-i386`
 
 - Optional software
    + A host C compiler (for tests)
-
-```bash
-./scripts/build.sh docker_get    # setup required docker image for build (this image will contain all software required to build)
-./scripts/build.sh build         # run all build commands to generate iso
-./scripts/build.sh clean         # clean up build files (including iso)
-./scripts/build.sh checkmboot    # check to ensure that the kernel binary is multiboot enabled
-./scripts/build.sh qemu          # run qemu with the built iso file
-```
 
 # Step By Step
 ```bash
@@ -46,19 +39,27 @@ $ git clone https://github.com/rfmineguy/2024_barebones_os.git --depth=1
 ```
 ```bash
 # 2. Retrieve and setup the docker image require to build this project
+#  - This step requires docker to be installed
+#  - This step also pulls down and generates an image that is around 1GB in size
 $ ./scripts/build.sh docker_get 
 ```
 ```bash
 # 3. Build the iso file
+#  - This step uses the previously built docker image and the software installed
+#      to it to build the c source files with a i686-elf cross compiler toolchain
 $ ./scripts/build.sh build
 ```
 ```bash
 # 4. Verify that the iso file is multiboot1 compatible (multiboot2 might be in the future) 
-#    If this indicates that its not multiboot compatible, I broke something (oops)
+#  - If this indicates that its not multiboot compatible, I broke something (oops)
+#  - This step uses the previously built docker image and the software installed
+#      to it to check if the generated iso image contains valid multiboot headers
 $ ./scripts/build.sh checkmboot
 ```
 ```bash
 # 5. Finally run the kernel in qemu
+#  - This step uses qemu-sysstem-i386 to run the kernel iso
+#  - The i686 and i386 architectures are mostly compatible with each other
 $ ./scripts/build.sh qemu
 ```
 
