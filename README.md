@@ -65,6 +65,17 @@ $ ./scripts/build.sh checkmboot
 $ ./scripts/build.sh qemu
 ```
 
+# Bonus
+So the filesystem is created on the host machine, which means we can add more files to it during the build phase.
+To do this you need to edit `debian.Makefile`
+
+```
+1. Look for the section titled `create_fat_fs` 
+2. Add a new `mcopy` where you replace the `fatfiles/name.txt` with your file and replace `"::name.txt"` with your filename
+    a. Note: It's important that this new line is formatted as such
+       mcopy -i out/main.img fatfiles/new.txt "::new.txt"
+```
+
 # Resources
 [OliveStem OS Playlist](https://youtube.com/playlist?list=PL2EF13wm-hWAglI8rRbdsCPq_wRpYvQQy&si=q2oYblMfOZJexLc9)<br>
 [osdev-wiki](https://wiki.osdev.org/Expanded_Main_Page)<br>
