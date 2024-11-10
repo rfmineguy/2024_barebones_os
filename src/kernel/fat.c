@@ -65,6 +65,7 @@ int fat_filename_to_8_3(const char* filename, char* name_8_3) {
     // copy the first 3 chars of extension
     for (int i = 0; i < 3; i++)
         name_8_3[8 + i] = toupper(filename[dot_loc + i + 1]);
+    return 0;
 }
 
 void fat_init(uint32_t fat_start, uint32_t fat_end, arena* arena) {

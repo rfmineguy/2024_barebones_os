@@ -55,9 +55,9 @@ bool       fat_read_sectors(uint32_t, uint32_t, void*);
 bool       fat_read();
 
 bool       fat_read_root_dir();
+
 dir_entry* fat_find_file(const char* name);
 bool       fat_read_file(dir_entry*, uint8_t* outBuff);
-
 uint8_t*   fat_read_entry(dir_entry*, arena*);
 
 #endif
