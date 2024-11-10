@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 docker_cmd='docker run --rm -it -w /root/workspace -v $(pwd):/root/workspace debian-test'
 
 function usage {
