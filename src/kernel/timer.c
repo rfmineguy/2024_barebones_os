@@ -3,6 +3,7 @@
 #include "idt.h"
 #include "io.h"
 #include "vga.h"
+#include "log.h"
 #include "serial.h"
 
 #define DATA_0 0x40         // Channel 0 data port (read/write)
@@ -13,7 +14,27 @@
 uint64_t ticks;
 const uint32_t frequency = 100;
 
+typedef struct {
+    int trigger_interval;
+    int (*listener)(int);
+} timer_listener_data;
+
+timer_listener_data listeners[10];
+int listeners_count;
+
+void timer_add_listener(int(* listener)(int), int interval) {
+    if (listeners_count >= 10) {
+        log_crit("KeyboardAddListener", "Couldn't add new keyboard listener");
+        return;
+    }
+    listeners[listeners_count] = (timer_listener_data) {
+        .listener = listener,
+        .trigger_interval = interval
+    };
+    listeners_count++;
+}
 void timer_init() {
+    listeners_count = 0;
     idt_cli();
     ticks = 0;
     irq_install_handler(0, &timer_onirq0);
@@ -40,8 +61,11 @@ void timer_onirq0(struct interrupt_registers_test* regs) {
     (void)(regs);   // not used in timer irq
     
     ticks++;
-    if (ticks % 50 == 0) {
-        vga_toggle_cursor_blink();
+    for (int i = 0; i < listeners_count; i++) {
+        timer_listener_data ld = listeners[i];
+        if (ticks % ld.trigger_interval == 0 && ld.listener != NULL) {
+            // ld.listener(ticks);
+        }
     }
 }
 uint64_t timer_ticks() {
