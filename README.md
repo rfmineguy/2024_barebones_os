@@ -67,7 +67,7 @@ $ ./scripts/build.sh qemu
 
 # Bonus
 So the filesystem is created on the host machine, which means we can add more files to it during the build phase.
-To do this you need to edit `debian.Makefile`
+To do this you need to edit `scripts/debian.Makefile`
 
 ```
 1. Look for the section titled `create_fat_fs` 
