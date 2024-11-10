@@ -67,7 +67,7 @@ void multiboot_verify(int magic, struct multiboot_info* mbi) {
   /* Are mods_* valid? */
   if (CHECK_FLAG (mbi->flags, 3)) {
       struct multiboot_module_s *mod;
-      int i;
+      multiboot_uint32_t i;
 
       log_info ("MbootVerify", "mods_count = %d, mods_addr = 0x%x\n", (int) mbi->mods_count, (int) mbi->mods_addr);
       for (i = 0, mod = (struct multiboot_module_s *) mbi->mods_addr; i < mbi->mods_count; i++, mod++)
