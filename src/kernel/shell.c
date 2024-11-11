@@ -9,6 +9,7 @@
 #include "error.h"
 #include "fat.h"
 #include "ui_v2.h"
+#include "sys.h"
 
 bool cursor_on;
 bool up_pressed = false, down_pressed = false;
@@ -147,8 +148,9 @@ struct builtin_result shell_process(char* buf) {
     for (int i = 0; i < ctx.arg_counter; i++) {
         log_info("ShellProc", "Arg #%d = %s\n", i, ctx.args[i]);
     }
-    if (strcmp(ctx.args[0], "read") == 0) return shell_read_builtin(&ctx);
-    if (strcmp(ctx.args[0], "dir") == 0)  return shell_dir_builtin(&ctx);
+    if (strcmp(ctx.args[0], "reboot") == 0) sys_reboot();
+    if (strcmp(ctx.args[0], "read") == 0)   return shell_read_builtin(&ctx);
+    if (strcmp(ctx.args[0], "dir") == 0)    return shell_dir_builtin(&ctx);
 
     return BUILTIN_RESULT(ERROR_INVALID_CMD, (void*)0); // invalid command supplied
 }
