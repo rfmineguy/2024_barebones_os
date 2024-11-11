@@ -13,9 +13,10 @@
 #include "shell.h"
 #include "../stdlib/printf.h"
 #include "../stdlib/ctype.h"
+#include "ui.h"
 #include "rfos_splash.h"            // related to the splashbox
 #include "tips.h"                   // related to the tipsbox
-#include "ui.h"
+#include "files.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -45,7 +46,7 @@ void test_fat_read() {
 static int i = 0;
 void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
     UNUSED(magic);
-    ui_box_t splashbox, infobox, shellbox, tipsbox;
+    ui_box_t splashbox, infobox, shellbox, tipsbox, filebox;
 
     serial_init();
     vga_init();
@@ -63,17 +64,23 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
     ui_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
     ui_set_border_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
-    shellbox = ui_new(0,  11, 79, 13, "Shell");
+    shellbox = ui_new(0,  11, 59, 13, "Shell");
     ui_set_body_color(&shellbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
     ui_set_border_color(&shellbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+
+    filebox = ui_new(60, 11, 19, 13, "Files");
+    ui_set_body_color(&filebox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+    ui_set_border_color(&filebox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
     // Display uiboxes
     ui_box(&splashbox);
     ui_box(&infobox);
     ui_box(&shellbox);
     ui_box(&tipsbox);
+    ui_box(&filebox);
     rfos_splash(&splashbox);
     tips_populate(&tipsbox);
+    files_populate(&filebox);
 
     multiboot_verify(magic, bootinfo);
 
