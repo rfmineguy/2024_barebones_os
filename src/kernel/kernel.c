@@ -15,7 +15,7 @@
 #include "../stdlib/ctype.h"
 #include "rfos_splash.h"            // related to the splashbox
 #include "tips.h"                   // related to the tipsbox
-#include "ui_v2.h"
+#include "ui.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -45,33 +45,33 @@ void test_fat_read() {
 static int i = 0;
 void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
     UNUSED(magic);
-    ui_box2 splashbox, infobox, shellbox, tipsbox;
+    ui_box_t splashbox, infobox, shellbox, tipsbox;
 
     serial_init();
     vga_init();
 
     // Setup uiboxes
-    splashbox = ui2_new(0,  0,  39, 10, "Splash");
-    ui2_set_body_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
-    ui2_set_border_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+    splashbox = ui_new(0,  0,  39, 10, "Splash");
+    ui_set_body_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+    ui_set_border_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
-    infobox = ui2_new(40, 0,  24, 10, "Info");
-    ui2_set_body_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
-    ui2_set_border_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+    infobox = ui_new(40, 0,  24, 10, "Info");
+    ui_set_body_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+    ui_set_border_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
-    tipsbox = ui2_new(65, 0, 14, 10, "Tips");
-    ui2_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
-    ui2_set_border_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+    tipsbox = ui_new(65, 0, 14, 10, "Tips");
+    ui_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+    ui_set_border_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
-    shellbox = ui2_new(0,  11, 79, 13, "Shell");
-    ui2_set_body_color(&shellbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
-    ui2_set_border_color(&shellbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+    shellbox = ui_new(0,  11, 79, 13, "Shell");
+    ui_set_body_color(&shellbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+    ui_set_border_color(&shellbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
     // Display uiboxes
-    ui2_box(&splashbox);
-    ui2_box(&infobox);
-    ui2_box(&shellbox);
-    ui2_box(&tipsbox);
+    ui_box(&splashbox);
+    ui_box(&infobox);
+    ui_box(&shellbox);
+    ui_box(&tipsbox);
     rfos_splash(&splashbox);
     tips_populate(&tipsbox);
 
@@ -81,16 +81,16 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
 
     // ui_box_draw(&infobox);
     // Initialize hardware (sets up exception handlers as well)
-    gdt_init();            ui2_putstr(&infobox, 2, 0, "Installed GDT");
-    idt_install();         ui2_putstr(&infobox, 2, 1, "Installed IDT");
+    gdt_init();            ui_putstr(&infobox, 2, 0, "Installed GDT");
+    idt_install();         ui_putstr(&infobox, 2, 1, "Installed IDT");
 
     // Setup irq handlers
-    timer_init();          ui2_putstr(&infobox, 2, 2, "Initialized timer");
-    keyboard_init();       ui2_putstr(&infobox, 2, 3, "Initialized keyboard");
+    timer_init();          ui_putstr(&infobox, 2, 2, "Initialized timer");
+    keyboard_init();       ui_putstr(&infobox, 2, 3, "Initialized keyboard");
 
     // Initialize memory
-    memory_init(bootinfo); ui2_putstr(&infobox, 2, 4, "Initialized memory");
-    ui2_refresh();
+    memory_init(bootinfo); ui_putstr(&infobox, 2, 4, "Initialized memory");
+    ui_refresh();
 
     idt_sti();
 

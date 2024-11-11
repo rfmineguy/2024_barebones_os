@@ -20,7 +20,7 @@
 // ║  ██   ██ ██      ██    ██      ██   ║
 // ║  ██   ██ ██       ██████  ███████   ║
 // ╚═════════════════════════════════════╝
-void rfos_splash(ui_box2* box) {
+void rfos_splash(ui_box_t* box) {
     ////                            R                     Space        F         Space                     O                   Space          S                                  S
     ////             |--------------------------------| |-------|  |--------|  |-------|  |--------------------------------| \-------|   |---------|           
     char line1[] = { REP6(BLCK),                        REP2(' '), REP7(BLCK), REP2(' '),             REP6(BLCK),            REP2(' '), REP7(BLCK), 0};
@@ -28,10 +28,10 @@ void rfos_splash(ui_box2* box) {
     char line3[] = { REP6(BLCK),                        REP2(' '), REP5(BLCK), REP3(' '), REP2(BLCK), REP4(' '), REP2(BLCK), REP1(' '), REP7(BLCK), 0};
     char line4[] = { REP2(BLCK), REP3(' '), REP2(BLCK), REP1(' '), REP2(BLCK), REP6(' '), REP2(BLCK), REP4(' '), REP2(BLCK), REP1(' '), REP5(' '), REP2(BLCK), 0};
     char line5[] = { REP2(BLCK), REP3(' '), REP2(BLCK), REP1(' '), REP2(BLCK), REP7(' '),             REP6(BLCK),            REP2(' '), REP7(BLCK), 0};
-    ui2_putstr(box, 2, 1, line1);
-    ui2_putstr(box, 2, 2, line2);
-    ui2_putstr(box, 2, 3, line3);
-    ui2_putstr(box, 2, 4, line4);
-    ui2_putstr(box, 2, 5, line5);
-    ui2_putstr(box, 2, 7, "Welcome to RFOS!!!");
+    ui_putstr(box, 2, 1, line1);
+    ui_putstr(box, 2, 2, line2);
+    ui_putstr(box, 2, 3, line3);
+    ui_putstr(box, 2, 4, line4);
+    ui_putstr(box, 2, 5, line5);
+    ui_putstr(box, 2, 7, "Welcome to RFOS!!!");
 }
