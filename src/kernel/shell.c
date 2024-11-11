@@ -85,12 +85,10 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
             case ERROR_NONE:
                 if (r.string_result) {
                     output_linecount = ui_putstr(box, 2, current_line, r.string_result);
-                    // current_line += ui_putstr(box, 2, current_line, r.string_result);
                 }
                 break;
             default:
                 output_linecount = ui_putstr(box, 2, current_line, map_error_code(r.code));
-                // current_line += ui_putstr(box, 2, current_line, map_error_code(r.code));
                 break;
             }
 
@@ -148,9 +146,9 @@ struct builtin_result shell_process(char* buf) {
     for (int i = 0; i < ctx.arg_counter; i++) {
         log_info("ShellProc", "Arg #%d = %s\n", i, ctx.args[i]);
     }
-    if (strcmp(ctx.args[0], "reboot") == 0) sys_reboot();
     if (strcmp(ctx.args[0], "read") == 0)   return shell_read_builtin(&ctx);
     if (strcmp(ctx.args[0], "dir") == 0)    return shell_dir_builtin(&ctx);
+    if (strcmp(ctx.args[0], "reboot") == 0) sys_reboot();
 
     return BUILTIN_RESULT(ERROR_INVALID_CMD, (void*)0); // invalid command supplied
 }
