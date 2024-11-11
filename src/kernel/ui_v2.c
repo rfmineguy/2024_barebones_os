@@ -66,10 +66,10 @@ void ui2_putstr_int(ui_box2* box, int x, int y, const char* str) {
 int ui2_putstr(ui_box2* box, int x, int y, const char* str){
     int line = 0;
     for (int i = 0; i < strlen(str); i++) {
-        if ((x + i) % box->region.w == 0) {
+        if ((x + i) % (box->region.w - 1) == 0) {
             line++;
         }
-        ui2_putch(box, (x + i) % box->region.w, y + line, str[i]);
+        ui2_putch(box, (x + i) % (box->region.w - 1), (y + line) % (box->region.h - 2), str[i]);
     }
     return line + 1;
 }
@@ -128,19 +128,29 @@ void ui2_clear_rv(ui_box2* box, int x, int y, int w, int h){
     ui2_clear_r(box, r);
 }
 
-int ui2_scroll_vertical(ui_box2* b, int n) {
+int ui2_scroll_vertical_n(ui_box2* b, int n) {
     ui_region r = b->region;
     if (n <= 0) return 0;
     if (n >= r.h - 1) return 0;
-    for (int j = r.y + 1; j < r.y + (r.h - n - 1); j++) {
+    for (int i = 0; i < n; i++)
+        ui2_scroll_vertical(b);
+    return n;
+}
+
+int ui2_scroll_vertical(ui_box2* b) {
+    ui2_refresh();
+    ui_region r = b->region;
+    for (int j = r.y + 1; j < r.y + (r.h - 1 - 1); j++) {
         // swap character at j + 1, with j
         for (int i = r.x + 1; i < r.x + r.w - 1; i++) {
-            uint16_t n_below = ui_screen_buf[(j + n) * VGA_WIDTH + i];
+            uint16_t n_below = ui_screen_buf[(j + 1) * VGA_WIDTH + i];
             ui_screen_buf[j * VGA_WIDTH + i] = n_below;
-            ui_screen_buf[(j + n) * VGA_WIDTH + i] = vga_make_entry(' ', b->body_color);
+            ui_screen_buf[(j + 1) * VGA_WIDTH + i] = vga_make_entry(' ', b->body_color);
         }
     }
-    return n;
+    update_list[update_list_len++] = r;
+    ui2_refresh();
+    return 1;
 }
 
 void ui2_box(ui_box2* box) {

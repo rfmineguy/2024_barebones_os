@@ -36,7 +36,8 @@ void    ui2_clear_r  (ui_box2*, ui_region);
 void    ui2_clear    (ui_box2*);
 void    ui2_clear_rv (ui_box2*, int x, int y, int w, int h);
 
-int     ui2_scroll_vertical(ui_box2*, int);
+int     ui2_scroll_vertical_n(ui_box2*, int);
+int     ui2_scroll_vertical(ui_box2*);
 
 void    ui2_box      (ui_box2*);
 void    ui2_refresh  ();
