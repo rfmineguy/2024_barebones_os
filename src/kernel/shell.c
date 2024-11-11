@@ -8,7 +8,7 @@
 #include "keyboard.h"
 #include "error.h"
 #include "fat.h"
-#include "ui_v2.h"
+#include "ui.h"
 #include "sys.h"
 
 bool cursor_on;
@@ -61,15 +61,15 @@ int shell_timer_listener(int ticks) {
     return 0;
 }
 
-int shell_run(arena* _kernel_arena, ui_box2* box) {
+int shell_run(arena* _kernel_arena, ui_box_t* box) {
     (void)_kernel_arena;
 
     int current_line = 0;
     struct builtin_result r;
-    ui2_box(box);
+    ui_box(box);
 
     while (1) {
-        ui2_putch(box, 0, current_line, '>');
+        ui_putch(box, 0, current_line, '>');
 
         if (return_pressed) {
             current_line++;
@@ -84,20 +84,20 @@ int shell_run(arena* _kernel_arena, ui_box2* box) {
             switch (r.code) {
             case ERROR_NONE:
                 if (r.string_result) {
-                    output_linecount = ui2_putstr(box, 2, current_line, r.string_result);
-                    // current_line += ui2_putstr(box, 2, current_line, r.string_result);
+                    output_linecount = ui_putstr(box, 2, current_line, r.string_result);
+                    // current_line += ui_putstr(box, 2, current_line, r.string_result);
                 }
                 break;
             default:
-                output_linecount = ui2_putstr(box, 2, current_line, map_error_code(r.code));
-                // current_line += ui2_putstr(box, 2, current_line, map_error_code(r.code));
+                output_linecount = ui_putstr(box, 2, current_line, map_error_code(r.code));
+                // current_line += ui_putstr(box, 2, current_line, map_error_code(r.code));
                 break;
             }
 
             // scroll if needed
             if (current_line + output_linecount >= 8) {
                 log_info("Shell", "Scroll\n");
-                ui2_scroll_vertical_n(box, output_linecount + 1);
+                ui_scroll_vertical_n(box, output_linecount + 1);
                 current_line --;
             }
             else {
@@ -106,20 +106,20 @@ int shell_run(arena* _kernel_arena, ui_box2* box) {
         }
         if (up_pressed) {
             log_info("Shell", "Up pressed\n");
-            current_line -= ui2_scroll_vertical(box);
+            current_line -= ui_scroll_vertical(box);
             up_pressed = false;
         }
         if (backspace_pressed) {
-            ui2_clear_rv(box, 2, current_line, 50, 1);
-            ui2_putstr(box, 2, current_line, shell_buffer);
+            ui_clear_rv(box, 2, current_line, 50, 1);
+            ui_putstr(box, 2, current_line, shell_buffer);
             backspace_pressed = false;
         }
         if (other_pressed) {
-            ui2_putstr(box, 2, current_line, shell_buffer);
+            ui_putstr(box, 2, current_line, shell_buffer);
             other_pressed = false;
         }
-        ui2_putch(box, 2 + strlen(shell_buffer) + 1, current_line, cursor_on ? '_' : ' ');
-        ui2_refresh();
+        ui_putch(box, 2 + strlen(shell_buffer) + 1, current_line, cursor_on ? '_' : ' ');
+        ui_refresh();
     }
     return 0;
 }
