@@ -50,7 +50,7 @@ void ui_box_printf(ui_box* box, int x, int y, const char* fmt, ...) {
     static char buf[1000] = {0};
     if (x < 0 || y < 0) return;
     if (x > box->x + box->w - 2) return;
-    if (y > box->y + box->h - 2) return; 
+    if (y > box->y + box->h - 2) return;
     box->cursorx = x;
     box->cursory = y;
 
@@ -63,18 +63,11 @@ void ui_box_printf(ui_box* box, int x, int y, const char* fmt, ...) {
         if (box->cursorx > box->w - 2) {
             box->cursorx = 1;
             box->cursory++;
+            if (box->cursory > box->h) break;
         }
         ui_box_putch(box, box->cursorx, box->cursory, buf[i]);
         box->cursorx++;
     }
-    // if (box->cursory >= box->h - 2) {
-    //     // scroll everything up (remove oldest line)
-    //     for (int j = box->y + box->h - 2; j > box->y; j--) {
-    //         for (int i = box->x + 1; i < box->x + box->w - 2; i++) {
-    //             vga_put_ch_at(vga_getch(i, j + 1), i, j);
-    //         }
-    //     }
-    // }
 }
 
 void ui_box_clearline(ui_box* box, int line) {
@@ -101,3 +94,30 @@ void ui_box_clearregion(ui_box* box, int x, int y, int w, int h) {
         }
     }
 }
+
+// Scrolling takes line n+1 and copies it to line n
+// void ui_box_scroll_vertical(ui_box* box) {
+//     for (int i = box->x + 1; i < box->x + box->w - 2; i++) {
+//         for (int j = box->y + 1; j < box->y + 1 + box->h - 2; j++) {
+//             uint16_t c = vga_get_entry(i, j+1);
+//             vga_put_entry_at_v(c, i, j);
+//         }
+//     }
+// }
+
+void ui_box_scroll_vertical(ui_box* box) {
+    // First, copy the last row of content to the second-to-last row
+    for (int i = box->x + 1; i < box->x + box->w - 1; i++) {
+        uint16_t c = vga_get_entry(i, box->y + box->h - 2);  // Last row (content)
+        vga_put_entry_at_v(c, i, box->y + box->h - 3);  // Second-to-last row (content)
+    }
+
+    // Now, move all the other content lines up by 1
+    // for (int j = box->y + box->h - 3; j >= box->y + 1; j--) {
+    //     for (int i = box->x + 1; i < box->x + box->w - 1; i++) {
+    //         uint16_t c = vga_get_entry(i, j + 1);  // Get the entry from the row below
+    //         vga_put_entry_at_v(c, i, j);  // Copy to the current row
+    //     }
+    // }
+}
+

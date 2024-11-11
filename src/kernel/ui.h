@@ -23,6 +23,7 @@ void   ui_box_clear(ui_box*);
 void   ui_box_clearline(ui_box*, int);
 void   ui_box_putch(ui_box* box, int x, int y, char c);
 void   ui_box_clearregion(ui_box*, int x, int y, int w, int h);
+void   ui_box_scroll_vertical(ui_box*);
 
 void   emit(int n, ...);
 
