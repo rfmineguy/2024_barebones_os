@@ -7,8 +7,9 @@ make an OS that performs some simple operations.
 # Context and technologies used
 - As I am developing this on my Mac, I had to setup quite a bit of build steps to get a functioning kernel binary out of it.
   Docker is used to run all the commands that are not supported on macos such as grub.
-- I realized early on a simple Makefile wasn't going to be enough for this project so I opted for a bash script that contained
-  all the build commands (see [build.sh](https://github.com/rfmineguy/2024_barebones_os/blob/master/scripts/build.sh)).
+- I realized early on a simple Makefile wasn't going to be enough for this project so I opted for bash/powershell scripts
+  that contain all the build commands. If you're on Windows, you'll use `scripts/build.ps1`. If you're on Linux/MacOS, 
+  you'll use `scripts/build.sh`
 
 # Uncomprehensive feature list
 - Global Descriptor Table
@@ -21,6 +22,7 @@ make an OS that performs some simple operations.
    - [ ] File writing
 - Simple shell
    - `read <filename>` - read the file from the fat system with name of 'filename'
+   - restart - restarts the operating system (no need to relaunch qemu)
 - Terminal User Interface
 
 # Building
