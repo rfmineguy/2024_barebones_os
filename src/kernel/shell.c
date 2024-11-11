@@ -35,6 +35,8 @@ int shell_keyboard_listener(char ch) {
                   shell_buffer_i--;
                   shell_buffer[shell_buffer_i] = 0;
                   break;
+       case ';':  up_pressed = true;
+                  break;
        default:   // log_info("ShellKbd", "Got key %d\n", ch);
                   if (!isprint(ch)) break;
                   if (shell_buffer_i >= 1024) {
@@ -64,38 +66,46 @@ int shell_run(arena* _kernel_arena, ui_box2* box) {
     int current_line = 0;
     struct builtin_result r;
     ui2_box(box);
+
     while (1) {
         ui2_putch(box, 0, current_line, '>');
 
         if (return_pressed) {
             current_line++;
             return_pressed = false;
+            int output_linecount = 0;
 
             // process shell buffer
             r = shell_process(shell_buffer);
-            switch (r.code) {
-            case ERROR_NONE:
-                if (r.string_result) {
-                    current_line += ui2_putstr(box, 2, current_line, r.string_result);
-                }
-                break;
-            default:
-                current_line += ui2_putstr(box, 2, current_line, map_error_code(r.code));
-                break;
-            }
-
-            // reset shell buffer
             shell_buffer_i = 0;
             shell_buffer[0] = 0;
 
+            switch (r.code) {
+            case ERROR_NONE:
+                if (r.string_result) {
+                    output_linecount = ui2_putstr(box, 2, current_line, r.string_result);
+                    // current_line += ui2_putstr(box, 2, current_line, r.string_result);
+                }
+                break;
+            default:
+                output_linecount = ui2_putstr(box, 2, current_line, map_error_code(r.code));
+                // current_line += ui2_putstr(box, 2, current_line, map_error_code(r.code));
+                break;
+            }
+
             // scroll if needed
-            if (current_line >= 5) {
-                // ui2_scroll_vertical(box, 2);
-                ui2_refresh();
+            if (current_line + output_linecount >= 8) {
+                log_info("Shell", "Scroll\n");
+                ui2_scroll_vertical_n(box, output_linecount + 1);
+                current_line --;
+            }
+            else {
+                current_line += output_linecount;
             }
         }
         if (up_pressed) {
-            ui2_scroll_vertical(box, 1);
+            log_info("Shell", "Up pressed\n");
+            current_line -= ui2_scroll_vertical(box);
             up_pressed = false;
         }
         if (backspace_pressed) {
@@ -107,7 +117,7 @@ int shell_run(arena* _kernel_arena, ui_box2* box) {
             ui2_putstr(box, 2, current_line, shell_buffer);
             other_pressed = false;
         }
-        ui2_putch(box, 2 + strlen(shell_buffer), current_line, cursor_on ? '_' : ' ');
+        ui2_putch(box, 2 + strlen(shell_buffer) + 1, current_line, cursor_on ? '_' : ' ');
         ui2_refresh();
     }
     return 0;
