@@ -24,13 +24,14 @@ int listeners_count;
 
 void timer_add_listener(int(* listener)(int), int interval) {
     if (listeners_count >= 10) {
-        log_crit("KeyboardAddListener", "Couldn't add new keyboard listener");
+        log_crit("KeyboardAddListener", "Couldn't add new timer listener");
         return;
     }
     listeners[listeners_count] = (timer_listener_data) {
         .listener = listener,
         .trigger_interval = interval
     };
+    log_info("KeyboardAddListener", "Added new timer listener %d", listeners_count);
     listeners_count++;
 }
 void timer_init() {
