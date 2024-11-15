@@ -86,6 +86,9 @@ struct multiboot_header
 
   /*  The above fields plus this one must equal 0 mod 2^32. */
   multiboot_uint32_t checksum;
+
+  /* Address of tag beginning */
+  multiboot_uint32_t tags;      
 };
 
 struct multiboot_header_tag
@@ -391,7 +394,7 @@ struct multiboot_tag_load_base_addr
   multiboot_uint32_t load_base_addr;
 };
 
-void multiboot2_debug(multiboot_info*);
+// void multiboot2_debug(multiboot2_info*);
 
 #endif /*  ! ASM_FILE */
 

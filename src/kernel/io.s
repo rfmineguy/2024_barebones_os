@@ -1,5 +1,6 @@
 .global io_outb
 .global io_inb
+.global io_inw
 .global io_wait
 
 io_outb:
@@ -13,6 +14,12 @@ io_inb:
     xor %edx, %edx
     movl 4(%esp), %edx
     in %dx, %al
+    ret
+
+io_inw:
+    xor %edx, %edx
+    movl 4(%esp), %edx
+    in %dx, %ax
     ret
 
 io_wait:

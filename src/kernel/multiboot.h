@@ -259,6 +259,7 @@ struct multiboot_module_s {
 } __attribute__((packed));
 
 void multiboot_verify(int magic, struct multiboot_info*);
+void multiboot_debug(struct multiboot_header*, struct multiboot_info*);
 
 #endif
 #endif
