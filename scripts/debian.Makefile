@@ -71,7 +71,7 @@ grub_gen_cfg_fs:
 		echo "menuentry \"myos\" {"; \
 		echo "    insmod fat"; \
 		echo "    insmod part_msdos"; \
-		echo "    multiboot /boot/os.bin"; \
+		echo "    multiboot2 /boot/os.bin"; \
 		echo "    module /main.img \"fat_image\""; \
 		echo "    boot"; \
 		echo "}"; \
@@ -84,7 +84,7 @@ grub_gen_cfg_nofs:
 		echo ""; \
 		echo ""; \
 		echo "menuentry \"myos\" {"; \
-		echo "    multiboot /boot/os.bin";\
+		echo "    multiboot2 /boot/os.bin";\
 		echo "    boot";\
 		echo "}"; \
 	} > grub.cfg
