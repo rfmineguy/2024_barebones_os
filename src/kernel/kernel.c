@@ -4,7 +4,8 @@
 #include "serial.h"
 #include "timer.h"
 #include "keyboard.h"
-#include "multiboot.h"
+#include "mouse.h"
+#include "multiboot2.h"
 #include "memory.h"
 #include "fat_test.h"
 #include "fat.h"
@@ -17,6 +18,7 @@
 #include "rfos_splash.h"            // related to the splashbox
 #include "tips.h"                   // related to the tipsbox
 #include "files.h"
+#include "ata.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -43,13 +45,21 @@ void test_fat_read() {
     }
 }
 
+// https://www.gnu.org/software/grub/manual/multiboot/html_node/Machine-state.html
+// the first argument here should be the pointer to the mboot header
+// the second argument should be a pointer to the returned data
 static int i = 0;
-void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
+void kernel_main(int magic, struct multiboot_header* header) {
     UNUSED(magic);
     ui_box_t splashbox, infobox, shellbox, tipsbox, filebox;
 
     serial_init();
     vga_init();
+
+    log_info("Main", "Tags pointer: %x\n", header->tags);
+    log_info("Main", "%x\n", magic);
+    
+    //log_info("DriveInfo", "%x\n", bootinfo->drives_addr);
 
     // Setup uiboxes
     splashbox = ui_new(0,  0,  39, 10, "Splash");
@@ -61,7 +71,7 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
     ui_set_border_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
     tipsbox = ui_new(65, 0, 14, 10, "Tips");
-    ui_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+    ui_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_RED);
     ui_set_border_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
     shellbox = ui_new(0,  11, 59, 13, "Shell");
@@ -82,27 +92,37 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
     tips_populate(&tipsbox);
     files_populate(&filebox);
 
-    multiboot_verify(magic, bootinfo);
+    //multiboot_debug(header, bootinfo);
 
     idt_cli();
 
-    // ui_box_draw(&infobox);
     // Initialize hardware (sets up exception handlers as well)
-    gdt_init();            ui_putstr(&infobox, 2, 0, "Installed GDT");
-    idt_install();         ui_putstr(&infobox, 2, 1, "Installed IDT");
+    gdt_init();            ui_putstr(&infobox, 2, 0, "GDT      |Installed");
+    idt_install();         ui_putstr(&infobox, 2, 1, "IDT      |Installed");
 
     // Setup irq handlers
-    timer_init();          ui_putstr(&infobox, 2, 2, "Initialized timer");
-    keyboard_init();       ui_putstr(&infobox, 2, 3, "Initialized keyboard");
+    timer_init();          ui_putstr(&infobox, 2, 2, "Timer    |Init");
+    keyboard_init();       ui_putstr(&infobox, 2, 3, "Keyboard |Init");
+    mouse_init();          ui_putstr(&infobox, 2, 4, "Mouse    |Init (WIP)");
 
     // Initialize memory
-    memory_init(bootinfo); ui_putstr(&infobox, 2, 4, "Initialized memory");
+    // memory_init(bootinfo); ui_putstr(&infobox, 2, 5, "Memory   |Init");
     ui_refresh();
 
     idt_sti();
 
+
+    // Test ATA
+    uint8_t buf[512];
+    ata_select_drive(0xE0); // primary master
+    ata_read(0, buf, 1);
+    log_info("ATA", "%s\n", buf);// Check the last 2 bytes for the MBR signature
+    for  (int i = 0; i < 512; i++) {
+        serial_printf("%x ", buf[i]);
+    }
+
     // Initialize fat filesystem
-    if (bootinfo->mods_count > 0) {
+    /*if (bootinfo->mods_count > 0) {
         struct multiboot_module_s *mods = (struct multiboot_module_s*) bootinfo->mods_addr;
         fat_test(mods[0].mod_start);
 
@@ -114,7 +134,7 @@ void kernel_main(uint32_t magic, struct multiboot_info* bootinfo) {
         fat_debug();
 
         test_fat_read();
-    }
+    }*/
 
     // ui_box_scroll_vertical(&splashbox);
 
