@@ -43,3 +43,13 @@ int strlen(const char* str) {
     }
     return len;
 }
+
+char *strrchr(const char *s, int c) {
+    while (*s != '\0') { // iterate until the end of the string
+        if (*s == (char)c) { // check if the current character matches the target
+            return (char *)s; // return the address of the last occurrence
+        }
+        s++; // move to the next character
+    }
+    return (void*)0; // return NULL if the character is not found
+}
