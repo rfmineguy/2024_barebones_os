@@ -79,12 +79,14 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
             shell_buffer[0] = 0;
 
             switch (r.code) {
-            case ERROR_NONE:
+            case ERROR_NONE: {
                 for (int i = 0; i < r.string_result_count; i++) {
-                    log_info("Shell", "Line #%d : \"%s\"", i, r.string_results[i]);
+                    // log_info("Shell", "Line #%d : \"%s\"", i, r.string_results[i]);
+                    // fat_drive_8_3_to_filename(r.string_results[i], filename);
                     output_linecount += ui_putstr(box, 2, current_line + output_linecount, r.string_results[i]);
                 }
                 break;
+            }
             default:
                 output_linecount = ui_putstr(box, 2, current_line, map_error_code(r.code));
                 break;
@@ -189,13 +191,14 @@ struct builtin_result shell_list_builtin(const struct argument_ctx* arg_ctx) {
     (void)arg_ctx;
     const dir_entry* root_dir = fat_drive_internal_get_root_dir();
     struct builtin_result r = {0};
+    char filename[11];
     for (uint32_t i = 1; i < fat_drive_internal_get_boot_sector().DirEntryCount; i++) {
         if (root_dir[i].Name[0] == 0x00) break;
 
         // put name into result area
         r.string_results[i - 1] = arena_alloc(kernel_arena, 12);
-        memcpy(r.string_results[i - 1], root_dir[i].Name, 11);
-        r.string_results[i - 1][12] = '\0';
+        fat_drive_8_3_to_filename((const char*)root_dir[i].Name, r.string_results[i - 1]);
+
         log_info("Entry", "%s", r.string_results[i - 1]);
         r.string_result_count++;
     }
