@@ -9,6 +9,9 @@
 #include <stdbool.h>
 
 // https://wiki.osdev.org/Interrupts_Tutorial
+// https://wiki.osdev.org/Interrupts
+//      - maps irqs to vector numbers under "General IBM-PC Compatible Interrupt Information"
+
 struct idt_entry idt_entries[256];
 struct idt_ptr   idtp;
 
