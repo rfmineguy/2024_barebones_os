@@ -116,7 +116,7 @@ void kernel_main(int magic, struct multiboot_header* header) {
 
     kernel_arena = arena_new(0x500000, 0x500000 + 0x7ee0000);
 
-    // Drive
+    // Drive setup
     log_group_begin("Drive Setup");
     fat_drive_read_header(); // read drive MBR
     fat_drive_debug_header();
@@ -153,35 +153,18 @@ void kernel_main(int magic, struct multiboot_header* header) {
     }
     log_group_end("Read a.txt");
 
-    // Initialize fat filesystem
-    /*if (bootinfo->mods_count > 0) {
-        struct multiboot_module_s *mods = (struct multiboot_module_s*) bootinfo->mods_addr;
-        fat_test(mods[0].mod_start);
-
-        kernel_arena = arena_new(0x100000, 0x100000 + 0x7ee0000);
-
-        // start reading the fat "drive"
-        fat_init(mods[0].mod_start, mods[0].mod_end, &kernel_arena);
-        fat_read_header();
-        fat_debug();
-
-        test_fat_read();
-    }*/
-
-    // ui_box_scroll_vertical(&splashbox);
-
     // Initialize shell stuff
     keyboard_add_listener(shell_keyboard_listener);
     // timer_add_listener(shell_timer_listener, 20);
     shell_run(&kernel_arena, &shellbox);
 
     for(;;) {
-        if (timer_ticks() % 20 == 0) {
-            if (i % 3 == 0) vga_put_ch_at('-', 20, 20);
-            if (i % 3 == 1) vga_put_ch_at('/', 20, 20);
-            if (i % 3 == 2) vga_put_ch_at('|', 20, 20);
-        }
-        i++;
+        // if (timer_ticks() % 20 == 0) {
+        //     if (i % 3 == 0) vga_put_ch_at('-', 20, 20);
+        //     if (i % 3 == 1) vga_put_ch_at('/', 20, 20);
+        //     if (i % 3 == 2) vga_put_ch_at('|', 20, 20);
+        // }
+        // i++;
     }
 
     arena_free_all(&kernel_arena);
