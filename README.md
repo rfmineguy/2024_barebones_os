@@ -22,7 +22,8 @@ make an OS that performs some simple operations.
    - [ ] File writing
 - Simple shell
    - `read <filename>` - read the file from the fat system with name of 'filename'
-   - restart - restarts the operating system (no need to relaunch qemu)
+   - `list` - lists all the files on the fat drive
+   - `restart` - restarts the operating system (no need to relaunch qemu)
 - Terminal User Interface
 
 # Building
