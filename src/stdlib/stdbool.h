@@ -6,6 +6,6 @@
 #define true  1
 
 // Define the bool type
-typedef int bool;
+#define bool int
 
 #endif // MY_STDBOOL_H
