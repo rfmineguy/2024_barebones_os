@@ -1,4 +1,5 @@
 .global io_outb
+.global io_outw
 .global io_inb
 .global io_inw
 .global io_wait
@@ -8,6 +9,13 @@ io_outb:
     movl 4(%esp), %edx
     movb 8(%esp), %al
     out %al, %dx
+    ret
+
+io_outw:
+    xor %edx, %edx
+    movl 4(%esp), %edx
+    movw 8(%esp), %ax
+    out %ax, %dx
     ret
 
 io_inb:
