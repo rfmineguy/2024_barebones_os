@@ -11,6 +11,17 @@ uint8_t*    g_Fat         = (void*)0;
 dir_entry*  g_root_directory = (void*)0;
 uint32_t    g_root_directory_end;
 
+boot_sector fat_drive_internal_get_boot_sector() {
+    return g_boot_sector;
+}
+
+const uint8_t* fat_drive_internal_get_gfat() {
+    return g_Fat;
+}
+
+const dir_entry* fat_drive_internal_get_root_dir() {
+    return g_root_directory;
+}
 
 bool fat_isvalid_filename(const char* filename) {
     int dot_count = 0;
@@ -97,7 +108,7 @@ bool fat_drive_read(arena* arena){
     // bool r = fat_drive_read_sectors(g_boot_sector.ReservedSectors, g_boot_sector.SectorsPerFat, g_Fat);
     ata_read(0xE0, g_boot_sector.ReservedSectors, g_Fat, g_boot_sector.SectorsPerFat);
     log_line_begin("Bytes");
-    for (int i = 0; i < sizeof(g_boot_sector); i++) {
+    for (uint32_t i = 0; i < sizeof(g_boot_sector); i++) {
         log_line("%x ", ((char*)&g_boot_sector)[i]);
     }
     log_line_end("Bytes");

@@ -44,6 +44,11 @@ typedef struct boot_sector {
     uint8_t SystemId[8];
 } boot_sector;
 
+
+boot_sector       fat_drive_internal_get_boot_sector();
+const uint8_t*    fat_drive_internal_get_gfat();
+const dir_entry*  fat_drive_internal_get_root_dir();
+
 bool fat_drive_filename_to_8_3(const char*, char*);
 
 /* Desc:   Prints out the boot sector data entries in human readable form
