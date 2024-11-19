@@ -7,7 +7,7 @@
 #include "vga.h"
 #include "keyboard.h"
 #include "error.h"
-#include "fat.h"
+#include "fat_drive.h"
 #include "ui.h"
 #include "sys.h"
 
@@ -19,7 +19,6 @@ int shell_buffer_i = 0;
 arena* kernel_arena = (void*)0;
 
 int shell_keyboard_listener(char ch) {
-    log_info("KeyBdList", "%X\n", ch);
    switch (ch) {
        case '\n': // log_info("ShellKbd", "Return key\n");
                   return_pressed = true;
@@ -94,7 +93,6 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
 
             // scroll if needed
             if (current_line + output_linecount >= 8) {
-                log_info("Shell", "Scroll\n");
                 ui_scroll_vertical_n(box, output_linecount + 1);
                 current_line --;
             }
@@ -103,7 +101,6 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
             }
         }
         if (up_pressed) {
-            log_info("Shell", "Up pressed\n");
             current_line -= ui_scroll_vertical(box);
             up_pressed = false;
         }
@@ -143,9 +140,6 @@ struct builtin_result shell_process(char* buf) {
     struct argument_ctx ctx = {0};
     tokenize_args(buf, &ctx);
 
-    for (int i = 0; i < ctx.arg_counter; i++) {
-        log_info("ShellProc", "Arg #%d = %s\n", i, ctx.args[i]);
-    }
     if (strcmp(ctx.args[0], "read") == 0)   return shell_read_builtin(&ctx);
     if (strcmp(ctx.args[0], "dir") == 0)    return shell_dir_builtin(&ctx);
     if (strcmp(ctx.args[0], "reboot") == 0) sys_reboot();
@@ -163,33 +157,32 @@ struct builtin_result shell_process(char* buf) {
 //   1 = file not found
 //   2 = failed to read
 struct builtin_result shell_read_builtin(const struct argument_ctx* arg_ctx) {
+    log_group_begin("ShellReadBuiltin");
     dir_entry* f = (void*)0;
     uint8_t* buf = (void*)0;
 
-    log_info("ShellBuiltin", "Read file\n");
+    log_info("ShellBuiltinType", "Read file\n");
 
     // 1. Convert input filename into a FAT12 compatible 8.3 format
     char name_8_3[12] = "           ";
-    if (fat_filename_to_8_3(arg_ctx->args[1], name_8_3) == -1) {
+    if (fat_drive_filename_to_8_3(arg_ctx->args[1], name_8_3) == -1) {
         return BUILTIN_RESULT(ERROR_GENERIC, (void*)0);
     }
 
     // 2. Search the file system for the 8.3 name
-    if (!(f = fat_find_file(name_8_3))) {
+    if (!(f = fat_drive_find_file(name_8_3))) {
         return BUILTIN_RESULT(ERROR_FILE_NOT_FOUND, (void*)0);
     }
 
     // 3. Read the entry into the kernel arena (FUTURE: This should be the heap)
-    buf = fat_read_entry(f, kernel_arena);
-    if (!buf) {
-        log_info("ShellBuiltin", "Failed to read file\n");
+    buf = arena_alloc(kernel_arena, f->Size);
+    if (!fat_drive_read_file(f, buf)) {
+        log_info("Status", "Failed to read file\n");
         return BUILTIN_RESULT(ERROR_FILE_READ, (void*)0);
     }
-    else {
-        return BUILTIN_RESULT(ERROR_NONE, (char*)buf);
-    }
+    log_group_end("ShellReadBuiltin");
 
-    return BUILTIN_RESULT(ERROR_GENERIC, (void*)0);
+    return BUILTIN_RESULT(ERROR_NONE, (char*)buf);
 }
 
 struct builtin_result shell_dir_builtin(const struct argument_ctx* arg_ctx) {

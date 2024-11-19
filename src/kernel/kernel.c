@@ -7,8 +7,8 @@
 #include "mouse.h"
 #include "multiboot2.h"
 #include "memory.h"
-#include "fat_test.h"
-#include "fat.h"
+// #include "fat_test.h"
+// #include "fat.h"
 #include "arena.h"
 #include "log.h"
 #include "shell.h"
@@ -19,11 +19,13 @@
 #include "tips.h"                   // related to the tipsbox
 #include "files.h"
 #include "ata.h"
+#include "fat_drive.h"
 
 #define UNUSED(x) (void)(x)
 
 arena kernel_arena;
 
+/*
 void test_fat_read() {
     dir_entry* f = (void*)0;
     if (!fat_read_header())                  log_crit("FatRead", "Failed to read header\n"); 
@@ -44,6 +46,7 @@ void test_fat_read() {
         }
     }
 }
+*/
 
 // https://www.gnu.org/software/grub/manual/multiboot/html_node/Machine-state.html
 // the first argument here should be the pointer to the mboot header
@@ -56,8 +59,8 @@ void kernel_main(int magic, struct multiboot_header* header) {
     serial_init();
     vga_init();
 
-    log_info("Main", "Tags pointer: %x\n", header->tags);
-    log_info("Main", "%x\n", magic);
+    log_info("Main", "Tags pointer: %x", header->tags);
+    log_info("Main", "Magic: %x", magic);
     
     //log_info("DriveInfo", "%x\n", bootinfo->drives_addr);
 
@@ -111,15 +114,44 @@ void kernel_main(int magic, struct multiboot_header* header) {
 
     idt_sti();
 
+    kernel_arena = arena_new(0x500000, 0x500000 + 0x7ee0000);
+
+    // Drive
+    log_group_begin("Drive Setup");
+    fat_drive_read_header(); // read drive MBR
+    fat_drive_debug_header();
+    fat_drive_read(&kernel_arena);
+    fat_drive_read_root_dir(&kernel_arena);
+    log_group_end("Drive Setup");
 
     // Test ATA
-    uint8_t buf[512];
-    ata_select_drive(0xE0); // primary master
-    ata_read(0, buf, 1);
-    log_info("ATA", "%s\n", buf);// Check the last 2 bytes for the MBR signature
-    for  (int i = 0; i < 512; i++) {
-        serial_printf("%x ", buf[i]);
+    log_group_begin("Drive Test With ATA Directly");
+    uint8_t buf[512 * 14];
+    ata_read(0xE0, 19, buf, 14);
+    log_line_begin("Bytes");
+    for (int i = 0; i < 512; i++) {
+        log_line("%x ", buf[i]);
     }
+    log_line_end("Bytes");
+    log_group_end("Drive Test With ATA Directly");
+
+    log_group_begin("Drive Test With fat_drive.c");
+    fat_drive_read_sectors(19, 14, buf);
+    log_line_begin("Bytes");
+    for (int i = 0; i < 512; i++) {
+        log_line("%x ", buf[i]);
+    }
+    log_line_end("Bytes");
+    log_group_end("Drive Test With fat_drive.c");
+
+    log_group_begin("Read a.txt");
+    dir_entry* dir = fat_drive_find_file("A       TXT");
+    if (dir) {
+        uint8_t* buf = arena_alloc(&kernel_arena, dir->Size);
+        fat_drive_read_file(dir, buf);
+        log_info("a.txt", "%s\n", buf);
+    }
+    log_group_end("Read a.txt");
 
     // Initialize fat filesystem
     /*if (bootinfo->mods_count > 0) {
