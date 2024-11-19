@@ -5,6 +5,11 @@ int toupper(int ch) {
     return ch;
 }
 
+int tolower(int ch) {
+    if (ch >= 'A' && ch <= 'Z') return ch + 'a' - 'A';
+    return ch;
+}
+
 int isprint(int ch) {
     return ch > 0x1f && ch < 0x7f;
 }
