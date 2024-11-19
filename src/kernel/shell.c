@@ -12,7 +12,7 @@
 #include "sys.h"
 
 bool cursor_on;
-bool up_pressed = false, down_pressed = false;
+bool up_pressed = false,down_pressed = false;
 bool return_pressed = false, backspace_pressed = false, other_pressed = false;
 char shell_buffer[1024] = {0};
 int shell_buffer_i = 0;
@@ -54,14 +54,12 @@ int shell_keyboard_listener(char ch) {
 
 int shell_timer_listener(int ticks) {
     (void)ticks;
-    if (ticks % 20 == 0) {
-        cursor_on = !cursor_on;
-    }
+    cursor_on = !cursor_on;
     return 0;
 }
 
 int shell_run(arena* _kernel_arena, ui_box_t* box) {
-    (void)_kernel_arena;
+    kernel_arena = _kernel_arena;
 
     int current_line = 0;
     struct builtin_result r;
@@ -82,8 +80,9 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
 
             switch (r.code) {
             case ERROR_NONE:
-                if (r.string_result) {
-                    output_linecount = ui_putstr(box, 2, current_line, r.string_result);
+                for (int i = 0; i < r.string_result_count; i++) {
+                    log_info("Shell", "Line #%d : \"%s\"", i, r.string_results[i]);
+                    output_linecount += ui_putstr(box, 2, current_line + output_linecount, r.string_results[i]);
                 }
                 break;
             default:
@@ -141,10 +140,10 @@ struct builtin_result shell_process(char* buf) {
     tokenize_args(buf, &ctx);
 
     if (strcmp(ctx.args[0], "read") == 0)   return shell_read_builtin(&ctx);
-    if (strcmp(ctx.args[0], "dir") == 0)    return shell_dir_builtin(&ctx);
+    if (strcmp(ctx.args[0], "list") == 0)   return shell_list_builtin(&ctx);
     if (strcmp(ctx.args[0], "reboot") == 0) sys_reboot();
 
-    return BUILTIN_RESULT(ERROR_INVALID_CMD, (void*)0); // invalid command supplied
+    return BUILTIN_RESULT_SUC_NO_MSG(ERROR_INVALID_CMD); // invalid command supplied
 }
 
 // shell command
@@ -161,32 +160,45 @@ struct builtin_result shell_read_builtin(const struct argument_ctx* arg_ctx) {
     dir_entry* f = (void*)0;
     uint8_t* buf = (void*)0;
 
-    log_info("ShellBuiltinType", "Read file\n");
+    log_info("ShellBuiltinType", "Read file");
 
     // 1. Convert input filename into a FAT12 compatible 8.3 format
     char name_8_3[12] = "           ";
     if (fat_drive_filename_to_8_3(arg_ctx->args[1], name_8_3) == -1) {
-        return BUILTIN_RESULT(ERROR_GENERIC, (void*)0);
+        return BUILTIN_RESULT_SUC_NO_MSG(ERROR_GENERIC);
     }
 
     // 2. Search the file system for the 8.3 name
     if (!(f = fat_drive_find_file(name_8_3))) {
-        return BUILTIN_RESULT(ERROR_FILE_NOT_FOUND, (void*)0);
+        return BUILTIN_RESULT_SUC_NO_MSG(ERROR_FILE_NOT_FOUND);
     }
 
     // 3. Read the entry into the kernel arena (FUTURE: This should be the heap)
     buf = arena_alloc(kernel_arena, f->Size);
     if (!fat_drive_read_file(f, buf)) {
-        log_info("Status", "Failed to read file\n");
-        return BUILTIN_RESULT(ERROR_FILE_READ, (void*)0);
+        log_info("Status", "Failed to read file");
+        return BUILTIN_RESULT_SUC(ERROR_FILE_READ, 0);
     }
     log_group_end("ShellReadBuiltin");
 
-    return BUILTIN_RESULT(ERROR_NONE, (char*)buf);
+    return BUILTIN_RESULT_SUC(ERROR_NONE, (char*)buf);
 }
 
-struct builtin_result shell_dir_builtin(const struct argument_ctx* arg_ctx) {
+struct builtin_result shell_list_builtin(const struct argument_ctx* arg_ctx) {
+    log_group_begin("ShellListBuiltin");
     (void)arg_ctx;
-    log_info("ShellBuiltin", "Dir\n");
-    return BUILTIN_RESULT(ERROR_NONE, "Unimplemented");
+    const dir_entry* root_dir = fat_drive_internal_get_root_dir();
+    struct builtin_result r = {0};
+    for (uint32_t i = 1; i < fat_drive_internal_get_boot_sector().DirEntryCount; i++) {
+        if (root_dir[i].Name[0] == 0x00) break;
+
+        // put name into result area
+        r.string_results[i - 1] = arena_alloc(kernel_arena, 12);
+        memcpy(r.string_results[i - 1], root_dir[i].Name, 11);
+        r.string_results[i - 1][12] = '\0';
+        log_info("Entry", "%s", r.string_results[i - 1]);
+        r.string_result_count++;
+    }
+    log_group_end("ShellListBuiltin");
+    return r;
 }
