@@ -9,6 +9,8 @@ function usage {
     echo "  clean               : Use the container to clean the build files"
     echo "  checkmboot          : Check if the generated binary is multiboot"
     echo "  qemu                : Run generated kernel in qemu"
+    echo "  qemu_debug          : Run generated kernel in qemu debug mode"
+    echo "  create_disk         : Create a blank FAT12 disk image"
     echo "  help                : Display this menu"
 }
 
@@ -39,6 +41,10 @@ function handle_qemu_debug {
     qemu-system-i386 -drive file=out/main.img,format=raw -cdrom out/os.iso -boot d -vga std -serial file:output.txt -S -s
 }
 
+function handle_create_disk {
+    eval $docker_cmd 'sh -c "make create_fat_fs -f scripts/debian.Makefile"'
+}
+
 case "$1" in
     docker_get ) shift 1; handle_docker_get $@ ;;
     build )      shift 1; handle_build $@ ;;
@@ -46,6 +52,7 @@ case "$1" in
     checkmboot ) shift 1; handle_checkmboot $@ ;;
     qemu )       shift 1; handle_qemu $@ ;;
     qemu_debug ) shift 1; handle_qemu_debug $@ ;;
+    create_disk )shift 1; handle_create_disk $@ ;;
     help )       usage ;;
     * ) echo "Incorrect usage"; usage ;;
 esac

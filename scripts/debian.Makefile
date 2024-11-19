@@ -38,7 +38,8 @@ LIBDIR := /home/build/lib/gcc/i686-elf/7.1.0/
 .PHONY: grub_gen_cfg grub_gen_rescue grub_check_multiboot
 .PHONY: create_fat_fs
 .PHONY: always clean build
-always: create_fat_fs
+# create_fat_fs
+always:
 	mkdir -p $(OUT)
 
 clean:
@@ -107,7 +108,7 @@ checkmboot1:
 		echo "Multiboot not present "; \
 	fi
 checkmboot2:
-	@echo "Checking multiboot"
+	@echo "Checking multiboot2"
 	@if grub-file --is-x86-multiboot2 out/os.bin; then \
 		echo "Multiboot2 confirmed"; \
 	else \
