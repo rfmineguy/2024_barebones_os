@@ -1,7 +1,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
-#include "multiboot.h"
+#include "multiboot2.h"
 
-void memory_init(struct multiboot_info*);
+void memory_init(struct multiboot_header*);
 
 #endif
