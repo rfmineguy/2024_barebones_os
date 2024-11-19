@@ -36,8 +36,23 @@ bool fat_isvalid_filename(const char* filename) {
     return true;
 }
 
+bool fat_drive_8_3_to_filename(const char* _8_3_filename, char* filename) {
+    int i = 0;
+    int filename_index = 0;
+    for (; i < 8; i++) {
+        if (_8_3_filename[i] == ' ') break;
+        filename[filename_index++] = tolower(_8_3_filename[i]);
+    }
+    filename[filename_index++] = '.';
+    for (i = 8; i < 11; i++) {
+        filename[filename_index++] = tolower(_8_3_filename[i]);
+    }
+    filename[filename_index] = 0;
+    return true;
+}
+
 bool fat_drive_filename_to_8_3(const char* filename, char* name_8_3) {
-    if (!fat_isvalid_filename(filename)) return -1;
+    if (!fat_isvalid_filename(filename)) return false;
     int dot_loc = 0;
 
     // find dot
@@ -52,7 +67,7 @@ bool fat_drive_filename_to_8_3(const char* filename, char* name_8_3) {
     // copy the first 3 chars of extension
     for (int i = 0; i < 3; i++)
         name_8_3[8 + i] = toupper(filename[dot_loc + i + 1]);
-    return 0;
+    return true;
 }
 
 void fat_drive_debug_header() {

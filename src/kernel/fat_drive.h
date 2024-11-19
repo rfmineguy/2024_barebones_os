@@ -49,7 +49,20 @@ boot_sector       fat_drive_internal_get_boot_sector();
 const uint8_t*    fat_drive_internal_get_gfat();
 const dir_entry*  fat_drive_internal_get_root_dir();
 
-bool fat_drive_filename_to_8_3(const char*, char*);
+/* Desc:           Converts valid FAT12 8.3 format into a more human readable
+ *                  format
+ *                 i.e. TEST    TXT -> test.txt
+ * Params:         2
+ */
+bool fat_drive_8_3_to_filename(const char* _8_3_filename, char* filename);
+
+/* Desc:           Converts the input filename into a FAT12 compatible 8.3 format
+ * Params:         2
+ *  filename:      pointer to the input filename (should be of normal "test.txt" format)
+ *  _8_3_filename: pointer to an 11 byte buffer to store the converted 8.3 file string
+ * Return:         whether the input filename is a valid filename
+ */
+bool fat_drive_filename_to_8_3(const char* filename, char* _8_3_filename);
 
 /* Desc:   Prints out the boot sector data entries in human readable form
  *         Must be called after 'fat_drive_read_header()' for accurate results
@@ -75,7 +88,11 @@ bool fat_drive_read_header();
  */
 bool fat_drive_read_sectors(uint32_t lba, uint32_t count, uint8_t* buf_out);
 
-// WIP
+/* Desc:     read data from drive required by FAT to function properly
+ * Params:   1
+ *  arena:   a valid arena used to store data
+ * Return:   success or not
+ */
 bool fat_drive_read(arena*);
 
 /* Desc:     read the root directory of the fat
