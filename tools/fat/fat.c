@@ -84,11 +84,17 @@ bool readBootSector(FILE* disk)
 bool readSectors(FILE* disk, uint32_t lba, uint32_t count, void* bufferOut)
 {
     bool ok = true;
-    printf("ReadSectors :: lba: %x, BytesPerSector: %x\n", lba, g_BootSector.BytesPerSector);
-    printf("ReadSectors :: offset: %x\n", (uint32_t)lba * g_BootSector.BytesPerSector);
+    printf("ReadSectors :: lba: %d, BytesPerSector: %d\n", lba, g_BootSector.BytesPerSector);
+    printf("ReadSectors :: offset (decimal): %d, (hex): %x\n", (uint32_t)(lba * g_BootSector.BytesPerSector), (uint32_t)(lba * g_BootSector.BytesPerSector));
 
+    // move file pointer to base + lba * bytes_per_sector
+    // read count blocks of bytes_per_sector starting at base + lba * bytes_per_sector
     ok = ok && (fseek(disk, lba * g_BootSector.BytesPerSector, SEEK_SET) == 0);
     ok = ok && (fread(bufferOut, g_BootSector.BytesPerSector, count, disk) == count);
+
+    for (int i = 0; i < count * 256; i++) {
+        printf("%x ", ((char*)bufferOut)[i]);
+    }
     return ok;
 }
 
@@ -107,9 +113,9 @@ bool readRootDirectory(FILE* disk)
     if (size % g_BootSector.BytesPerSector > 0)
         sectors++;
 
-    printf("lba: %d\n", lba);
-    printf("size: %d\n", size);
-    printf("sectors: %d\n", sectors);
+    printf("readRoot: lba: %d\n", lba);
+    printf("readRoot: size: %d\n", size);
+    printf("readRoot: sectors: %d\n", sectors);
     g_RootDirectoryEnd = lba + sectors;
     printf("readRootDirectory: Allocating %d bytes\n", sectors * g_BootSector.BytesPerSector);
     g_RootDirectory = (DirectoryEntry*) malloc(sectors * g_BootSector.BytesPerSector);
@@ -118,8 +124,10 @@ bool readRootDirectory(FILE* disk)
 
 DirectoryEntry* findFile(const char* name)
 {
+    printf("%d\n", g_BootSector.DirEntryCount);
     for (uint32_t i = 0; i < g_BootSector.DirEntryCount; i++)
     {
+        printf("%11s\n", g_RootDirectory[i].Name);
         if (memcmp(name, g_RootDirectory[i].Name, 11) == 0)
             return &g_RootDirectory[i];
     }
