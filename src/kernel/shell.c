@@ -120,12 +120,25 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
     return 0;
 }
 
+// arguments can be passed as such
+//    dada fa da "daf dafkhda" ad
+//
+//    this will parsed as
+//    ["dada", "fa", "da", "daf dafkhda", "ad"]
 static void tokenize_args(char* str, struct argument_ctx* ctx) {
     ctx->arg_counter = 0;
 
     char* start = str;
     while (*str != 0) {
-        if (*str == ' ') {
+        if (*str == '"') {
+            str++;
+            start = str;
+            while (*str != 0 && *str != '"') str++;
+            if (*str == 0) { /* unterminated quote */ }
+            *str = 0;
+            ctx->args[ctx->arg_counter] = start + 1;
+        }
+        else if (*str == ' ') {
             *str = 0;
             ctx->args[ctx->arg_counter++] = start;
             start = str + 1;
@@ -140,6 +153,10 @@ static void tokenize_args(char* str, struct argument_ctx* ctx) {
 struct builtin_result shell_process(char* buf) {
     struct argument_ctx ctx = {0};
     tokenize_args(buf, &ctx);
+
+    for (int i = 0; i < ctx.arg_counter; i++) {
+        log_info("Arg", "%d = %s", i, ctx.args[i]);
+    }
 
     if (strcmp(ctx.args[0], "read") == 0)   return shell_read_builtin(&ctx);
     if (strcmp(ctx.args[0], "list") == 0)   return shell_list_builtin(&ctx);
