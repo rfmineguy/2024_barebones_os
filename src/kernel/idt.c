@@ -24,11 +24,11 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags) {
     e->always0 = 0;
     e->sel = sel;
     e->flags = flags | 0x60;
-    log_info("IDT SetGate", "#%d, base: %x, sel: %d, flags: %b\n", num, base, sel, flags);
+    log_info("IDT SetGate", "#%d, base: %x, sel: %d, flags: %b", num, base, sel, flags);
 }
 
 void idt_install() {
-    log_info("IDT Install", "Begin\n");
+    log_group_begin("IDT Install");
     idtp.limit = (sizeof (struct idt_entry) * 256) - 1;
     idtp.base = (uint32_t) &idt_entries;
     memset(&idt_entries, 0, sizeof(struct idt_entry) * 256);
@@ -91,7 +91,7 @@ void idt_install() {
     idt_set_gate(177, (uint32_t) isr177, 0x08, 0x8E);
 
     idt_flush();
-    log_info("IDT Install", "Finished\n");
+    log_group_end("IDT Install");
 }
 
 // https://wiki.osdev.org/Exceptions
