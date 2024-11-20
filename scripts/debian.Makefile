@@ -9,10 +9,13 @@
 
 KERNEL_SRC := src/kernel
 STDLIB_SRC := src/stdlib
+TEST_SRC   := src/tests
 OUT := out
 
 C_KERNEL_SOURCE := $(wildcard $(KERNEL_SRC)/*.c)
 C_STDLIB_SOURCE := $(wildcard $(STDLIB_SRC)/*.c)
+
+C_TEST_SOURCE   := $(wildcard $(TEST_SRC)/*.c)
 
 S_KERNEL_SOURCE := $(wildcard $(KERNEL_SRC)/*.s)
 S_STDLIB_SOURCE := $(wildcard $(STDLIB_SRC)/*.s)
@@ -20,8 +23,12 @@ S_STDLIB_SOURCE := $(wildcard $(STDLIB_SRC)/*.s)
 C_SOURCES := $(C_KERNEL_SOURCE) $(C_STDLIB_SOURCE)
 S_SOURCES := $(S_KERNEL_SOURCE) $(S_STDLIB_SOURCE)
 
-C_OBJECTS := $(patsubst $(KERNEL_SRC)/%.c, $(OUT)/%.c.o, $(C_KERNEL_SOURCE)) $(patsubst $(STDLIB_SRC)/%.c, $(OUT)/%.c.o, $(C_STDLIB_SOURCE))
-S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) $(patsubst $(STDLIB_SRC)/%.s, $(OUT)/%.s.o, $(S_STDLIB_SOURCE))
+C_OBJECTS := $(patsubst $(KERNEL_SRC)/%.c, $(OUT)/%.c.o, $(C_KERNEL_SOURCE)) \
+			 $(patsubst $(STDLIB_SRC)/%.c, $(OUT)/%.c.o, $(C_STDLIB_SOURCE)) \
+			 $(patsubst $(TEST_SRC)/%.c, $(OUT)/%.c.o, $(C_TEST_SOURCE))
+
+S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) \
+			 $(patsubst $(STDLIB_SRC)/%.s, $(OUT)/%.s.o, $(S_STDLIB_SOURCE))
 
 BIN := os.bin
 OPTIMIZATION_FLAGS := -O0
@@ -49,10 +56,13 @@ clean:
 build: always $(OUT)/$(BIN) grub_gen_rescue
 
 $(OUT)/%.c.o: $(KERNEL_SRC)/%.c
-	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(OUT)/
+	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
 
 $(OUT)/%.c.o: $(STDLIB_SRC)/%.c
-	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(OUT)/
+	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
+
+$(OUT)/%.c.o: $(TEST_SRC)/%.c
+	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
 
 $(OUT)/%.s.o: $(KERNEL_SRC)/%.s
 	$(AS) $(ASFLAGS) $^ -o $@
