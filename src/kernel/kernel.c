@@ -25,29 +25,6 @@
 
 arena kernel_arena;
 
-/*
-void test_fat_read() {
-    dir_entry* f = (void*)0;
-    if (!fat_read_header())                  log_crit("FatRead", "Failed to read header\n"); 
-    if (!fat_read())                         log_crit("FatRead", "Failed to read fat\n");
-    if (!fat_read_root_dir())                log_crit("FatRead", "Failed to read root dir\n");
-    if (!(f = fat_find_file("TEST    TXT"))) log_crit("FatRead", "Failed to find file\n");
-    log_info("Main", "Found file \'TEST    TXT\'\n");
-    log_info("Main", "Information about: Size %d, Name: %s, FirstClusterLow: %d, FirstClusterHigh: %d\n",
-            f->Size, f->Name, f->FirstClusterLow, f->FirstClusterHigh);
-
-    uint8_t* buf = fat_read_entry(f, &kernel_arena);
-    if (!buf) log_info("Main", "Failed to read file\n");
-    else {
-        log_info("Main", "Success buf=%x\n", (uint32_t)buf);
-        for (size_t i = 0; i < f->Size; i++) {
-            if (isprint(buf[i])) serial_printf("%c", buf[i]);
-            else serial_printf("<%X>", buf[i]);
-        }
-    }
-}
-*/
-
 // https://www.gnu.org/software/grub/manual/multiboot/html_node/Machine-state.html
 // the first argument here should be the pointer to the mboot header
 // the second argument should be a pointer to the returned data
@@ -117,7 +94,7 @@ void kernel_main(int magic, struct multiboot_header* header) {
     kernel_arena = arena_new(0x500000, 0x500000 + 0x7ee0000);
 
     // Drive setup
-    log_group_begin("Drive Setup");
+    log_group_begin("Drive Setup %s", "hi");
     fat_drive_read_header(); // read drive MBR
     fat_drive_debug_header();
     fat_drive_read(&kernel_arena);
