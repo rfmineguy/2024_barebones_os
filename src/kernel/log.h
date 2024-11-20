@@ -6,11 +6,11 @@ extern int group_level;
 extern void log_info_internal(const char*, const char*, const char*, ...);
 extern void log_line_internal(const char*, ...);
 
-void log_group_begin(const char*);
-void log_group_end(const char*);
+void log_group_begin(const char*, ...);
+void log_group_end(const char*, ...);
 
-void log_line_begin(const char*);
-void log_line_end(const char*);
+void log_line_begin(const char*, ...);
+void log_line_end(const char*, ...);
 
 // #define log_line_begin(x) log_group_begin(x)
 // #define log_line_end(x) log_group_end(x)
