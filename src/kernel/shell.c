@@ -160,6 +160,8 @@ struct builtin_result shell_process(char* buf) {
 
     if (strcmp(ctx.args[0], "read") == 0)   return shell_read_builtin(&ctx);
     if (strcmp(ctx.args[0], "list") == 0)   return shell_list_builtin(&ctx);
+    if (strcmp(ctx.args[0], "newf") == 0)   return shell_newf_builtin(&ctx);
+    if (strcmp(ctx.args[0], "appf") == 0)   return shell_appf_builtin(&ctx);
     if (strcmp(ctx.args[0], "reboot") == 0) sys_reboot();
 
     return BUILTIN_RESULT_SUC_NO_MSG(ERROR_INVALID_CMD); // invalid command supplied
@@ -221,4 +223,12 @@ struct builtin_result shell_list_builtin(const struct argument_ctx* arg_ctx) {
     }
     log_group_end("ShellListBuiltin");
     return r;
+}
+
+struct builtin_result shell_newf_builtin(const struct argument_ctx* arg_ctx) {
+    return BUILTIN_RESULT_ERR(ERROR_UNIMPLEMENTED, "Not implemented");
+}
+
+struct builtin_result shell_appf_builtin(const struct argument_ctx* arg_ctx) {
+    return BUILTIN_RESULT_ERR(ERROR_UNIMPLEMENTED, "Not implemented");
 }

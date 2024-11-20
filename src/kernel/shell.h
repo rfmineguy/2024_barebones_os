@@ -31,5 +31,7 @@ struct builtin_result shell_process(char*);
 
 struct builtin_result shell_read_builtin(const struct argument_ctx*);
 struct builtin_result shell_list_builtin(const struct argument_ctx*);
+struct builtin_result shell_newf_builtin(const struct argument_ctx*);
+struct builtin_result shell_appf_builtin(const struct argument_ctx*);
 
 #endif
