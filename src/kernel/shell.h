@@ -22,7 +22,7 @@ struct builtin_result {
 #define BUILTIN_RESULT_SUC_LST(_code, _list, _count) \
     (struct builtin_result) {.code=_code,.string_results=_list,.string_result_count=_count}
 
-int shell_keyboard_listener(char);
+int shell_keyboard_listener(char, uint8_t);
 int shell_timer_listener(int);
 
 int shell_print_result(char*);
@@ -32,6 +32,7 @@ struct builtin_result shell_process(char*);
 struct builtin_result shell_read_builtin(const struct argument_ctx*);
 struct builtin_result shell_list_builtin(const struct argument_ctx*);
 struct builtin_result shell_newf_builtin(const struct argument_ctx*);
+struct builtin_result shell_delf_builtin(const struct argument_ctx*);
 struct builtin_result shell_appf_builtin(const struct argument_ctx*);
 
 #endif

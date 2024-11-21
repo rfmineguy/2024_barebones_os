@@ -12,20 +12,16 @@
 #include "sys.h"
 
 bool cursor_on;
-bool up_pressed = false,down_pressed = false;
 bool return_pressed = false, backspace_pressed = false, other_pressed = false;
 char shell_buffer[1024] = {0};
 int shell_buffer_i = 0;
 arena* kernel_arena = (void*)0;
 
-int shell_keyboard_listener(char ch) {
+int shell_keyboard_listener(char ch, uint8_t mods) {
+    log_info("Key", "%d", ch);
    switch (ch) {
        case '\n': // log_info("ShellKbd", "Return key\n");
                   return_pressed = true;
-                  break;
-       case PGUP: up_pressed = true;
-                  break;
-       case PGDOWN: down_pressed = true;
                   break;
        case 8:    // log_info("ShellKbd", "Delete key\n");
                   if (shell_buffer_i <= 0) {
@@ -35,7 +31,7 @@ int shell_keyboard_listener(char ch) {
                   shell_buffer_i--;
                   shell_buffer[shell_buffer_i] = 0;
                   break;
-       case ';':  up_pressed = true;
+       case 9:    log_info("Key", "Tab pressed");
                   break;
        default:   // log_info("ShellKbd", "Got key %d\n", ch);
                   if (!isprint(ch)) break;
@@ -81,8 +77,6 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
             switch (r.code) {
             case ERROR_NONE: {
                 for (int i = 0; i < r.string_result_count; i++) {
-                    // log_info("Shell", "Line #%d : \"%s\"", i, r.string_results[i]);
-                    // fat_drive_8_3_to_filename(r.string_results[i], filename);
                     output_linecount += ui_putstr(box, 2, current_line + output_linecount, r.string_results[i]);
                 }
                 break;
@@ -101,10 +95,6 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
                 current_line += output_linecount;
             }
         }
-        if (up_pressed) {
-            current_line -= ui_scroll_vertical(box);
-            up_pressed = false;
-        }
         if (backspace_pressed) {
             ui_clear_rv(box, 2, current_line, 50, 1);
             ui_putstr(box, 2, current_line, shell_buffer);
@@ -120,11 +110,6 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
     return 0;
 }
 
-// arguments can be passed as such
-//    dada fa da "daf dafkhda" ad
-//
-//    this will parsed as
-//    ["dada", "fa", "da", "daf dafkhda", "ad"]
 static void tokenize_args(char* str, struct argument_ctx* ctx) {
     ctx->arg_counter = 0;
 
@@ -148,8 +133,6 @@ static void tokenize_args(char* str, struct argument_ctx* ctx) {
     ctx->args[ctx->arg_counter++] = start;
 }
 
-// shell command format
-//    <command> <args(space separated)>
 struct builtin_result shell_process(char* buf) {
     struct argument_ctx ctx = {0};
     tokenize_args(buf, &ctx);
@@ -161,21 +144,13 @@ struct builtin_result shell_process(char* buf) {
     if (strcmp(ctx.args[0], "read") == 0)   return shell_read_builtin(&ctx);
     if (strcmp(ctx.args[0], "list") == 0)   return shell_list_builtin(&ctx);
     if (strcmp(ctx.args[0], "newf") == 0)   return shell_newf_builtin(&ctx);
+    if (strcmp(ctx.args[0], "delf") == 0)   return shell_delf_builtin(&ctx);
     if (strcmp(ctx.args[0], "appf") == 0)   return shell_appf_builtin(&ctx);
     if (strcmp(ctx.args[0], "reboot") == 0) sys_reboot();
 
     return BUILTIN_RESULT_SUC_NO_MSG(ERROR_INVALID_CMD); // invalid command supplied
 }
 
-// shell command
-//    read <filename>
-//    
-//    <filename> should be converted to 8.3 format for fat12
-//      i.e.   "file.txt" -> "FILE    TXT"
-// return:
-//   0 = success
-//   1 = file not found
-//   2 = failed to read
 struct builtin_result shell_read_builtin(const struct argument_ctx* arg_ctx) {
     log_group_begin("ShellReadBuiltin");
     dir_entry* f = (void*)0;
@@ -214,7 +189,6 @@ struct builtin_result shell_list_builtin(const struct argument_ctx* arg_ctx) {
     for (uint32_t i = 1; i < fat_drive_internal_get_boot_sector().DirEntryCount; i++) {
         if (root_dir[i].Name[0] == 0x00) break;
 
-        // put name into result area
         r.string_results[i - 1] = arena_alloc(kernel_arena, 12);
         fat_drive_8_3_to_filename((const char*)root_dir[i].Name, r.string_results[i - 1]);
 
@@ -226,9 +200,20 @@ struct builtin_result shell_list_builtin(const struct argument_ctx* arg_ctx) {
 }
 
 struct builtin_result shell_newf_builtin(const struct argument_ctx* arg_ctx) {
+    log_group_begin("Shell 'newf'");
+    char name_8_3[12] = {0};
+    fat_drive_filename_to_8_3(arg_ctx->args[1], name_8_3);
+    log_info("Norm", "\"%s\"", arg_ctx->args[1]);
+    log_info("8.3", "\"%s\"", name_8_3);
+    
+    log_group_end("Shell 'newf'");
     return BUILTIN_RESULT_ERR(ERROR_UNIMPLEMENTED, "Not implemented");
 }
 
 struct builtin_result shell_appf_builtin(const struct argument_ctx* arg_ctx) {
+    return BUILTIN_RESULT_ERR(ERROR_UNIMPLEMENTED, "Not implemented");
+}
+
+struct builtin_result shell_delf_builtin(const struct argument_ctx* arg_ctx) {
     return BUILTIN_RESULT_ERR(ERROR_UNIMPLEMENTED, "Not implemented");
 }
