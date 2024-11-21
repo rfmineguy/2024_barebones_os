@@ -29,11 +29,11 @@ const uint32_t uppercase[128] = {
 };
 
 // array of listeners
-int (*listeners[10])(char ch);
+int (*listeners[10])(char ch, uint8_t mods);
 int listeners_count;
 
 bool caps_on, capslock;
-void keyboard_add_listener(int(* listener)(char)) {
+void keyboard_add_listener(int(* listener)(char, uint8_t)) {
     if (listeners_count >= 10) {
         log_crit("KeyboardAddListener", "Couldn't add new keyboard listener");
         return;
@@ -56,10 +56,14 @@ void keyboard_irq(struct interrupt_registers_test* regs) {
     char press    = io_inb(0x60) & 0x80;
     // log_info("Key IRQ", "Press: %d, Scan code: %d\n", press, scancode);
 
+    modifier_flags modifier_flags = 0x0;
     switch (scancode) {
         case 1:
-        case 29:
-        case 56:
+        case 0x1D: modifier_flags |= L_CONTROL;
+                   break;
+        // case 0x2A: modifier_flags |= L_SHIFT;
+        //            break;
+        case 56: 
         case 59:
         case 60:
         case 61:
@@ -84,8 +88,8 @@ void keyboard_irq(struct interrupt_registers_test* regs) {
         default:
             for (int i = 0; i < listeners_count; i++) {
                 if (press == 0) {
-                    if (caps_on || capslock) listeners[i](uppercase[(int)scancode]);
-                    else listeners[i](lowercase[(int)scancode]);
+                    if (caps_on || capslock) listeners[i](uppercase[(int)scancode], modifier_flags);
+                    else listeners[i](lowercase[(int)scancode], modifier_flags);
                 }
             }
             break;

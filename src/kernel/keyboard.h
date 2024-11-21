@@ -36,7 +36,13 @@
 #define ALTGR  0xFFFFFFFF - 31
 #define NUMLCK  0xFFFFFFFF - 32
 
-void keyboard_add_listener(int(*)(char));
+// Modifier flags
+typedef enum {
+    L_CONTROL = 0x1,   // scancode 0x1d
+    L_SHIFT   = 0x4,   // scancode 0x12
+} modifier_flags;
+
+void keyboard_add_listener(int(*)(char, uint8_t));
 
 void keyboard_init();
 void keyboard_irq(struct interrupt_registers_test*);
