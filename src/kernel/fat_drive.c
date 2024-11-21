@@ -57,7 +57,7 @@ bool fat_drive_filename_to_8_3(const char* filename, char* name_8_3) {
     char* ext = strrchr(filename, '.');
     int dot_idx = ext - filename;
     int filename_len = min(8, dot_idx);
-    int ext_len = min(3, strlen(filename) - dot_idx + 1);
+    int ext_len = min(3, strlen(filename) - dot_idx - 1);
 
     // fill in filename
     for (int i = 0; i < filename_len; i++)
@@ -70,6 +70,7 @@ bool fat_drive_filename_to_8_3(const char* filename, char* name_8_3) {
         name_8_3[8 + i] = toupper(filename[dot_idx + 1 + i]);
     for (int i = ext_len; i < 3; i++)
         name_8_3[8 + i] = ' ';
+    name_8_3[11] = 0;
     return true;
 }
 
