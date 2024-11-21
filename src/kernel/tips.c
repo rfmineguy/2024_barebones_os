@@ -7,4 +7,5 @@ void tips_populate(ui_box_t* box) {
     ui_putstr(box, 1, 3, "appf <file> <text>");
     ui_putstr(box, 1, 5, "list");
     ui_putstr(box, 1, 6, "reboot");
+    ui_putstr(box, 1, 7, "clear");
 }

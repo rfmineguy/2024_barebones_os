@@ -2,6 +2,7 @@
 #define SHELL_H
 #include "arena.h"
 #include "ui.h"
+#include "../stdlib/stdbool.h"
 
 struct argument_ctx {
     char* args[30];
@@ -9,6 +10,7 @@ struct argument_ctx {
 };
 
 struct builtin_result {
+    bool is_clear_command;
     int code;
     char* string_results[10];
     int string_result_count;
