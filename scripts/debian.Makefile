@@ -131,10 +131,12 @@ create_fat_fs:
 	mkfs.fat -F 12 -n "RFOS" out/main.img
 	mcopy -i out/main.img fatfiles/test.txt "::test.txt"
 	mcopy -i out/main.img fatfiles/a.txt "::a.txt"
+	mcopy -i out/main.img fatfiles/new.txt "::new.t"
 
 create_qcow:
 	qemu-img create -f qcow2 out/main.qcow2 50M
 	mkfs.fat -F 12 -n "RFOS" out/main.qcow2
 	mcopy -i out/main.qcow2 fatfiles/test.txt "::test.txt"
 	mcopy -i out/main.qcow2 fatfiles/a.txt "::a.txt"
+	mcopy -i out/main.qcow2 fatfiles/new.txt "::new.txt"
 	qemu-img info out/main.qcow2
