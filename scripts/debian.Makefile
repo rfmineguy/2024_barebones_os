@@ -12,12 +12,14 @@ STDLIB_SRC := src/stdlib
 TEST_SRC   := src/tests
 OUT := out
 
-C_KERNEL_SOURCE := $(wildcard $(KERNEL_SRC)/*.c)
+C_KERNEL_BLACKLIST := src/kernel/kernel_test.c src/kernel/kernel_no_test.c
+C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/*.c))
 C_STDLIB_SOURCE := $(wildcard $(STDLIB_SRC)/*.c)
 
 C_TEST_SOURCE   := $(wildcard $(TEST_SRC)/*.c)
 
-S_KERNEL_SOURCE := $(wildcard $(KERNEL_SRC)/*.s)
+S_KERNEL_BLACKLIST := 
+S_KERNEL_SOURCE := $(filter-out $(S_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/*.s))
 S_STDLIB_SOURCE := $(wildcard $(STDLIB_SRC)/*.s)
 
 C_SOURCES := $(C_KERNEL_SOURCE) $(C_STDLIB_SOURCE)
