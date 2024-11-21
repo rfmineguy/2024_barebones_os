@@ -56,6 +56,6 @@ void pic_remap() {
 void pic_setflags(uint8_t pic1, uint8_t pic2) {
     io_outb(PIC1_DATA, pic1); io_wait();
     io_outb(PIC2_DATA, pic2); io_wait();
-    log_info("PIC SetFlag", "pic1: %b\n", pic1);
-    log_info("PIC SetFlag", "pic2: %b\n", pic2);
+    log_info("PIC SetFlag", "pic1: %b", pic1);
+    log_info("PIC SetFlag", "pic2: %b", pic2);
 }
