@@ -40,18 +40,26 @@ void kernel_main(int magic, struct multiboot_header* header) {
     log_info("Main", "Tags pointer: %x", header->tags);
     log_info("Main", "Magic: %x", magic);
     
-    //log_info("DriveInfo", "%x\n", bootinfo->drives_addr);
+    kernel_arena = arena_new(0x500000, 0x500000 + 0x7ee0000);
+
+    // Drive setup
+    log_group_begin("Drive Setup %s", "hi");
+    fat_drive_read_header(); // read drive MBR
+    fat_drive_debug_header();
+    fat_drive_read(&kernel_arena);
+    fat_drive_read_root_dir(&kernel_arena);
+    log_group_end("Drive Setup");
 
     // Setup uiboxes
-    splashbox = ui_new(0,  0,  39, 10, "Splash");
+    splashbox = ui_new(0,  0,  37, 10, "Splash");
     ui_set_body_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
     ui_set_border_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
-    infobox = ui_new(40, 0,  24, 10, "Info");
+    infobox = ui_new(38, 0,  24, 10, "Info");
     ui_set_body_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
     ui_set_border_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
-    tipsbox = ui_new(65, 0, 14, 10, "Tips");
+    tipsbox = ui_new(63, 0, 16, 10, "Tips");
     ui_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_RED);
     ui_set_border_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
@@ -91,16 +99,6 @@ void kernel_main(int magic, struct multiboot_header* header) {
     ui_refresh();
 
     idt_sti();
-
-    kernel_arena = arena_new(0x500000, 0x500000 + 0x7ee0000);
-
-    // Drive setup
-    log_group_begin("Drive Setup %s", "hi");
-    fat_drive_read_header(); // read drive MBR
-    fat_drive_debug_header();
-    fat_drive_read(&kernel_arena);
-    fat_drive_read_root_dir(&kernel_arena);
-    log_group_end("Drive Setup");
 
     // Run tests
     test_entry();
