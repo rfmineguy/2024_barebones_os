@@ -10,7 +10,7 @@ struct gdt_ptr gdt_ptr;
 struct tss_entry tss_entry_inst;
 
 void gdt_init(){
-    log_info("GDT Init   ", "Begin\n");
+    log_info("GDT Init   ", "Begin");
     gdt_ptr.base = (uint32_t)&gdt_entries;
     gdt_ptr.limit = (sizeof (struct gdt_entry) * GDT_SIZE) - 1;
 
@@ -22,10 +22,10 @@ void gdt_init(){
     gdt_set_gate(4, 0, 0xffffffff, 0xF2, 0xCF); // user   data segment
     write_tss   (5, 0x10, 0x0);                 // task  state segment 
     gdt_flush();
-    log_info("GDT Init   ", "Flushed gdt\n");
+    log_info("GDT Init   ", "Flushed gdt");
     tss_flush();
-    log_info("GDT Init   ", "Flushed tss\n");
-    log_info("GDT Init   ", "Finished\n");
+    log_info("GDT Init   ", "Flushed tss");
+    log_info("GDT Init   ", "Finished");
 }
 
 void gdt_set_gate(uint32_t n, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags){
@@ -39,7 +39,7 @@ void gdt_set_gate(uint32_t n, uint32_t base, uint32_t limit, uint8_t access, uin
     e->flags_limit |= (flags & 0xf0);
 
     e->access = access;
-    log_info("GDT SetGate", "#%d    base=%x    limit=%x\n", n, base, limit);
+    log_info("GDT SetGate", "#%d    base=%x    limit=%x", n, base, limit);
 }
 
 void write_tss(uint32_t n, uint16_t ss0, uint32_t esp0) {
@@ -73,6 +73,6 @@ void write_tss(uint32_t n, uint16_t ss0, uint32_t esp0) {
     tss_entry_inst.es = 0x10 | 0x3;
     tss_entry_inst.fs = 0x10 | 0x3;
     tss_entry_inst.gs = 0x10 | 0x3;
-    log_info("GDT WriteTSS", "cs = %x, ss = %x, ds = %x\n", tss_entry_inst.cs, tss_entry_inst.ss, tss_entry_inst.ds);
-    log_info("GDT WriteTSS", "fs = %x, es = %x, gs = %x\n", tss_entry_inst.fs, tss_entry_inst.es, tss_entry_inst.gs);
+    log_info("GDT WriteTSS", "cs = %x, ss = %x, ds = %x", tss_entry_inst.cs, tss_entry_inst.ss, tss_entry_inst.ds);
+    log_info("GDT WriteTSS", "fs = %x, es = %x, gs = %x", tss_entry_inst.fs, tss_entry_inst.es, tss_entry_inst.gs);
 }
