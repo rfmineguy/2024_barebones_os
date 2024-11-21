@@ -6,6 +6,8 @@
 #include "../stdlib/stdint.h"
 #include "../stdlib/ctype.h"
 
+#define min(a, b) (a) <= (b) ? (a) : (b)
+
 boot_sector g_boot_sector;
 uint8_t*    g_Fat         = (void*)0;
 dir_entry*  g_root_directory = (void*)0;
@@ -52,21 +54,22 @@ bool fat_drive_8_3_to_filename(const char* _8_3_filename, char* filename) {
 }
 
 bool fat_drive_filename_to_8_3(const char* filename, char* name_8_3) {
-    if (!fat_isvalid_filename(filename)) return false;
-    int dot_loc = 0;
+    char* ext = strrchr(filename, '.');
+    int dot_idx = ext - filename;
+    int filename_len = min(8, dot_idx);
+    int ext_len = min(3, strlen(filename) - dot_idx + 1);
 
-    // find dot
-    for (int i = 0; i < strlen(filename); i++)
-        if (filename[i] == '.') dot_loc = i;
-
-    // copy up to the first 8 chars of filename
-    int copy_to = dot_loc > 8 ? 8 : dot_loc;
-    for (int i = 0; i < copy_to; i++)
+    // fill in filename
+    for (int i = 0; i < filename_len; i++)
         name_8_3[i] = toupper(filename[i]);
+    for (int i = filename_len; i < 8; i++) 
+        name_8_3[i] = ' ';
 
-    // copy the first 3 chars of extension
-    for (int i = 0; i < 3; i++)
-        name_8_3[8 + i] = toupper(filename[dot_loc + i + 1]);
+    // fill in extension
+    for (int i = 0; i < ext_len; i++)
+        name_8_3[8 + i] = toupper(filename[dot_idx + 1 + i]);
+    for (int i = ext_len; i < 3; i++)
+        name_8_3[8 + i] = ' ';
     return true;
 }
 
