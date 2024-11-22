@@ -9,6 +9,8 @@ serial.log
 qemu_log.txt
 compile_commands.json
 
+tools/printf/printf_test
+
 # Test files
 tests/a.out
 tests/out*
