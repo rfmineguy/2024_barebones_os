@@ -222,8 +222,8 @@ int stringify_base(char buf[20], int value, int base, bool uppercase){
 }
 
 int k_vsnprintf2(char* buf, int n, const char* fmt, va_list list) {
-#define min(a, b) a < b ? a : b
-#define max(a, b) a < b ? b : a
+#define min(a, b) (a) < (b) ? (a) : (b)
+#define max(a, b) (a) >= (b) ? (a) : (b)
     const char* cursor = fmt;
     int state = NORMAL;
     fmt_spec spec;
@@ -260,11 +260,22 @@ int k_vsnprintf2(char* buf, int n, const char* fmt, va_list list) {
                         if (spec.width == -1)     spec.width = va_arg(list, int);
                         if (spec.precision == -1) spec.precision = va_arg(list, int);
                         const char* arg = va_arg(list, const char*);
-                        int chars_to_print = min(spec.precision, strlen(arg));
-                        for (int i = 0; i < spec.width - chars_to_print; i++)
-                            buf = sprint_ch(buf, ' ');
-                        for (int i = 0; i < chars_to_print; i++)
-                            buf = sprint_ch(buf, arg[i]);
+                        if (spec.width == 0 && spec.precision == 0) {
+                            while (*arg) {
+                                buf = sprint_ch(buf, *arg);
+                                arg++;
+                            }
+                        }
+                        else {
+                            int to_print = min(spec.width, strlen(arg));
+                            int space_to_print = spec.width - to_print;
+                            for (int i = 0; i < space_to_print; i++) {
+                                buf = sprint_ch(buf, ' ');
+                            }
+                            for (int i = 0; i < to_print; i++) {
+                                buf = sprint_ch(buf, arg[i]);
+                            }
+                        }
                     }
                     if ('d' == spec.specifier || 'i' == spec.specifier) {
                         char number_buf[20];

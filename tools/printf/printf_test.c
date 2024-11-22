@@ -20,7 +20,9 @@
 void normal_printf_example() {
     int x = 0;
     printf("%*.c|%9c|%*.*s|%7d|%p\n", 2, 'a', 'p', 5, 3, "adkfhsjd", 443431, &x);
-    k_printf2("%*.c|%9c|%*.*s|%7d|%5x|%p\n", 2, 'a', 'p', 5, 3, "adkfhsjd", 443431, 24, &x);
+    k_printf2("Hello world. %*.c|%9c|%*.*s|%7d|%5x|%p\n", 2, 'a', 'p', 5, 3, "adkfhsjd", 443431, 24, &x);
+    k_printf2("%*.*s\n", 9, 8, "Hello World");
+    k_printf2("%s, %4s\n", "Hello World", "Booger World");
 }
 
 int main() {
