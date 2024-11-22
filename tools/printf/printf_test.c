@@ -18,8 +18,9 @@
 // }
 
 void normal_printf_example() {
-    printf("%*.c|%9c|%*.*s|%7d\n", 2, 'a', 'p', 5, 3, "adkfhsjd", 443431);
-    k_printf2("%*.c|%9c|%*.*s|%7d|%5x\n", 2, 'a', 'p', 5, 3, "adkfhsjd", 4434, 24);
+    int x = 0;
+    printf("%*.c|%9c|%*.*s|%7d|%p\n", 2, 'a', 'p', 5, 3, "adkfhsjd", 443431, &x);
+    k_printf2("%*.c|%9c|%*.*s|%7d|%5x|%p\n", 2, 'a', 'p', 5, 3, "adkfhsjd", 443431, 24, &x);
 }
 
 int main() {

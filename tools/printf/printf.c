@@ -247,6 +247,9 @@ int k_vsnprintf2(char* buf, int n, const char* fmt, va_list list) {
                     if (spec.flags & 0x8) {} //
                     if (spec.flags & 0x10) {} // left padding with 0s
 
+                    if ('%' == spec.specifier) {
+                        buf = sprint_ch(buf, '%');
+                    }
                     if ('c' == spec.specifier) {
                         if (spec.width == -1) spec.width = va_arg(list, int);
                         for (int i = 0; i < spec.width - 1; i++)
@@ -263,7 +266,7 @@ int k_vsnprintf2(char* buf, int n, const char* fmt, va_list list) {
                         for (int i = 0; i < chars_to_print; i++)
                             buf = sprint_ch(buf, arg[i]);
                     }
-                    if ('d' == spec.specifier) {
+                    if ('d' == spec.specifier || 'i' == spec.specifier) {
                         char number_buf[20];
                         if (spec.width == -1)     spec.width = va_arg(list, int);
                         if (spec.precision == -1) spec.precision = va_arg(list, int);
@@ -288,6 +291,22 @@ int k_vsnprintf2(char* buf, int n, const char* fmt, va_list list) {
                         for (int i = 0; i < space_to_print; i++) {
                             buf = sprint_ch(buf, ' ');
                         }
+                        for (int i = 0; i < length; i++) {
+                            buf = sprint_ch(buf, number_buf[i]);
+                        }
+                    }
+                    if ('p' == spec.specifier) {
+                        int uppercase = spec.specifier == 'X';
+                        char number_buf[20];
+                        if (spec.width == -1)     spec.width = va_arg(list, int);
+                        if (spec.precision == -1) spec.precision = va_arg(list, int);
+                        int arg = va_arg(list, int);
+                        int length = stringify_base(number_buf, arg, 16, uppercase);
+                        int space_to_print = spec.width - length - 2;
+                        for (int i = 0; i < space_to_print; i++) {
+                            buf = sprint_ch(buf, ' ');
+                        }
+                        buf = sprint_str(buf, "0x");
                         for (int i = 0; i < length; i++) {
                             buf = sprint_ch(buf, number_buf[i]);
                         }
