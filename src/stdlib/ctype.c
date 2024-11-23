@@ -17,3 +17,8 @@ int isprint(int ch) {
 int isdigit(int ch) {
     return ch >= '0' && ch <= '9';
 }
+
+int isalpha(int ch) {
+    ch = tolower(ch);
+    return (ch >= 'a' && ch <= 'z');
+}
