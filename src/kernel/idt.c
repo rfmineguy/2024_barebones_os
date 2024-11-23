@@ -145,7 +145,7 @@ void *irq_routines[16] = {
 
 void irq_install_handler(int irq, void (*handler_func)(struct interrupt_registers_test*)) {
     irq_routines[irq] = handler_func;
-    log_info("IRQ Install", "Installed irq handler #%d, %x\n", irq, handler_func);
+    log_info("IRQ Install", "Installed irq handler #%d, %x", irq, handler_func);
 }
 
 void irq_uninstall_handler(int irq) {

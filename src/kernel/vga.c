@@ -44,7 +44,7 @@ void vga_init(){
             buffer[j * VGA_WIDTH + i] = vga_entry(' ', term_color);
         }
     }
-    log_info("VGA Init   ", "Initialized the vga buffer\n");
+    log_info("VGA Init   ", "Initialized the vga buffer");
 }
 
 uint16_t vga_get_entry(int x, int y) {
