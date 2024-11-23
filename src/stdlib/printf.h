@@ -3,6 +3,14 @@
 #include "../kernel/vga.h"
 #include "stdarg.h"
 
+typedef struct fmt_spec {
+    uint8_t flags;
+    int width;
+    char length;
+    int precision;
+    char specifier;
+} fmt_spec;
+
 int k_vsprintf(char* buf, const char* fmt, va_list);
 int k_sprintf(char* buf, const char* fmt, ...);
 
