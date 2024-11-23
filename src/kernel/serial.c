@@ -1,7 +1,7 @@
 #include "serial.h"
 #include "io.h"
 #include "log.h"
-#include "printf.h"
+#include "../stdlib/printf.h"
 
 #define PORT 0x3f8 // com1
 
@@ -24,7 +24,7 @@ int serial_init() {
    // If serial is not faulty set it in normal operation mode
    // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
    io_outb(PORT + 4, 0x0F);
-   log_info("SerialInit ", "Sucessfully initialized\n");
+   log_info("SerialInit ", "Sucessfully initialized");
    return 0;
 }
 
@@ -50,11 +50,10 @@ void serial_printf(const char* fmt, ...) {
     static char buf[1000] = {0};
     va_list alist;
     va_start(alist, fmt);
-    int x = k_vsprintf(buf, fmt, alist);
+    k_vsprintf(buf, fmt, alist);
     va_end(alist);
-    buf[x] = 0;
     serial_write_str(buf);
 }
-int  serial_received(){
+int serial_received(){
     return io_inb(PORT);
 }
