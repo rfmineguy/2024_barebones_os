@@ -7,7 +7,8 @@
 #define ERROR_FILE_NOT_FOUND 3
 #define ERROR_FILE_READ 4
 #define ERROR_UNIMPLEMENTED 5
-#define ERROR_INVALID 6
+#define ERROR_FILE_EXISTS 6
+#define ERROR_INVALID 7
 
 char* map_error_code(int);
 
