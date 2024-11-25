@@ -11,12 +11,10 @@
 #include "arena.h"
 #include "log.h"
 #include "shell.h"
-#include "../stdlib/printf.h"
-#include "../stdlib/ctype.h"
 #include "ui.h"
 #include "rfos_splash.h"            // related to the splashbox
 #include "tips.h"                   // related to the tipsbox
-#include "files.h"
+#include "files.h"                  // related to the filebox
 #include "fat_drive.h"
 
 #define UNUSED(x) (void)(x)
@@ -30,9 +28,6 @@ void kernel_main(int magic, struct multiboot_header* header) {
      serial_init();
      vga_init();
  
-     log_info("Main", "Tags pointer: %x", header->tags);
-     log_info("Main", "Magic: %x", magic);
-     
      kernel_arena = arena_new(0x500000, 0x500000 + 0x7ee0000);
  
      // Drive setup
@@ -48,11 +43,11 @@ void kernel_main(int magic, struct multiboot_header* header) {
      ui_set_body_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
      ui_set_border_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
  
-     infobox = ui_new(38, 0,  24, 10, "Info");
+     infobox = ui_new(38, 0,  17, 10, "Info");
      ui_set_body_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
      ui_set_border_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
  
-     tipsbox = ui_new(63, 0, 16, 10, "Tips");
+     tipsbox = ui_new(56, 0, 23, 10, "Tips");
      ui_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_RED);
      ui_set_border_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
  
@@ -74,18 +69,16 @@ void kernel_main(int magic, struct multiboot_header* header) {
      tips_populate(&tipsbox);
      files_populate(&filebox);
  
-     //multiboot_debug(header, bootinfo);
- 
      idt_cli();
  
      // Initialize hardware (sets up exception handlers as well)
-     gdt_init();            ui_putstr(&infobox, 2, 0, "GDT      |Installed");
-     idt_install();         ui_putstr(&infobox, 2, 1, "IDT      |Installed");
+     gdt_init();            ui_putstr(&infobox, 2, 0, "GDT      [X]");
+     idt_install();         ui_putstr(&infobox, 2, 1, "IDT      [X]");
  
      // Setup irq handlers
-     timer_init();          ui_putstr(&infobox, 2, 2, "Timer    |Init");
-     keyboard_init();       ui_putstr(&infobox, 2, 3, "Keyboard |Init");
-     mouse_init();          ui_putstr(&infobox, 2, 4, "Mouse    |Init (WIP)");
+     timer_init();          ui_putstr(&infobox, 2, 2, "Timer    [X]");
+     keyboard_init();       ui_putstr(&infobox, 2, 3, "Keyboard [X]");
+     mouse_init();          ui_putstr(&infobox, 2, 4, "Mouse    [_]");
  
      // Initialize memory
      // memory_init(bootinfo); ui_putstr(&infobox, 2, 5, "Memory   |Init");
