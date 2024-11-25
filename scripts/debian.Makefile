@@ -106,7 +106,7 @@ grub_gen_rescue: grub_gen_cfg_fs
 	mkdir -p isodir/boot/grub
 	dd if=out/os.bin of=isodir/boot/os.bin
 	dd if=grub.cfg of=isodir/boot/grub/grub.cfg
-	dd if=out/main.img of=isodir/main.img
+	dd if=drives/main.img of=isodir/main.img
 	grub-mkrescue -o out/os.iso isodir
 	rm grub.cfg
 	rm -r isodir
@@ -129,16 +129,18 @@ checkmboot2:
 
 # File system targets
 create_fat_fs:
-	dd if=/dev/zero of=out/main.img bs=512 count=2880
-	mkfs.fat -F 12 -n "RFOS" out/main.img
-	mcopy -i out/main.img fatfiles/test.txt "::test.txt"
-	mcopy -i out/main.img fatfiles/a.txt "::a.txt"
-	mcopy -i out/main.img fatfiles/new.txt "::new.t"
+	mkdir -p drives
+	dd if=/dev/zero of=drives/main.img bs=512 count=2880
+	mkfs.fat -F 12 -n "RFOS" drives/main.img
+	mcopy -i drives/main.img fatfiles/test.txt "::test.txt"
+	mcopy -i drives/main.img fatfiles/a.txt "::a.txt"
+	mcopy -i drives/main.img fatfiles/new.txt "::new.t"
 
 create_qcow:
-	qemu-img create -f qcow2 out/main.qcow2 50M
-	mkfs.fat -F 12 -n "RFOS" out/main.qcow2
-	mcopy -i out/main.qcow2 fatfiles/test.txt "::test.txt"
-	mcopy -i out/main.qcow2 fatfiles/a.txt "::a.txt"
-	mcopy -i out/main.qcow2 fatfiles/new.txt "::new.txt"
-	qemu-img info out/main.qcow2
+	mkdir -p drives
+	qemu-img create -f qcow2 drives/main.qcow2 50M
+	mkfs.fat -F 12 -n "RFOS" drives/main.qcow2
+	mcopy -i drives/main.qcow2 fatfiles/test.txt "::test.txt"
+	mcopy -i drives/main.qcow2 fatfiles/a.txt "::a.txt"
+	mcopy -i drives/main.qcow2 fatfiles/new.txt "::new.txt"
+	qemu-img info drives/main.qcow2
