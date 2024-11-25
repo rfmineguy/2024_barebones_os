@@ -223,6 +223,7 @@ struct builtin_result shell_appf_builtin(const struct argument_ctx* arg_ctx) {
     dir_entry* f = (void*)0;
     fat_drive_filename_to_8_3(arg_ctx->args[1], name_8_3);
     if (!(f = fat_drive_find_file(name_8_3))) {
+        log_group_end("Shell 'appf'");
         return BUILTIN_RESULT_ERR(ERROR_FILE_NOT_FOUND, "");
     }
     log_info("Append", "%s", name_8_3);
@@ -250,11 +251,11 @@ struct builtin_result shell_appf_builtin(const struct argument_ctx* arg_ctx) {
     boot_sector bs = fat_drive_internal_get_boot_sector();
     uint32_t lba = (root_end + (current_cluster - 2)) * bs.SectorsPerCluster;
     fat_drive_write_sectors(lba, 1, fbuf);
-    log_info("Appf", "Write to lba: %d\n", lba);
+    log_info("Appf", "Write to lba: %d", lba);
 
     // Update the root directory to reflect the file's new size
     dir_entry* root = fat_drive_internal_get_root_dir_mut();
-    log_info("Appf", "Rootdir size: %d\n", root->Size);
+    log_info("Appf", "Rootdir size: %d", root->Size);
 
     for (int i = 0; i < fat_drive_internal_get_boot_sector().DirEntryCount; i++) {
         if (strncmp((const char*)root[i].Name, name_8_3, 11) == 0) {
