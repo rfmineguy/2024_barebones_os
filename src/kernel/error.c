@@ -10,12 +10,12 @@ char* error_to_str_map[ERROR_MAP_SIZE] = {
     [4] = "File read failed",
     [5] = "Unimplemented command",
     [6] = "File exists",
-    [7] = "Invalid",
+    [7] = "File too big",
     [8] = "Invalid",
     [9] = "Invalid",
 };
 
 char* map_error_code(int code) {
-    if (code < 0 || code >= ERROR_MAP_SIZE) return "Out of bounds code";
+    if (code < 0 || code >= ERROR_MAP_SIZE) return "Out of bounds error code";
     return error_to_str_map[code];
 }
