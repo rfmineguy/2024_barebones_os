@@ -32,8 +32,24 @@ $ .\scripts\build.ps1 build
 $ .\scripts\build.ps1 checkmboot
 ```
 ```ps
-# 5. Finally run the kernel in qemu
+# 5. Create fat drive to mount in qemu and use as the active drive for the kernel's operations
+#  - This step isn't technically mandatory, but the kernel does a lot more if you do this step
+$ .\scripts\build.ps1 create_disk
+```
+```ps
+# 6. Finally run the kernel in qemu
 #  - This step uses qemu-sysstem-i386 to run the kernel iso
 #  - The i686 and i386 architectures are mostly compatible with each other
 $ .\scripts\build.ps1 qemu
+```
+
+# Bonus
+So the filesystem is created on the host machine, which means we can add more files to it during the build phase.
+To do this you need to edit `scripts/debian.Makefile`
+
+```
+1. Look for the section titled `create_fat_fs` 
+2. Add a new `mcopy` where you replace the `fatfiles/name.txt` with your file and replace `"::name.txt"` with your filename
+    a. Note: It's important that this new line is formatted as such
+       mcopy -i out/main.img fatfiles/new.txt "::new.txt"
 ```
