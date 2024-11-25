@@ -18,7 +18,6 @@ int shell_buffer_i = 0;
 arena* kernel_arena = (void*)0;
 
 int shell_keyboard_listener(char ch, uint8_t mods) {
-    log_info("Key", "%d", ch);
    switch (ch) {
        case '\n': // log_info("ShellKbd", "Return key\n");
                   return_pressed = true;
@@ -92,7 +91,7 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
             }
 
             // scroll if needed
-            if (current_line + output_linecount >= 8) {
+            if (current_line + output_linecount >= 10) {
                 ui_scroll_vertical_n(box, output_linecount + 1);
                 current_line --;
             }
@@ -214,13 +213,67 @@ struct builtin_result shell_newf_builtin(const struct argument_ctx* arg_ctx) {
     fat_drive_filename_to_8_3(arg_ctx->args[1], name_8_3);
     log_info("Norm", "\"%s\"", arg_ctx->args[1]);
     log_info("8.3", "\"%s\"", name_8_3);
-    
     log_group_end("Shell 'newf'");
     return BUILTIN_RESULT_ERR(ERROR_UNIMPLEMENTED, "WIP");
 }
 
 struct builtin_result shell_appf_builtin(const struct argument_ctx* arg_ctx) {
-    return BUILTIN_RESULT_ERR(ERROR_UNIMPLEMENTED, "Not implemented");
+    log_group_begin("Shell 'appf'");
+    char name_8_3[12] = {0};
+    dir_entry* f = (void*)0;
+    fat_drive_filename_to_8_3(arg_ctx->args[1], name_8_3);
+    if (!(f = fat_drive_find_file(name_8_3))) {
+        return BUILTIN_RESULT_ERR(ERROR_FILE_NOT_FOUND, "");
+    }
+    log_info("Append", "%s", name_8_3);
+
+    uint8_t fbuf[512]; // enough storage for a full sector (files max size is 512)
+    if (!fat_drive_read_file(f, fbuf)) {
+        log_info("Status", "Failed to read file");
+        log_group_end("ShellReadBuiltin");
+        return BUILTIN_RESULT_ERR(ERROR_FILE_READ, 0);
+    }
+
+    // Error if the appended string would overflow the file
+    if (f->Size + strlen(arg_ctx->args[2]) > 512) {
+        log_crit("Status", "File too big, can't write");
+        return BUILTIN_RESULT_ERR(ERROR_FILE_TOO_BIG, 0);
+    }
+
+    // Appened argument argument to file buffer
+    for (int i = 0; i < strlen(arg_ctx->args[2]); i++)
+        fbuf[f->Size + i] = arg_ctx->args[2][i];
+
+    // Write fbuf to the lba that f resides
+    uint16_t current_cluster = f->FirstClusterLow;
+    uint32_t root_end = fat_drive_internal_get_root_dir_end();
+    boot_sector bs = fat_drive_internal_get_boot_sector();
+    uint32_t lba = (root_end + (current_cluster - 2)) * bs.SectorsPerCluster;
+    fat_drive_write_sectors(lba, 1, fbuf);
+    log_info("Appf", "Write to lba: %d\n", lba);
+
+    // Update the root directory to reflect the file's new size
+    dir_entry* root = fat_drive_internal_get_root_dir_mut();
+    log_info("Appf", "Rootdir size: %d\n", root->Size);
+
+    for (int i = 0; i < fat_drive_internal_get_boot_sector().DirEntryCount; i++) {
+        if (strncmp((const char*)root[i].Name, name_8_3, 11) == 0) {
+            log_info("Appf", "Found root dir entry %11s at entry %d", name_8_3, i);
+            root[i].Size = f->Size + strlen(arg_ctx->args[2]);
+            break;
+        }
+    }
+
+    // Write to the root directory
+    boot_sector boot = fat_drive_internal_get_boot_sector();
+    lba = boot.ReservedSectors + boot.SectorsPerFat * boot.FatCount;
+    uint32_t size = sizeof(dir_entry) * boot.DirEntryCount;
+    uint32_t sectors = (size / boot.BytesPerSector);
+    if (size % boot.BytesPerSector > 0) sectors++;
+    fat_drive_write_sectors(lba, sectors, root);
+
+    log_group_end("Shell 'appf'");
+    return BUILTIN_RESULT_SUC(ERROR_NONE, "Wrote the file");
 }
 
 struct builtin_result shell_delf_builtin(const struct argument_ctx* arg_ctx) {
