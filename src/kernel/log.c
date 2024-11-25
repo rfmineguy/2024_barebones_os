@@ -60,9 +60,6 @@ void log_info_internal(const char* type, const char* cat, const char* fmt, ...) 
     va_end(args);
 
     serial_printf("%*s[%s]%s\n", (group_level * 4), "", cat, buf);
-    // k_sprintf(buf2, "%*s[%s] %s", (group_level * 4), "", cat, buf);
-    // serial_write_str(buf2);
-    // serial_write_ch('\n');
 
 }
 void log_line_internal(const char* fmt, ...) {
