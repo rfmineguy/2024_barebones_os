@@ -44,6 +44,19 @@ int strlen(const char* str) {
     return len;
 }
 
+int strncmp(const char* str1, const char* str2, int n) {
+    int len1 = strlen(str1);
+    int len2 = strlen(str2);
+    int minl = len1 < len2 ? len1 : len2;
+    int minl2 = minl < n ? minl : n;
+    int sum1 = 0, sum2 = 0;
+    for (int i = 0; i < minl2; i++) {
+        sum1 += str1[i];
+        sum2 += str2[i];
+    }
+    return sum1 - sum2;
+}
+
 char *strrchr(const char *s, int c) {
     while (*s != '\0') { // iterate until the end of the string
         if (*s == (char)c) { // check if the current character matches the target
