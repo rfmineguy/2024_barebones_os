@@ -4,6 +4,12 @@ make an OS that performs some simple operations.
 
 ![Image](images/rfos.jpg)
 
+> [!CAUTION]
+> I'd like to explicitely mention that this kernel has not been tested on real hardware, and thus I can't guaruntee the 
+> safety of running this outside of a VM. A couple things of note:
+> - The FAT12 driver isnt smart in which drive it chooses, which means if the hardware configuration is any different to how the build
+> system is setup I can't guaruntee it won't overwrite data on other connected drives.
+
 # Context and technologies used
 - As I am developing this on my Mac, I had to setup quite a bit of build steps to get a functioning kernel binary out of it.
   Docker is used to run all the commands that are not supported on macos such as grub.
@@ -18,12 +24,16 @@ make an OS that performs some simple operations.
 - Serial port communication
 - Simple VGA Driver
 - Simple FAT driver
-   - [X] File reading
-   - [ ] File writing
+   - [x] File reading
+   - [x] File appending
+   - [ ] File creation
+   - [ ] File deletion
 - Simple shell
    - `read <filename>` - read the file from the fat system with name of 'filename'
+   - `appf <filename> <quoted>` - append the quoted text to the end of the file specified by 'filename'
    - `list` - lists all the files on the fat drive
-   - `restart` - restarts the operating system (no need to relaunch qemu)
+   - `reboot` - restarts the operating system (no need to relaunch qemu)
+   - `clear` - clears the shell area
 - Terminal User Interface
 
 # Building
