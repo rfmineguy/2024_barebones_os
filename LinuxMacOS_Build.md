@@ -26,7 +26,12 @@ $ ./scripts/build.sh build
 $ ./scripts/build.sh checkmboot
 ```
 ```bash
-# 5. Finally run the kernel in qemu
+# 5. Create fat drive to mount in qemu and use as the active drive for the kernel's operations
+#  - This step isn't technically mandatory, but the kernel does a lot more if you do this step
+$ ./scripts/build.sh create_disk
+```
+```bash
+# 6. Finally run the kernel in qemu
 #  - This step uses qemu-sysstem-i386 to run the kernel iso
 #  - The i686 and i386 architectures are mostly compatible with each other
 $ ./scripts/build.sh qemu
