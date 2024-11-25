@@ -38,7 +38,7 @@ function handle_qemu {
 }
 
 function handle_qemu_debug {
-    qemu-system-i386 -drive file=out/main.img,format=raw -cdrom out/os.iso -boot d -vga std -serial file:output.txt -S -s
+    qemu-system-i386 -drive file=out/main.img,format=raw,if=ide -cdrom out/os.iso -boot d -vga std -serial file:output.txt -S -s
 }
 
 function handle_create_disk {
