@@ -6,7 +6,7 @@
 > If for some reason powershell gives you an error indicating that running 
 > scripts are disabled on this system, you can solve this by running the script
 > in the following manner
-> `powershell -ExecutionPolicy Bypass -File script.ps1`
+> `powershell -ExecutionPolicy Bypass -File scripts\script.ps1`
 
 ```ps
 # 1. Clone the repo with depth 1 (we dont need the git history here)
