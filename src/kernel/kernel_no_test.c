@@ -48,7 +48,7 @@ void kernel_main(int magic, struct multiboot_header* header) {
      ui_set_border_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
  
      tipsbox = ui_new(56, 0, 23, 10, "Tips");
-     ui_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_RED);
+     ui_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
      ui_set_border_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
  
      shellbox = ui_new(0,  11, 59, 13, "Shell");
