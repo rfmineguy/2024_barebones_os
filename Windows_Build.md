@@ -1,6 +1,12 @@
 # Welcome to the Windows build instructions
-**NOTE: IT IS ALWAYS WISE TO VERIFY SCRIPT CONTENTS BEFORE RUNNING**<br>
-**NOTE: These commands are expected to be run under the powershell environment, NOT normal cmd**
+> [!IMPORTANT]
+> It is always wise to verify script contents before running
+
+> [!IMPORTANT]
+> If for some reason powershell gives you an error indicating that running 
+> scripts are disabled on this system, you can solve this by running the script
+> in the following manner
+> `powershell -ExecutionPolicy Bypass -File script.ps1`
 
 ```ps
 # 1. Clone the repo with depth 1 (we dont need the git history here)

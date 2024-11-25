@@ -48,7 +48,8 @@ NOTE: The required software for Linux/Macos, and Windows should be the same. See
    + A host C compiler (for tests)
 
 # Step By Step
-**NOTE: IT IS ALWAYS WISE TO VERIFY SCRIPT CONTENTS BEFORE RUNNING**<br>
+> [!IMPORTANT]
+> It is always wise to verify script contents before running
 
 ## Linux/MacOS
 See [LinuxMacOS_Build.md](LinuxMacOS_Build.md) for how to install on Linux/MacOS

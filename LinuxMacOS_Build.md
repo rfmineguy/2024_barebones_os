@@ -1,5 +1,6 @@
 # Welcome to the Linux / MacOS build instructions
-**NOTE: IT IS ALWAYS WISE TO VERIFY SCRIPT CONTENTS BEFORE RUNNING**<br>
+> [!IMPORTANT]
+> It is always wise to verify script contents before running
 
 ```bash
 # 1. Clone the repo with depth 1 (we dont need the git history here)
