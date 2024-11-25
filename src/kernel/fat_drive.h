@@ -2,6 +2,7 @@
 #define FAT_DRIVE_H
 #include "../stdlib/stdint.h"
 #include "../stdlib/stdbool.h"
+#include "../stdlib/string_view.h"
 #include "arena.h"
 
 typedef struct dir_entry {
@@ -48,6 +49,8 @@ typedef struct boot_sector {
 boot_sector       fat_drive_internal_get_boot_sector();
 const uint8_t*    fat_drive_internal_get_gfat();
 const dir_entry*  fat_drive_internal_get_root_dir();
+dir_entry*        fat_drive_internal_get_root_dir_mut();
+uint32_t          fat_drive_internal_get_root_dir_end();
 
 /* Desc:           Converts valid FAT12 8.3 format into a more human readable
  *                  format
@@ -84,7 +87,7 @@ bool fat_drive_read_header();
  *  lba:     the sector to start reading from
  *  count:   the number of sectors to read
  *  buf_out: pointer to memory to store the read data
- * Return:   whether the read from disk was successful 
+ * Return:   whether the read from disk was successful
  */
 bool fat_drive_read_sectors(uint32_t lba, uint32_t count, uint8_t* buf_out);
 
@@ -116,5 +119,7 @@ dir_entry* fat_drive_find_file(const char* name);
  * Return:   Whether the read was sucessful
  */
 bool fat_drive_read_file(dir_entry* entry, uint8_t* outbuff);
+
+bool fat_drive_write_sectors(uint32_t lba, uint32_t count, uint8_t* buf_in);
 
 #endif
