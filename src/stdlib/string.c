@@ -26,6 +26,8 @@ int memcmp(const void *s1, const void *s2, int n) {
 int strcmp(const char* str1, const char* str2) {
     int len1 = strlen(str1);
     int len2 = strlen(str2);
+    if (len1 != len2) return -1;
+
     int minl = len1 < len2 ? len1 : len2;
     int sum1 = 0, sum2 = 0;
     for (int i = 0; i < minl; i++) {
