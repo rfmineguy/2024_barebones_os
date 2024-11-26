@@ -10,7 +10,7 @@ function usage {
     echo "  checkmboot          : Check if the generated binary is multiboot"
     echo "  qemu                : Run generated kernel in qemu"
     echo "  qemu_debug          : Run generated kernel in qemu debug mode"
-    echo "  create_disk         : Create a blank FAT12 disk image"
+    echo "  create_disk         : Create FAT12 disk image with default files on it"
     echo "  help                : Display this menu"
 }
 

@@ -11,6 +11,7 @@ function usage {
     Write-Host "  clean               : Use the container to clean the build files"
     Write-Host "  checkmboot          : Check if the generated binary is multiboot"
     Write-Host "  qemu                : Run generated kernel in qemu"
+    Write-Host "  create_disk         : Create FAT12 disk image with default files on it"
     Write-Host "  help                : Display this menu"
     Write-Host "$docker_cmd"
 }
@@ -48,6 +49,12 @@ function handle_qemu_debug {
     qemu-system-i386 -drive file=out/main.img,format=raw -cdrom out/os.iso -boot d -vga std -serial file:output.txt -S -s
 }
 
+function handle_create_disk {
+    $params = 'sh -c "make create_fat_fs -f scripts/debian.Makefile"'
+    Write-Host "$docker_cmd $params"
+    Invoke-Expression "$docker_cmd $params"
+}
+
 # Parse the arguments
 
 # Process arguments
@@ -64,6 +71,7 @@ if ($args.Count -eq 0) {
         'checkmboot' { handle_checkmboot }
         'qemu' { handle_qemu }
         'qemu_debug' { handle_qemu_debug }
+        'create_disk' { handle_create_disk }
         'help' { usage }
         default {
             Write-Host "Incorrect usage"
