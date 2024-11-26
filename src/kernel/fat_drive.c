@@ -33,6 +33,10 @@ uint32_t fat_drive_internal_get_root_dir_end() {
     return g_root_directory_end;
 }
 
+uint32_t fat_drive_internal_find_free_sector() {
+    return 0;
+}
+
 bool fat_isvalid_filename(const char* filename) {
     int dot_count = 0;
     for (int i = 0; i < strlen(filename); i++) {
@@ -132,7 +136,6 @@ bool fat_drive_read_sectors(uint32_t lba, uint32_t count, uint8_t* buf_out) {
 bool fat_drive_read(arena* arena){
     log_group_begin("FatDriveRead");
     g_Fat = arena_alloc(arena, g_boot_sector.SectorsPerFat * g_boot_sector.BytesPerSector);
-    // bool r = fat_drive_read_sectors(g_boot_sector.ReservedSectors, g_boot_sector.SectorsPerFat, g_Fat);
     ata_read(0xE0, g_boot_sector.ReservedSectors, g_Fat, g_boot_sector.SectorsPerFat);
     log_line_begin("Bytes");
     for (uint32_t i = 0; i < sizeof(g_boot_sector); i++) {
@@ -166,6 +169,16 @@ bool fat_drive_read_root_dir(arena* arena){
     }
     log_line_end("Bytes");
     log_group_end("FatDriveReadRootDir");
+    return true;
+}
+
+bool fat_drive_write_root_dir(dir_entry* entries) {
+    uint32_t lba = g_boot_sector.ReservedSectors + g_boot_sector.SectorsPerFat * g_boot_sector.FatCount;
+    uint32_t size = sizeof(dir_entry) * g_boot_sector.DirEntryCount;
+    uint32_t sectors = (size / g_boot_sector.BytesPerSector);
+    if (size % g_boot_sector.BytesPerSector > 0)
+        sectors++;
+    ata_write(0xE0, lba, (uint8_t*)entries, sectors);
     return true;
 }
 

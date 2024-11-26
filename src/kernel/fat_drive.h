@@ -52,6 +52,8 @@ const dir_entry*  fat_drive_internal_get_root_dir();
 dir_entry*        fat_drive_internal_get_root_dir_mut();
 uint32_t          fat_drive_internal_get_root_dir_end();
 
+uint32_t          fat_drive_internal_find_free_sector();
+
 /* Desc:           Converts valid FAT12 8.3 format into a more human readable
  *                  format
  *                 i.e. TEST    TXT -> test.txt
@@ -101,6 +103,8 @@ bool fat_drive_read(arena*);
 /* Desc:     read the root directory of the fat
  */
 bool fat_drive_read_root_dir(arena*);
+
+bool fat_drive_write_root_dir(dir_entry*);
 
 /* Desc:     search for the dir where the file resides
  * Params:   1
