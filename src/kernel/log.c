@@ -60,29 +60,25 @@ void log_info_internal(const char* type, const char* cat, const char* fmt, ...) 
     va_end(args);
 
     serial_printf("%*s[%s]%s\n", (group_level * 4), "", cat, buf);
-
 }
+
 void log_line_internal(const char* fmt, ...) {
     static char buf[1000] = {0};
     va_list args;
     va_start(args, fmt);
     k_vsprintf(buf, fmt, args);
-    va_end(args);
+    va_end(args); 
 
     int len = strlen(buf);
-    int index = 0;
-    while (index < len && buf[index]) {
-        index += 50;
-        // serial_printf("%*s |", (group_level + 1) * 4, "");
-        // if (line_length % 50 == 0)
-        //     serial_printf("%*s", (group_level + 1) * 4, "");
-        //     // for (int i = 0; i < (group_level + 1) * 4; i++) serial_printf(" ");
-        // serial_write_ch(buf[index++]);
-        // line_length++;
-        // if (line_length % 50 == 0) {
-        //     serial_write_ch('\n');
-        //     lines++;
-        // }
+    if (line_length >= 50) {
+        serial_printf("\n");
+        line_length = 0;
     }
-    // serial_write_ch('\n');
+    if (line_length == 0) serial_printf("%*s", ((group_level + 1) * 4), "");
+    line_length += serial_printf("%s ", buf);
+    // for (int i = 0; i < len; i++) {
+    //     // if (line_length >= 50)
+    //     //     serial_printf("\n");
+    // }
+    // serial_printf("\n");
 }
