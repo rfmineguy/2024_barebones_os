@@ -40,19 +40,21 @@ void serial_write_ch(char ch){
     while (serial_is_transmit_empty() == 0);
     io_outb(PORT, ch);
 }
-void serial_write_str(char* ch){
+int serial_write_str(char* ch){
+    const char* start = ch;
     while (*ch) {
         serial_write_ch(*ch);
         ch++;
     }
+    return ch - start;
 }
-void serial_printf(const char* fmt, ...) {
+int serial_printf(const char* fmt, ...) {
     static char buf[1000] = {0};
     va_list alist;
     va_start(alist, fmt);
     k_vsprintf(buf, fmt, alist);
     va_end(alist);
-    serial_write_str(buf);
+    return serial_write_str(buf);
 }
 int serial_received(){
     return io_inb(PORT);
