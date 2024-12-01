@@ -154,6 +154,7 @@ int stringify_base(char buf[20], int value, int base, bool uppercase){
 int k_vsprintf(char* buf, const char* fmt, va_list list) {
 #define min(a, b) a < b ? a : b
 #define max(a, b) a < b ? b : a
+    const char* start = buf;
     const char* cursor = fmt;
     int state = NORMAL;
     fmt_spec spec;
@@ -230,7 +231,7 @@ int k_vsprintf(char* buf, const char* fmt, va_list list) {
                         int length = stringify_base(number_buf, arg, 16, uppercase);
                         int space_to_print = spec.width - length;
                         for (int i = 0; i < space_to_print; i++) {
-                            buf = sprint_ch(buf, ' ');
+                            buf = sprint_ch(buf, spec.flags & 0x4 ? '0' : ' ');
                         }
                         for (int i = 0; i < length; i++) {
                             buf = sprint_ch(buf, number_buf[i]);
@@ -260,7 +261,7 @@ int k_vsprintf(char* buf, const char* fmt, va_list list) {
         }
     }
     *buf = 0;
-    return 0;
+    return buf - start;
 }
 
 int k_sprintf(char* buf, const char* fmt, ...) {
