@@ -10,7 +10,7 @@ struct argument_ctx {
 };
 
 struct builtin_result {
-    bool is_clear_command;
+    bool is_clear_command, is_empty_command;
     int code;
     char* string_results[10];
     int string_result_count;
