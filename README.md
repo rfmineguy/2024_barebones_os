@@ -26,11 +26,12 @@ make an OS that performs some simple operations.
 - Simple FAT driver
    - [x] File reading
    - [x] File appending
-   - [ ] File creation
+   - [x] File creation
    - [ ] File deletion
 - Simple shell
    - `read <filename>` - read the file from the fat system with name of 'filename'
-   - `appf <filename> <quoted>` - append the quoted text to the end of the file specified by 'filename'
+   - `newf <filename>` - create new file ready to be appended to
+   - `appf <filename> <quoted>` - append the **"quoted text"** to the end of the file specified by 'filename'
    - `list` - lists all the files on the fat drive
    - `reboot` - restarts the operating system (no need to relaunch qemu)
    - `clear` - clears the shell area
