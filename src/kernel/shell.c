@@ -55,6 +55,7 @@ int shell_timer_listener(int ticks) {
 
 int shell_run(arena* _kernel_arena, ui_box_t* box) {
     kernel_arena = _kernel_arena;
+    cursor_on = true;
 
     int current_line = 0;
     struct builtin_result r;
@@ -75,6 +76,9 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
 
             switch (r.code) {
             case ERROR_NONE: {
+                if (r.is_empty_command) {
+                    break;
+                }
                 if (r.is_clear_command) {
                     ui_scroll_vertical_n(box, current_line);
                     current_line = 0;
@@ -108,7 +112,7 @@ int shell_run(arena* _kernel_arena, ui_box_t* box) {
             ui_putstr(box, 2, current_line, shell_buffer);
             other_pressed = false;
         }
-        ui_putch(box, 2 + strlen(shell_buffer) + 1, current_line, cursor_on ? '_' : ' ');
+        ui_putch(box, 2 + strlen(shell_buffer), current_line, '_');
         ui_refresh();
     }
     return 0;
@@ -152,6 +156,7 @@ struct builtin_result shell_process(char* buf) {
     if (strcmp(ctx.args[0], "appf") == 0)   return shell_appf_builtin(&ctx);
     if (strcmp(ctx.args[0], "clear") == 0)  return (struct builtin_result) {.is_clear_command = true};
     if (strcmp(ctx.args[0], "reboot") == 0) sys_reboot();
+    if (strcmp(ctx.args[0], "") == 0)       return (struct builtin_result) {.is_empty_command = true};
 
     return BUILTIN_RESULT_SUC_NO_MSG(ERROR_INVALID_CMD); // invalid command supplied
 }
@@ -167,7 +172,7 @@ struct builtin_result shell_read_builtin(const struct argument_ctx* arg_ctx) {
     char name_8_3[12] = "           ";
     if (fat_drive_filename_to_8_3(arg_ctx->args[1], name_8_3) == -1) {
         log_group_end("ShellReadBuiltin");
-        return BUILTIN_RESULT_SUC_NO_MSG(ERROR_GENERIC);
+        return BUILTIN_RESULT_SUC_NO_MSG(ERROR_MALFORMED_FILENAME);
     }
 
     // 2. Search the file system for the 8.3 name
@@ -210,11 +215,75 @@ struct builtin_result shell_list_builtin(const struct argument_ctx* arg_ctx) {
 struct builtin_result shell_newf_builtin(const struct argument_ctx* arg_ctx) {
     log_group_begin("Shell 'newf'");
     char name_8_3[12] = {0};
+    dir_entry* f = (void*)0;
+
+    // 1. Convert filename to 8.3
     fat_drive_filename_to_8_3(arg_ctx->args[1], name_8_3);
-    log_info("Norm", "\"%s\"", arg_ctx->args[1]);
-    log_info("8.3", "\"%s\"", name_8_3);
+    if ((f = fat_drive_find_file(name_8_3))) {
+        log_warn("Error", "File already exists");
+        log_group_end("Shell 'newf'");
+        return BUILTIN_RESULT_ERR(ERROR_FILE_ALREADY_EXISTS, "");
+    }
+
+    // 2. Create entry, with initial size of 0
+    dir_entry new = (dir_entry) {0};
+    new.Size = 0;
+    new.Attributes = 0x20; // mimick default
+    new._Reserved = 0x18;  // mimick default
+    // new.FirstClusterLow = fat_drive_internal_find_free_sector();
+
+    memcpy(new.Name, name_8_3, 11);
+
+    // 3. Modify root directory
+    dir_entry* root_dir = fat_drive_internal_get_root_dir_mut();
+    boot_sector boot = fat_drive_internal_get_boot_sector();
+
+    // 3a. Get first empty entry
+    int i = 0;
+    for (i = 1; i < boot.DirEntryCount; i++)
+        if (root_dir[i].Size == 0) break;
+    log_info("First empty entry", "%d", i);
+
+    // 3b. Set first empty entry to the new entry
+    root_dir[i] = new;
+    // TODO: Set FirstClusterLow to the first non used cluster
+
+    // 4. Modify file allocation table
+    //    - NOTE: 10 is an arbitary value (for now its ok)
+    uint8_t* g_Fat = fat_drive_internal_get_gfat_mut();
+    int fat_index = -1;
+    for (int i = 0; i < 10; i++) { // i represents fat index
+        uint16_t fat_entry = fat_drive_get_curr_fat_entry_value(i);
+        log_info("Newf", "i=%d, ci=%d, fat_entry=%x", i, (i * 3) / 2, fat_entry);
+        if (fat_entry == 0) {
+            log_info("Newf", "Found available cluster at i=%d, cluster_i=%d", i, (i * 3) / 2);
+            fat_index = i;
+            break;
+        }
+    }
+    if (fat_index == -1) return BUILTIN_RESULT_ERR(ERROR_NO_AVAILABLE_CLUSTER, 0);
+    log_line_begin("Before Bytes");
+    for (int i = 0; i < 100; i++)
+        log_line("%x ", g_Fat[i]);
+    log_line_end("Before Bytes");
+
+    // 5. Write root_dir back out to disk
+    root_dir[i].FirstClusterLow = fat_index;
+    log_info("FirstClusterLow", "%d", fat_index);
+    fat_drive_write_root_dir(root_dir);
+
+    // 6. Set the cluster to used in the FAT, then theoretically the file should be writable
+    // NOTE:  If we support chaining, this gets significantly more complex
+    fat_drive_set_fat_entry_value(fat_index, 0xff8);
+    log_line_begin("After Bytes");
+    for (int i = 0; i < 100; i++)
+        log_line("%x ", g_Fat[i]);
+    log_line_end("After Bytes");
+
+    fat_drive_write_sectors(boot.ReservedSectors, boot.SectorsPerFat, g_Fat);
+
     log_group_end("Shell 'newf'");
-    return BUILTIN_RESULT_ERR(ERROR_UNIMPLEMENTED, "WIP");
+    return BUILTIN_RESULT_SUC(ERROR_NONE, "Created file");
 }
 
 struct builtin_result shell_appf_builtin(const struct argument_ctx* arg_ctx) {
