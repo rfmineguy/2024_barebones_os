@@ -48,11 +48,27 @@ typedef struct boot_sector {
 
 boot_sector       fat_drive_internal_get_boot_sector();
 const uint8_t*    fat_drive_internal_get_gfat();
+uint8_t*          fat_drive_internal_get_gfat_mut();
 const dir_entry*  fat_drive_internal_get_root_dir();
 dir_entry*        fat_drive_internal_get_root_dir_mut();
 uint32_t          fat_drive_internal_get_root_dir_end();
 
 uint32_t          fat_drive_internal_find_free_sector();
+
+/* Desc:          Returns the current fat entry value at 'fat_index'
+ * Params:        1
+ *  fat_index:    the fat index to get
+ */
+uint16_t fat_drive_get_curr_fat_entry_value(uint32_t fat_index);
+
+/* Desc:          Computes the new fat entry given the index of the fat, and the new value
+ * Params:        2
+ *  fat_index:    the fat index to change. This should be the cluster index value.
+ *  newf:         the value to set the fat entry to. Only the 12 least significant bits are used.
+ * Return:        returns the value to be written out to disk
+ */
+uint16_t fat_drive_get_new_fat_entry_value(uint32_t fat_index, uint16_t newf);
+void fat_drive_set_fat_entry_value(uint32_t fat_index, uint16_t value);
 
 /* Desc:           Converts valid FAT12 8.3 format into a more human readable
  *                  format

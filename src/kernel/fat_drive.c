@@ -21,6 +21,10 @@ const uint8_t* fat_drive_internal_get_gfat() {
     return g_Fat;
 }
 
+uint8_t* fat_drive_internal_get_gfat_mut() {
+    return g_Fat;
+}
+
 const dir_entry* fat_drive_internal_get_root_dir() {
     return g_root_directory;
 }
@@ -35,6 +39,36 @@ uint32_t fat_drive_internal_get_root_dir_end() {
 
 uint32_t fat_drive_internal_find_free_sector() {
     return 0;
+}
+
+uint16_t fat_drive_get_curr_fat_entry_value(uint32_t fat_index) {
+    uint16_t byte_offset = (fat_index * 3) / 2;
+    uint16_t v;
+    if (fat_index % 2 == 0) {
+        v = (g_Fat[byte_offset] | ((g_Fat[byte_offset + 1] & 0x0f) << 8));
+    }
+    else {
+        v = ((g_Fat[byte_offset] >> 4) | (g_Fat[byte_offset + 1] << 4));
+    }
+    return v & 0x0fff;
+}
+
+void fat_drive_set_fat_entry_value(uint32_t fat_index, uint16_t value) {
+    // Calculate the offset and shift for the FAT entry
+    uint32_t offset = (fat_index * 3) / 2;
+
+    if (fat_index % 2 == 0) {
+        // Even cluster: Lower 12 bits in the two bytes
+        g_Fat[offset] = (value & 0x00FF);                                // Write low byte
+        g_Fat[offset + 1] = (g_Fat[offset + 1] & 0xF0) | ((value >> 8) & 0x0F); // Preserve high nibble
+    } else {
+        // Odd cluster: Upper 12 bits in the two bytes
+        g_Fat[offset] = (g_Fat[offset] & 0x0F) | ((value << 4) & 0xF0); // Preserve low nibble
+        g_Fat[offset + 1] = (value >> 4) & 0xFF;                               // Write high byte
+    }
+
+    log_info("", "Updated FAT entry for cluster %d: new value=0x%03X\n",
+           offset, value);
 }
 
 bool fat_isvalid_filename(const char* filename) {
@@ -67,6 +101,7 @@ bool fat_drive_8_3_to_filename(const char* _8_3_filename, char* filename) {
 
 bool fat_drive_filename_to_8_3(const char* filename, char* name_8_3) {
     char* ext = strrchr(filename, '.');
+    if (ext == (void*)0) return false;
     int dot_idx = ext - filename;
     int filename_len = min(8, dot_idx);
     int ext_len = min(3, strlen(filename) - dot_idx - 1);
@@ -139,7 +174,7 @@ bool fat_drive_read(arena* arena){
     ata_read(0xE0, g_boot_sector.ReservedSectors, g_Fat, g_boot_sector.SectorsPerFat);
     log_line_begin("Bytes");
     for (uint32_t i = 0; i < sizeof(g_boot_sector); i++) {
-        log_line("%x ", ((char*)&g_boot_sector)[i]);
+        log_line("%02x", ((char*)&g_boot_sector)[i]);
     }
     log_line_end("Bytes");
     log_group_end("FatDriveRead");
@@ -165,7 +200,7 @@ bool fat_drive_read_root_dir(arena* arena){
     log_line_begin("Bytes");
     ((char*)g_root_directory)[0] = 0x53;
     for (int i = 0; i < g_boot_sector.BytesPerSector; i++) {
-        log_line("%X ", ((char*)g_root_directory)[i]);
+        log_line("%02x", ((char*)g_root_directory)[i]);
     }
     log_line_end("Bytes");
     log_group_end("FatDriveReadRootDir");
