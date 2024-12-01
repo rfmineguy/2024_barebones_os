@@ -42,6 +42,7 @@ NOTE: The required software for Linux/Macos, and Windows should be the same. See
 
 - Required software
    + docker
+      * The required image is around 1 gigabyte in size and takes roughly 5 minutes to build
    + qemu (or some other virtualization software)
       * specifically we need `qemu-system-i386`
 
