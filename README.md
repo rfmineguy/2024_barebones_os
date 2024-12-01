@@ -58,6 +58,9 @@ See [LinuxMacOS_Build.md](LinuxMacOS_Build.md) for how to install on Linux/MacOS
 ## Windows
 See [Windows_Build.md](Windows_Build.md) for how to install on Linux/MacOS
 
+## Usage
+See [Usage.md](Usage.md) for some basics on how the OS works
+
 # Resources
 [OliveStem OS Playlist](https://youtube.com/playlist?list=PL2EF13wm-hWAglI8rRbdsCPq_wRpYvQQy&si=q2oYblMfOZJexLc9)<br>
 [osdev-wiki](https://wiki.osdev.org/Expanded_Main_Page)<br>
