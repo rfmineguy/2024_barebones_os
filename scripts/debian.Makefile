@@ -10,7 +10,7 @@
 KERNEL_SRC := src/kernel
 STDLIB_SRC := src/stdlib
 TEST_SRC   := src/tests
-OUT := out
+OUT        := out
 
 C_KERNEL_BLACKLIST := src/kernel/kernel_test.c src/kernel/kernel_no_test.c
 C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/*.c))
@@ -82,10 +82,7 @@ grub_gen_cfg_fs:
 		echo "set default=0"; \
 		echo ""; \
 		echo "menuentry \"myos\" {"; \
-		echo "    insmod fat"; \
-		echo "    insmod part_msdos"; \
 		echo "    multiboot2 /boot/os.bin"; \
-		echo "    module /main.img \"fat_image\""; \
 		echo "    boot"; \
 		echo "}"; \
 	} > grub.cfg
