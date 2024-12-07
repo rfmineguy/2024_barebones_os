@@ -1,0 +1,4 @@
+settings set target.source-map /root/workspace/ /Users/rileyfischer/Documents/dev/operation-systems/2024_barebones
+gdb-remote localhost:1234
+b kernel_main
+c

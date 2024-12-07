@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-docker_cmd='docker run --rm -it -w /root/workspace -v $(pwd):/root/workspace debian-test'
+docker_cmd='docker run -e HOST_PATH=$(pwd) --rm -it -w /root/workspace -v $(pwd):/root/workspace debian-test'
 
 function usage {
     echo "usage: build <subcommand>";
@@ -10,6 +10,7 @@ function usage {
     echo "  checkmboot          : Check if the generated binary is multiboot"
     echo "  qemu                : Run generated kernel in qemu"
     echo "  qemu_debug          : Run generated kernel in qemu debug mode"
+    echo "  lldb                : Run lldb with a special lldb init script"
     echo "  create_disk         : Create FAT12 disk image with default files on it"
     echo "  help                : Display this menu"
 }
@@ -45,6 +46,10 @@ function handle_create_disk {
     eval $docker_cmd 'sh -c "make create_fat_fs -f scripts/debian.Makefile"'
 }
 
+function handle_lldb {
+    lldb ./out/os.bin -s scripts/lldbinit
+}
+
 case "$1" in
     docker_get ) shift 1; handle_docker_get $@ ;;
     build )      shift 1; handle_build $@ ;;
@@ -53,6 +58,7 @@ case "$1" in
     qemu )       shift 1; handle_qemu $@ ;;
     qemu_debug ) shift 1; handle_qemu_debug $@ ;;
     create_disk )shift 1; handle_create_disk $@ ;;
+    lldb )       shift 1; handle_lldb $@ ;;
     help )       usage ;;
     * ) echo "Incorrect usage"; usage ;;
 esac
