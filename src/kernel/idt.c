@@ -1,7 +1,6 @@
 #include "idt.h"
 #include "pic.h"
 #include "vga.h"
-#include "serial.h"
 #include "log.h"
 #include "io.h"
 #include "../stdlib/printf.h"
@@ -11,6 +10,7 @@
 // https://wiki.osdev.org/Interrupts_Tutorial
 // https://wiki.osdev.org/Interrupts
 //      - maps irqs to vector numbers under "General IBM-PC Compatible Interrupt Information"
+// https://wiki.osdev.org/Exceptions
 
 struct idt_entry idt_entries[256];
 struct idt_ptr   idtp;
@@ -91,7 +91,25 @@ void idt_install() {
     idt_set_gate(177, (uint32_t) isr177, 0x08, 0x8E);
 
     idt_flush();
+
+		for (int i = 0; i < 32; i++) {
+			isr_install_handler(i, unimplemented_handler);
+		}
+    isr_install_handler(0x00, div_zero_handler);
+    isr_install_handler(0x0E, page_fault_handler);
     log_group_end("IDT Install");
+}
+
+void div_zero_handler(struct interrupt_registers_test* regs) {
+    log_info("Handler", "Division by zero error", regs->int_no);
+}
+
+void page_fault_handler(struct interrupt_registers_test* regs) {
+    log_info("Handler", "WIP");
+}
+
+void unimplemented_handler(struct interrupt_registers_test* regs) {
+    log_info("Handler", "Unimplemented");
 }
 
 // https://wiki.osdev.org/Exceptions
@@ -129,13 +147,32 @@ const char* exception_messages[] = {
     "Reserved",
 };
 
+void *exception_handlers[32] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+};
+
+// https://wiki.osdev.org/Exceptions
 void isr_handler(struct interrupt_registers_test* regs) {
-    // log_info("ISR Handler", "#%d\n", regs->int_no);
+    log_warn("ISR", "#%d", regs->int_no);
     if (regs->int_no < 32) {
-        k_printf("isr%d   : %s\n", regs->int_no, exception_messages[regs->int_no]);
-        k_printf("System halted\n");
-        for(;;);
+        void (*handler)(struct interrupt_registers_test* regs) = exception_handlers[regs->int_no];
+        if (handler) handler(regs);
+        else {
+            log_crit("ISR", "Unhandled isr %d", regs->int_no);
+        }
     }
+    // for(;;);
+}
+
+void isr_install_handler(int isr, void(*handler_func)(struct interrupt_registers_test*)) {
+    exception_handlers[isr] = handler_func;
+    log_info("ISR Install", "Installed isr handler #%d, %x", isr, handler_func);
+}
+void isr_uninstall_handler(int isr) {
+    exception_handlers[isr] = 0;
 }
 
 void *irq_routines[16] = {

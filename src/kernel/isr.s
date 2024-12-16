@@ -4,8 +4,8 @@
 .global isr\name
 isr\name:
     cli
-    pushl 0
-    pushl \name
+    push $0
+    push $\name
     jmp isr_common_stub_test
 .endm
 
@@ -13,7 +13,7 @@ isr\name:
 .global isr\name
 isr\name:
     cli
-    pushl \name
+    pushl $\name
     jmp isr_common_stub_test
 .endm
 
@@ -84,25 +84,14 @@ isr_common_stub:
     iret
 
 isr_common_stub_test:
-    mov %eax, %eax
     pusha
 
-    mov $0x10, %ax
-    mov %ax, %ds
-    mov %ax, %es
-    mov %ax, %fs
-    mov %ax, %gs
-
-    // pushl %esp
+    pushl %esp
     call isr_handler
-
-    // add $8, %esp
-    // pop %ebx
-    // mov %bx, %ds
-    // mov %bx, %es
-    // mov %bx, %fs
-    // mov %bx, %gs
+    add $4, %esp
 
     popa
+
     add $8, %esp
+    sti
     iret
