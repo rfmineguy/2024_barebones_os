@@ -9,7 +9,7 @@ int lines = 0; // used for line groups
 
 char log_buf[500];
 
-void log_group_begin(const char* name, ...){
+void log_group_begin_internal(const char* name, ...){
     va_list args;
     va_start(args, name);
     k_vsprintf(log_buf, name, args);
@@ -18,7 +18,7 @@ void log_group_begin(const char* name, ...){
     serial_printf("%*s[%s]\n", (group_level * 4), "", log_buf);
     group_level++;
 }
-void log_group_end(const char* name, ...){
+void log_group_end_internal(const char* name, ...){
     va_list args;
     va_start(args, name);
     k_vsprintf(log_buf, name, args);
@@ -27,7 +27,7 @@ void log_group_end(const char* name, ...){
     group_level--;
     serial_printf("%*s[%s]\n", (group_level * 4), "", log_buf);
 }
-void log_line_begin(const char* name, ...) {
+void log_line_begin_internal(const char* name, ...) {
     va_list args;
     va_start(args, name);
     k_vsprintf(log_buf, name, args);
@@ -37,7 +37,7 @@ void log_line_begin(const char* name, ...) {
     // for (int i = 0; i < group_level * 4; i++) serial_printf(" ");
     serial_printf("%*s[%s] {\n", (group_level * 4), "", log_buf);
 }
-void log_line_end(const char* name, ...) {
+void log_line_end_internal(const char* name, ...) {
     va_list args;
     va_start(args, name);
     k_vsprintf(log_buf, name, args);
