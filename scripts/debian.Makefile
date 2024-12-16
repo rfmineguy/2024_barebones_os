@@ -32,6 +32,9 @@ C_OBJECTS := $(patsubst $(KERNEL_SRC)/%.c, $(OUT)/%.c.o, $(C_KERNEL_SOURCE)) \
 S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) \
 			 $(patsubst $(STDLIB_SRC)/%.s, $(OUT)/%.s.o, $(S_STDLIB_SOURCE))
 
+C_LISTINGS:= $(patsubst $(OUT)/%.c.o, $(OUT)/%.c.o.lst, $(C_OBJECTS))
+S_LISTINGS:= $(patsubst $(OUT)/%.s.o, $(OUT)/%.s.o.lst, $(S_OBJECTS))
+
 BIN := os.bin
 OPTIMIZATION_FLAGS := -O0
 CFLAGS := -std=gnu99 -ffreestanding -nostdlib -m32 -ggdb
@@ -42,11 +45,13 @@ SHELL := /bin/bash
 CC := /home/build/gcc
 AS := /home/build/as
 LD := /home/build/ld
+OBJDUMP := /home/build/bin/i686-elf-objdump
 LIBDIR := /home/build/lib/gcc/i686-elf/7.1.0/
 
 .PHONY: grub_gen_cfg grub_gen_rescue grub_check_multiboot
 .PHONY: create_fat_fs
 .PHONY: always clean build
+.PHONY: gen_lst
 # create_fat_fs
 always:
 	mkdir -p $(OUT)
@@ -55,7 +60,7 @@ clean:
 	-rm -r $(OUT)/
 
 # Build related targets
-build: always $(OUT)/$(BIN) grub_gen_rescue
+build: always $(OUT)/$(BIN) grub_gen_rescue gen_lst
 
 $(OUT)/%.c.o: $(KERNEL_SRC)/%.c
 	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
@@ -74,6 +79,13 @@ $(OUT)/%.s.o: $(STDLIB_SRC)/%.s
 
 $(OUT)/$(BIN): $(C_OBJECTS) $(S_OBJECTS)
 	$(LD) -T linker.ld -o $@ -nostdlib $(S_OBJECTS) $(C_OBJECTS) -L$(LIBDIR) -lgcc
+
+# Generate listing files
+gen_lst: $(C_LISTINGS) $(S_LISTINGS)
+$(OUT)/%.c.o.lst: $(OUT)/%.c.o
+	$(OBJDUMP) -d -S $^ > $@
+$(OUT)/%.s.o.lst: $(OUT)/%.s.o
+	$(OBJDUMP) -d -S $^ > $@
 
 # Grub related targets
 grub_gen_cfg_fs:
