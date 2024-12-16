@@ -24,6 +24,7 @@ SECTIONS
 	   Next we'll put the .text section. */
 	.text BLOCK(4K) : ALIGN(4K)
 	{
+		kernel_start = .;
 		*(.multiboot)
 		*(.text)
 	}
@@ -45,6 +46,7 @@ SECTIONS
 	{
 		*(COMMON)
 		*(.bss)
+		kernel_end = .;
 	}
 
 	/* The compiler may produce other sections, by default it will put them in
