@@ -33,7 +33,9 @@ mboot_header_end:
 
 /* STACK AREA */
 .section .bss
-.align 16
+.align 4096
+.global stack_bottom
+.global stack_top
 stack_bottom:
 .skip 16384
 stack_top:
