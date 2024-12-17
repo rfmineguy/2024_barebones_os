@@ -13,27 +13,33 @@ TEST_SRC   := src/tests
 OUT        := out
 
 C_KERNEL_BLACKLIST := src/kernel/kernel_test.c src/kernel/kernel_no_test.c
-C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/*.c))
-C_STDLIB_SOURCE := $(wildcard $(STDLIB_SRC)/*.c)
+#C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/**/*.c))
+C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(shell find $(KERNEL_SRC)/ -type f -name "*.c"))
+C_STDLIB_SOURCE := $(shell find $(STDLIB_SRC)/ -type f -name "*.c")
 
 C_TEST_SOURCE   := $(wildcard $(TEST_SRC)/*.c)
 
 S_KERNEL_BLACKLIST := 
-S_KERNEL_SOURCE := $(filter-out $(S_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/*.s))
-S_STDLIB_SOURCE := $(wildcard $(STDLIB_SRC)/*.s)
+#S_KERNEL_SOURCE := $(filter-out $(S_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/**/*.s))
+S_KERNEL_SOURCE := $(filter-out $(S_KERNEL_BLACKLIST), $(shell find $(KERNEL_SRC)/ -type f -name "*.s"))
+#S_STDLIB_SOURCE := $(wildcard $(STDLIB_SRC)/**/*.s)
+S_STDLIB_SOURCE := $(shell find $(STDLIB_SRC)/ -type f -name "*.s")
 
 C_SOURCES := $(C_KERNEL_SOURCE) $(C_STDLIB_SOURCE)
 S_SOURCES := $(S_KERNEL_SOURCE) $(S_STDLIB_SOURCE)
 
 C_OBJECTS := $(patsubst $(KERNEL_SRC)/%.c, $(OUT)/%.c.o, $(C_KERNEL_SOURCE)) \
-			 $(patsubst $(STDLIB_SRC)/%.c, $(OUT)/%.c.o, $(C_STDLIB_SOURCE)) \
-			 $(patsubst $(TEST_SRC)/%.c, $(OUT)/%.c.o, $(C_TEST_SOURCE))
+			 $(patsubst $(STDLIB_SRC)/%.c, $(OUT)/%.c.o, $(C_STDLIB_SOURCE))
+			 #$(patsubst $(TEST_SRC)/%.c, $(OUT)/%.c.o, $(C_TEST_SOURCE))
 
 S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) \
 			 $(patsubst $(STDLIB_SRC)/%.s, $(OUT)/%.s.o, $(S_STDLIB_SOURCE))
 
 C_LISTINGS:= $(patsubst $(OUT)/%.c.o, $(OUT)/%.c.o.lst, $(C_OBJECTS))
 S_LISTINGS:= $(patsubst $(OUT)/%.s.o, $(OUT)/%.s.o.lst, $(S_OBJECTS))
+
+ALL_OBJS := $(C_OBJECTS) $(S_OBJECTS)
+OBJ_DIRS := $(patsubst %, $(OUT)/%, $(C_OBJECTS) $(S_OBJECTS))
 
 BIN := os.bin
 OPTIMIZATION_FLAGS := -O0
@@ -55,6 +61,12 @@ LIBDIR := /home/build/lib/gcc/i686-elf/7.1.0/
 # create_fat_fs
 always:
 	mkdir -p $(OUT)
+	@echo "C Object Files"
+	@echo $(C_OBJECTS)
+	@echo "C Object Files End"
+	@echo "S Object Files"
+	@echo $(S_OBJECTS)
+	@echo "S Object Files End"
 
 clean:
 	-rm -r $(OUT)/
@@ -63,18 +75,23 @@ clean:
 build: always $(OUT)/$(BIN) grub_gen_rescue gen_lst
 
 $(OUT)/%.c.o: $(KERNEL_SRC)/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
 
 $(OUT)/%.c.o: $(STDLIB_SRC)/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
 
 $(OUT)/%.c.o: $(TEST_SRC)/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
 
 $(OUT)/%.s.o: $(KERNEL_SRC)/%.s
+	@mkdir -p $(dir $@)
 	$(AS) $(ASFLAGS) $^ -o $@
 
 $(OUT)/%.s.o: $(STDLIB_SRC)/%.s
+	@mkdir -p $(dir $@)
 	$(AS) $(ASFLAGS) $^ -o $@
 
 $(OUT)/$(BIN): $(C_OBJECTS) $(S_OBJECTS)
