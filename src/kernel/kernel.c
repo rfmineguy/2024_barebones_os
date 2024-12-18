@@ -17,6 +17,7 @@
 #include "files.h"                  // related to the filebox
 #include "fat_drive.h"
 #include "memory.h"
+#include "datastructures/ll_int.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -32,34 +33,24 @@ void kernel_main(int magic, struct multiboot_header* header) {
  
      idt_cli();
  
-     // gdt_init();            ui_putstr(&infobox, 2, 0, "GDT      [X]"); log_info("Kernel", "Initialized GDT");
-     // idt_install();         ui_putstr(&infobox, 2, 1, "IDT      [X]"); log_info("Kernel", "Initialized IDT");
-     // timer_init();          ui_putstr(&infobox, 2, 2, "Timer    [X]"); log_info("Kernel", "Initialized Timer");
-     // keyboard_init();       ui_putstr(&infobox, 2, 3, "Keyboard [X]"); log_info("Kernel", "Initialized Keyboard");
-     // mouse_init();          ui_putstr(&infobox, 2, 4, "Mouse    [_]"); log_info("Kernel", "Initialized Mouse (WIP)");
+     gdt_init();            ui_putstr(&infobox, 2, 0, "GDT      [X]"); log_info("Kernel", "Initialized GDT");
+     idt_install();         ui_putstr(&infobox, 2, 1, "IDT      [X]"); log_info("Kernel", "Initialized IDT");
+     timer_init();          ui_putstr(&infobox, 2, 2, "Timer    [X]"); log_info("Kernel", "Initialized Timer");
+     keyboard_init();       ui_putstr(&infobox, 2, 3, "Keyboard [X]"); log_info("Kernel", "Initialized Keyboard");
+     mouse_init();          ui_putstr(&infobox, 2, 4, "Mouse    [_]"); log_info("Kernel", "Initialized Mouse (WIP)");
  
-     // idt_sti();
+     idt_sti();
 
      memory_init(header);
-     memory_debug();
-     uint32_t x = memory_alloc(0xff);
-     memory_debug();
-     uint32_t y = memory_alloc(0x4245);
-     memory_debug();
-     memory_free(y);
-     memory_debug();
-     uint32_t z = memory_alloc(0x32);
-     memory_debug();
-     memory_free(z);
-     memory_debug();
-     memory_free(x);
-     memory_debug();
-     log_info("Memory", "x = %x, y = %x, z = %x", x, y, z);
-     for (;;) {}
 
+		 ll_int ll;
+		 ll_int_pushback(&ll, 3);
+		 ll_int_pushback(&ll, 9);
+		 ll_int_pushback(&ll, 4);
+		 ll_int_delete(&ll, 4);
+		 ll_int_print(&ll);
 
-     // FIXME: By enabling paging, we're probably page faulting somewhere
-     // paging_init();
+		 // for(;;) {}
 
      log_info("Kernel", "Successfully initiliazed");
  
