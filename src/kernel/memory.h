@@ -6,15 +6,16 @@
 
 typedef struct llist_node {
 	bool free;
-	uint32_t begin, end;
+	void *begin, *end;
 	struct llist_node *next, *prev;
 } llist_node;
 
 void memory_init(struct multiboot_header*);
 
-uint32_t memory_alloc(uint32_t n);
+void*    memory_alloc(uint32_t n);
+void*    memory_calloc(uint32_t count, uint32_t n);
 #define  memory_free(addr) memory_free_int(addr, #addr)
-void     memory_free_int(uint32_t n, const char* name);
+void     memory_free_int(void* n, const char* name);
 
 void     memory_debug();
 

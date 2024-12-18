@@ -25,7 +25,7 @@ bool is_block_sufficient(llist_node* n, uint32_t byte_size) {
 	return n->free && ((n->end - n->begin) >= byte_size);
 }
 
-uint32_t memory_alloc(uint32_t byte_size) {
+void* memory_alloc(uint32_t byte_size) {
 	//1. Find block big enough
 	llist_node* n = root;
 	while (n && !is_block_sufficient(n, byte_size)) {
@@ -64,6 +64,14 @@ uint32_t memory_alloc(uint32_t byte_size) {
 	}
 
 	return new->begin;
+}
+
+void* memory_calloc(uint32_t count, uint32_t size) {
+	void* p = memory_alloc(count * size);
+	for (uint32_t i = 0; i < count * size; i ++) {
+		*(char*)p = 0;
+	}
+	return p;
 }
 
 void merge_free_nodes_rec(llist_node* n) {
@@ -112,7 +120,7 @@ void merge_free_nodes_rec(llist_node* n) {
 	}
 }
 
-void memory_free_int(uint32_t addr, const char* name) {
+void memory_free_int(void* addr, const char* name) {
 	log_group_begin("MemFree");
 	// 1. Find allocation for addr
 	llist_node* n = root;
@@ -132,7 +140,7 @@ void memory_free_int(uint32_t addr, const char* name) {
 	merge_free_nodes_rec(n);
 
 	// 3. Clear out region
-	for (int i = malloc_arena.base + n->begin; i < malloc_arena.base + n->end; i++) {
+	for (char* i = malloc_arena.base + n->begin; i < malloc_arena.base + n->end; i++) {
 		uint32_t* addr = (uint32_t*)(malloc_arena.base + i);
 		*addr = 0;
 	}
