@@ -31,10 +31,18 @@ uint32_t memory_alloc(uint32_t byte_size) {
 	while (n && !is_block_sufficient(n, byte_size)) {
 		n = n->next;
 	}
+	log_info("MemAlloc", "Size: %x", byte_size);
 
 	//2. Split node into two, one that has the new allocation and one for the remaining free space
 	//   Fixme: Implement freelist to encourage memory reuse
-	llist_node* new = arena_alloc(&llist_arena, sizeof(llist_node));
+	llist_node* new = 0;
+	if (freelist != 0) {
+		new = freelist;
+		freelist = freelist->next;
+	}
+	else {
+		new = arena_alloc(&llist_arena, sizeof(llist_node));
+	}
 	new->begin = n->begin;
 	new->end = new->begin + byte_size;
 	new->free = false;
@@ -64,36 +72,48 @@ void merge_free_nodes_rec(llist_node* n) {
 
 	// Merge previous
 	if (n->prev && n->prev->free) {
+		llist_node* to_free = n->prev;
+
+		// Rewire allocation list
 		n->begin = n->prev->begin;
-		n->prev = n->prev->prev;
+		if (n->prev == root) root = n;
+		else n->prev = n->prev->prev;
 		n->prev->next = n;
+
+		// Add to freelist
+		llist_node* oldhead = freelist;
+		llist_node** headp = &freelist;
+		*headp = to_free;
+		(*headp)->next = oldhead;
+		oldhead->prev = *headp;
+
 		merge_free_nodes_rec(n);
 		return;
 	}
 
 	// Merge next
 	if (n->next && n->next->free){
+		llist_node* to_free = n->next;
+
+		// Rewire allocation list
 		n->end = n->next->end;
 		n->next = n->next->next;
 		n->next->prev = n;
+
+		// Add to freelist
+		llist_node* oldhead = freelist;
+		llist_node** headp = &freelist;
+		*headp = to_free;
+		(*headp)->next = oldhead;
+		oldhead->prev = *headp;
+
 		merge_free_nodes_rec(n);
 		return;
 	}
 }
 
-void merge_free_nodes(llist_node* n) {
-	llist_node *merge_start = n, *merge_end = n;
-	while (merge_start && merge_start->free) merge_start = merge_start->prev;
-	while (merge_end && merge_end->free) merge_end = merge_end->next;
-	log_info("MergeFree", "Start = %x, End = %x", merge_start->begin, merge_end->end);
-	// merge_start->end = merge_end->end;
-	// merge_start->next = merge_end->next;
-	// merge_end->next->prev = merge_start;
-
-	// add dangling nodes to freelist
-}
-
-void memory_free(uint32_t addr) {
+void memory_free_int(uint32_t addr, const char* name) {
+	log_group_begin("MemFree");
 	// 1. Find allocation for addr
 	llist_node* n = root;
 	while (n) {
@@ -101,14 +121,15 @@ void memory_free(uint32_t addr) {
 		n = n->next;
 	}
 	if (!n) {
-		log_info("MemFree", "%x not allocated by memory_alloc", addr);
+		log_crit("Error", "'%s' | %x not allocated by memory_alloc", name, addr);
 		return; // address not allocated by memory_alloc
 	}
+	log_info("__", "'%s' | %x", name, addr);
 
 	// 2. Mark as free and merge neighbors
 	n->free = true;
+	log_info("__", "Marked free");
 	merge_free_nodes_rec(n);
-	log_info("MemFree", "%x", addr);
 
 	// 3. Clear out region
 	for (int i = malloc_arena.base + n->begin; i < malloc_arena.base + n->end; i++) {
@@ -116,14 +137,29 @@ void memory_free(uint32_t addr) {
 		*addr = 0;
 	}
 	log_info("MemFree", "Freed %x, size=%x", addr, n->end - n->begin);
+	log_group_end("MemFree");
 }
 
 void memory_debug() {
 	llist_node* n = root;
-	log_line_begin("Memory List");
-	while (n) {
-		log_line("{%s, %x - %x} <-> ", n->free ? "Free" : "Used", n->begin, n->end);
-		n = n->next;
-	}
-	log_line_end("Memory List");
+	log_group_begin("MemDebug");
+		log_line_begin("Allocation List");
+		while (n) {
+			log_line("{%s, %x - %x} <-> ", n->free ? "Free" : "Used", n->begin, n->end);
+			n = n->next;
+		}
+		log_line_end("Allocation List");
+		log_line_begin("Free list");
+		n = freelist;
+		if (!n) {
+			log_line("Empty");
+		}
+		else {
+			while (n) {
+				log_line("{Freed node} <-> ");
+				n = n->next;
+			}
+		}
+		log_line_end("Free list");
+	log_group_end("MemDebug");
 }

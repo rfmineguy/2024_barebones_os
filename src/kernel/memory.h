@@ -13,7 +13,8 @@ typedef struct llist_node {
 void memory_init(struct multiboot_header*);
 
 uint32_t memory_alloc(uint32_t n);
-void     memory_free(uint32_t n);
+#define  memory_free(addr) memory_free_int(addr, #addr)
+void     memory_free_int(uint32_t n, const char* name);
 
 void     memory_debug();
 
