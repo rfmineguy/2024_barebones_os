@@ -35,6 +35,7 @@ make an OS that performs some simple operations.
    - `list` - lists all the files on the fat drive
    - `reboot` - restarts the operating system (no need to relaunch qemu)
    - `clear` - clears the shell area
+- Simple malloc/free implementation
 - Terminal User Interface
 
 # Building
