@@ -72,24 +72,19 @@ void mouse_handler(struct interrupt_registers_test *r) {
 
 	if (mouse_cycle == 3) {
 		mouse_cycle = 0;
-		int8_t info = mouse_byte[0];
-		int8_t mouse_dx = mouse_byte[1];
-		int8_t mouse_dy = mouse_byte[2];
 
+		int8_t info = mouse_byte[0];
 		if ((info & 0x8) != 0x8) {
-            log_warn("Mouse", "Desynchronized packet. Attempting resync.");
-            
             // Shift buffer left by one byte and continue
             mouse_byte[0] = mouse_byte[1];
             mouse_byte[1] = mouse_byte[2];
 			mouse_cycle = 2;
             return;
-			// log_info("Mouse", "Something wrong");
-			// mouse_cycle = 0;
-			// return;
 		}
+		info = mouse_byte[0];
+		int8_t mouse_dx = mouse_byte[1];
+		int8_t mouse_dy = mouse_byte[2];
 
-		log_info("Mouse", "Raw [%d, %d, %d]", info, mouse_dx, mouse_dy);
 		for (int i = 0; i < mouse_listeners_count; i++) {
 			int (*listener)(mouse_device_packet_t) = mouse_listeners[i];
 			if (!listener) continue;
@@ -101,7 +96,7 @@ void mouse_handler(struct interrupt_registers_test *r) {
 				.y_sign = (info & 0b00010000) ? -1 : 1,
 				.x_delta_signed = mouse_dx,
 				.y_delta_signed = mouse_dy,
-				.buttons = 0,
+				.buttons = info & 0b00000111,
 			};
 			listener(pkt);
 		}
