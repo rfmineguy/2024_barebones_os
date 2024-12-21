@@ -50,7 +50,7 @@ void pic_remap() {
     // restore flags
     // 1 means disabled
     // 0 means enabled
-    pic_setflags(0x00, 0x00);
+    pic_setflags(0x00, 0x80);
 }
 
 void pic_setflags(uint8_t pic1, uint8_t pic2) {
