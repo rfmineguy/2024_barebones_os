@@ -37,7 +37,9 @@ void kernel_main(int magic, struct multiboot_header* header) {
      idt_install();         ui_putstr(&infobox, 2, 1, "IDT      [X]"); log_info("Kernel", "Initialized IDT");
      timer_init();          ui_putstr(&infobox, 2, 2, "Timer    [X]"); log_info("Kernel", "Initialized Timer");
      keyboard_init();       ui_putstr(&infobox, 2, 3, "Keyboard [X]"); log_info("Kernel", "Initialized Keyboard");
-     mouse_init();          ui_putstr(&infobox, 2, 4, "Mouse    [_]"); log_info("Kernel", "Initialized Mouse (WIP)");
+     mouse_install();       ui_putstr(&infobox, 2, 4, "Mouse    [_]"); log_info("Kernel", "Initialized Mouse (WIP)");
+
+		 idt_debug_setup();
  
      idt_sti();
 
