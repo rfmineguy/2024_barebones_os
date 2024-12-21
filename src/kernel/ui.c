@@ -55,10 +55,16 @@ void ui_putch_int(ui_box_t* box, int x, int y, unsigned char c) {
     }
     update_list[update_list_len++] = (ui_region){.x=bx, .y=by, .w=1, .h=1};
 }
-char ui_getch(ui_box_t* box, int x, int y) {
+char ui_getch_r(ui_box_t* box, int x, int y) {
 	int bx = box->region.x + x;
 	int by = box->region.y + y;
 	return ui_screen_buf[by * VGA_WIDTH + bx] & 0xff;
+}
+char ui_getch(ui_box_t* box, int x, int y) {
+	return ui_getch_r(box, x + 1, y + 1);
+}
+void ui_putch_r(ui_box_t* box, int x, int y, unsigned char c) {
+    ui_putch_int(box, x, y, c);
 }
 void ui_putch(ui_box_t* box, int x, int y, unsigned char c){
     ui_putch_int(box, x + 1, y + 1, c);

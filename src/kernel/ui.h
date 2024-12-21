@@ -27,8 +27,10 @@ ui_box_t ui_new             (int x, int y, int w, int h, const char*);
 void     ui_set_border_color(ui_box_t*, uint8_t fg, uint8_t bg);
 void     ui_set_body_color  (ui_box_t*, uint8_t fg, uint8_t bg);
 
-char 	   ui_getch  (ui_box_t*, int x, int y);
+char 	   ui_getch_r(ui_box_t*, int x, int y);
+char 		 ui_getch(ui_box_t*, int x, int y);
 
+void     ui_putch_r(ui_box_t*, int x, int y, unsigned char c);
 void     ui_putch  (ui_box_t*, int x, int y, unsigned char c);
 int      ui_putstr (ui_box_t*, int x, int y, const char*);
 void     ui_printf (ui_box_t*, int x, int y, const char*, ...);
