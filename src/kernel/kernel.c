@@ -10,7 +10,7 @@
 #include "multiboot2.h"
 #include "arena.h"
 #include "log.h"
-#include "shell.h"
+#include "shell_2.h"
 #include "ui.h"
 #include "rfos_splash.h"            // related to the splashbox
 #include "tips.h"                   // related to the tipsbox
@@ -26,6 +26,7 @@ arena kernel_arena;
 void kernel_main(int magic, struct multiboot_header* header) {
      UNUSED(magic);
      ui_box_t splashbox, infobox, shellbox, tipsbox, filebox;
+		 ui_box_t mainbox;
  
      serial_init();
      vga_init();
@@ -47,7 +48,7 @@ void kernel_main(int magic, struct multiboot_header* header) {
 
 		 ll_int ll;
 		 ll_int_pushback(&ll, 3);
-		 ll_int_pushback(&ll, 9);
+		 ll_int_pushback(&ll, -99742846);
 		 ll_int_pushback(&ll, 4);
 		 ll_int_delete(&ll, 4);
 		 ll_int_print(&ll);
@@ -86,22 +87,28 @@ void kernel_main(int magic, struct multiboot_header* header) {
      filebox = ui_new(60, 11, 19, 13, "Files");
      ui_set_body_color(&filebox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
      ui_set_border_color(&filebox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+
+		 mainbox = ui_new(0, 0, 79, 24, "Main");
+     ui_set_body_color(&mainbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+     ui_set_border_color(&mainbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
  
      // Display uiboxes
-     ui_box(&splashbox);
-     ui_box(&infobox);
-     ui_box(&shellbox);
-     ui_box(&tipsbox);
-     ui_box(&filebox);
-     rfos_splash(&splashbox);
-     tips_populate(&tipsbox);
-     files_populate(&filebox);
-     ui_refresh();
+     // ui_box(&splashbox);
+     // ui_box(&infobox);
+     // ui_box(&shellbox);
+     // ui_box(&tipsbox);
+     // ui_box(&filebox);
+     // rfos_splash(&splashbox);
+     // tips_populate(&tipsbox);
+     // files_populate(&filebox);
+		 ui_box(&mainbox);
+		 ui_refresh();
  
      // Initialize shell stuff
-     keyboard_add_listener(shell_keyboard_listener);
+     keyboard_add_listener(shell2_keyboard_listener);
+		 mouse_add_listener(shell2_mouse_listener);
      // timer_add_listener(shell_timer_listener, 20);
-     shell_run(&kernel_arena, &shellbox);
+     shell2_run(&mainbox);
  
      for(;;) {}
  
