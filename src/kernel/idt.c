@@ -167,6 +167,30 @@ void isr_handler(struct interrupt_registers_test* regs) {
     // for(;;);
 }
 
+extern void mouse_wait(uint8_t a_type);
+void idt_debug_setup() {
+    // Check PIC masks
+    uint8_t pic1_mask = io_inb(0x21);
+    uint8_t pic2_mask = io_inb(0xA1);
+    log_info("Debug", "PIC masks - Master: %02x, Slave: %02x", pic1_mask, pic2_mask);
+
+    // Verify mouse isn't masked
+    if (pic2_mask & (1 << 4)) { // IRQ12 is bit 4 on slave PIC
+        log_info("Debug", "Warning: Mouse IRQ is masked!");
+    }
+
+    // Read 8042 controller config byte
+    mouse_wait(1);
+    io_outb(0x64, 0x20);
+    mouse_wait(0);
+    uint8_t ps2_config = io_inb(0x60);
+    log_info("Debug", "PS/2 Controller config: %02x", ps2_config);
+    
+    if (!(ps2_config & (1 << 1))) {
+        log_info("Debug", "Warning: Mouse IRQ disabled in PS/2 controller!");
+    }
+}
+
 void isr_install_handler(int isr, void(*handler_func)(struct interrupt_registers_test*)) {
     exception_handlers[isr] = handler_func;
     log_info("ISR Install", "Installed isr handler #%d, %x", isr, handler_func);
@@ -191,7 +215,12 @@ void irq_uninstall_handler(int irq) {
 
 void irq_handler(struct interrupt_registers_test* regs) {
     void (*handler)(struct interrupt_registers_test* regs);
+		if (regs->int_no - 32 <= 0) return;
     handler = irq_routines[regs->int_no - 32];
+		switch (regs->int_no - 32) {
+			case 0: break;
+			default: break;///log_info("IRQ", "#%d", regs->int_no);
+		}
     if (handler) handler(regs);
     if (regs->int_no >= 40) {
         io_outb(0xA0, 0x20); io_wait();

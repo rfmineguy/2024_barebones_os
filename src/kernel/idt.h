@@ -24,6 +24,8 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
 extern void idt_cli();
 extern void idt_sti();
 
+void idt_debug_setup();
+
 void isr_install_handler(int, void(*)(struct interrupt_registers_test*));
 void isr_uninstall_handler(int);
 void isr_handler(struct interrupt_registers_test*);
