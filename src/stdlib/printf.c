@@ -127,7 +127,7 @@ int fmt_spec_parse(const char* fmt, fmt_spec* out_spec) {
     // parse the specifier
     if (*cursor == 'd' || *cursor == 'i' || *cursor == 'u' || *cursor == 'o' ||
         *cursor == 'x' || *cursor == 'X' || *cursor == 'c' || *cursor == 's' ||
-        *cursor == 'p' || *cursor == '%') {
+        *cursor == 'p' || *cursor == '%' || *cursor == 'b') {
         out_spec->specifier = *cursor;
         cursor++;
     }
@@ -163,8 +163,8 @@ int stringify_base10_signed(char buf[20], int value, bool uppercase){
     return digit_i;
 }
 
-int stringify_base(char buf[20], int value, int base, bool uppercase){
-    static char internal_buf[20];
+int stringify_base_unsigned(char buf[33], unsigned int value, int base, bool uppercase){
+    static char internal_buf[33];
     int digit_i = 0;
     if (value == 0) internal_buf[digit_i++] = '0';
     while (value != 0) {
@@ -176,6 +176,7 @@ int stringify_base(char buf[20], int value, int base, bool uppercase){
     for (int i = digit_i - 1; i >= 0; i--) {
         buf[digit_i - 1 - i] = internal_buf[i];
     }
+		internal_buf[digit_i] = 0;
     return digit_i;
 }
 
@@ -240,9 +241,9 @@ int k_vsprintf(char* buf, const char* fmt, va_list list) {
 										// signed decimal literal
                     if ('d' == spec.specifier || 'i' == spec.specifier) {
                         char number_buf[20];
-                        if (spec.width == -1)     spec.width = va_arg(list, int);
-                        if (spec.precision == -1) spec.precision = va_arg(list, int);
-                        int arg = va_arg(list, int);
+                        if (spec.width == -1)     spec.width = va_arg(list, uint32_t);
+                        if (spec.precision == -1) spec.precision = va_arg(list, uint32_t);
+                        int arg = va_arg(list, int32_t);
                         int length = stringify_base10_signed(number_buf, arg, false);
                         int space_to_print = spec.width - length;
                         for (int i = 0; i < space_to_print; i++) {
@@ -252,13 +253,42 @@ int k_vsprintf(char* buf, const char* fmt, va_list list) {
                             buf = sprint_ch(buf, number_buf[i]);
                         }
                     }
+										// unsigned decimal literal
+										if ('u' == spec.specifier) {
+                        char number_buf[20];
+                        if (spec.width == -1)     spec.width = va_arg(list, uint32_t);
+                        if (spec.precision == -1) spec.precision = va_arg(list, uint32_t);
+                        int arg = va_arg(list, int32_t);
+                        int length = stringify_base_unsigned(number_buf, arg, 10, false);
+                        int space_to_print = spec.width - length;
+                        for (int i = 0; i < space_to_print; i++) {
+                            buf = sprint_ch(buf, ' ');
+                        }
+                        for (int i = 0; i < length; i++) {
+                            buf = sprint_ch(buf, number_buf[i]);
+                        }
+										}
+										if ('b' == spec.specifier) {
+												char number_buf[33];
+                        if (spec.width == -1)     spec.width = va_arg(list, uint32_t);
+                        if (spec.precision == -1) spec.precision = va_arg(list, uint32_t);
+												int arg = va_arg(list, int32_t);
+                        int length = stringify_base_unsigned(number_buf, arg, 2, false);
+                        int space_to_print = spec.width - length;
+                        for (int i = 0; i < space_to_print; i++) {
+                            buf = sprint_ch(buf, spec.flags & 0x4 ? '0' : ' ');
+                        }
+                        for (int i = 0; i < length; i++) {
+                            buf = sprint_ch(buf, number_buf[i]);
+                        }
+										}
                     if ('x' == spec.specifier || 'X' == spec.specifier) {
                         int uppercase = spec.specifier == 'X';
                         char number_buf[20];
                         if (spec.width == -1)     spec.width = va_arg(list, int);
                         if (spec.precision == -1) spec.precision = va_arg(list, int);
                         int arg = va_arg(list, int);
-                        int length = stringify_base(number_buf, arg, 16, uppercase);
+                        int length = stringify_base_unsigned(number_buf, arg, 16, uppercase);
                         int space_to_print = spec.width - length;
                         for (int i = 0; i < space_to_print; i++) {
                             buf = sprint_ch(buf, spec.flags & 0x4 ? '0' : ' ');
@@ -273,7 +303,7 @@ int k_vsprintf(char* buf, const char* fmt, va_list list) {
                         if (spec.width == -1)     spec.width = va_arg(list, int);
                         if (spec.precision == -1) spec.precision = va_arg(list, int);
                         int arg = va_arg(list, int);
-                        int length = stringify_base(number_buf, arg, 16, uppercase);
+                        int length = stringify_base_unsigned(number_buf, arg, 16, uppercase);
                         int space_to_print = spec.width - length - 2;
                         for (int i = 0; i < space_to_print; i++) {
                             buf = sprint_ch(buf, ' ');
@@ -302,8 +332,6 @@ int k_sprintf(char* buf, const char* fmt, ...) {
     return x;
 }
 
-// Dont compile this function if -DTESTING
-#ifndef TESTING
 int k_printf(const char* fmt, ...) {
     va_list alist;
     va_start(alist, fmt);
@@ -318,4 +346,3 @@ int k_vprintf(const char* fmt, va_list alist) {
     vga_writestring(buf);
     return x;
 }
-#endif

@@ -205,7 +205,7 @@ void debug_fmt_spec(fmt_spec s) {
     printf("=================\n");
 }
 
-int stringify_base(char buf[20], int value, int base, bool uppercase){
+int stringify_base(char buf[20], unsigned int value, int base, bool uppercase){
     static char internal_buf[20];
     int digit_i = 0;
     if (value == 0) internal_buf[digit_i++] = '0';
