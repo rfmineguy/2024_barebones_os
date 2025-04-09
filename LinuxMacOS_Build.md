@@ -13,22 +13,22 @@ $ git clone https://github.com/rfmineguy/2024_barebones_os.git --depth=1
 $ ./scripts/build.sh docker_get 
 ```
 ```bash
-# 3. Build the iso file
+# 3. Create fat drive to mount in qemu and use as the active drive for the kernel's operations
+#  - This step isn't technically mandatory, but the kernel does a lot more if you do this step
+$ ./scripts/build.sh create_disk
+```
+```bash
+# 4. Build the iso file
 #  - This step uses the previously built docker image and the software installed
 #      to it to build the c source files with a i686-elf cross compiler toolchain
 $ ./scripts/build.sh build
 ```
 ```bash
-# 4. Verify that the iso file is multiboot1 compatible (multiboot2 might be in the future) 
+# 5. Verify that the iso file is multiboot1 compatible (multiboot2 might be in the future) 
 #  - If this indicates that its not multiboot compatible, I broke something (oops)
 #  - This step uses the previously built docker image and the software installed
 #      to it to check if the generated iso image contains valid multiboot headers
 $ ./scripts/build.sh checkmboot
-```
-```bash
-# 5. Create fat drive to mount in qemu and use as the active drive for the kernel's operations
-#  - This step isn't technically mandatory, but the kernel does a lot more if you do this step
-$ ./scripts/build.sh create_disk
 ```
 ```bash
 # 6. Finally run the kernel in qemu
