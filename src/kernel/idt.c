@@ -213,13 +213,10 @@ void irq_uninstall_handler(int irq) {
 }
 
 void irq_handler(struct interrupt_registers_test* regs) {
+    // log_info("IRQ Handler", "%d", regs->int_no);
     void (*handler)(struct interrupt_registers_test* regs);
-		if (regs->int_no - 32 <= 0) return;
+		if (regs->int_no - 32 < 0) return;
     handler = irq_routines[regs->int_no - 32];
-		switch (regs->int_no - 32) {
-			case 0: break;
-			default: break;///log_info("IRQ", "#%d", regs->int_no);
-		}
     if (handler) handler(regs);
     if (regs->int_no >= 40) {
         io_outb(0xA0, 0x20); io_wait();
