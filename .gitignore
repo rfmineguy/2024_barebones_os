@@ -10,6 +10,10 @@ serial.log
 qemu_log.txt
 compile_commands.json
 
+# Generic datastructure files
+src/kernel/linkedlist*
+src/kernel/queue*
+
 tools/printf/printf_test
 
 # Test files
