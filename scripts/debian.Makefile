@@ -12,6 +12,12 @@ STDLIB_SRC := src/stdlib
 TEST_SRC   := src/tests
 OUT        := out
 
+GENGEN_TPL_FILES := src/tpl/queue.htpl src/tpl/queue.ctpl \
+										src/tpl/linkedlist.htpl src/tpl/linkedlist.ctpl
+GENGEN_GEN_FILES := src/kernel/queue_event.c src/kernel/queue_event.h \
+										src/kernel/linkedlist_memory_node.c src/kernel/linkedlist_memory_node.h
+GENGEN_SOURCE_FILES := $(filter %.c,$(GENGEN_GEN_FILES))
+
 C_KERNEL_BLACKLIST := src/kernel/kernel_test.c src/kernel/kernel_no_test.c
 #C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/**/*.c))
 C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(shell find $(KERNEL_SRC)/ -type f -name "*.c"))
@@ -33,7 +39,7 @@ C_OBJECTS := $(patsubst $(KERNEL_SRC)/%.c, $(OUT)/%.c.o, $(C_KERNEL_SOURCE)) \
 			 #$(patsubst $(TEST_SRC)/%.c, $(OUT)/%.c.o, $(C_TEST_SOURCE))
 
 S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) \
-			 $(patsubst $(STDLIB_SRC)/%.s, $(OUT)/%.s.o, $(S_STDLIB_SOURCE))
+						 $(patsubst $(STDLIB_SRC)/%.s, $(OUT)/%.s.o, $(S_STDLIB_SOURCE))
 
 C_LISTINGS:= $(patsubst $(OUT)/%.c.o, $(OUT)/%.c.o.lst, $(C_OBJECTS))
 S_LISTINGS:= $(patsubst $(OUT)/%.s.o, $(OUT)/%.s.o.lst, $(S_OBJECTS))
@@ -43,7 +49,7 @@ OBJ_DIRS := $(patsubst %, $(OUT)/%, $(C_OBJECTS) $(S_OBJECTS))
 
 BIN := os.bin
 OPTIMIZATION_FLAGS := -O0
-CFLAGS := -std=gnu99 -ffreestanding -nostdlib -m32 -ggdb
+CFLAGS := -std=gnu99 -ffreestanding -nostdlib -m32 -ggdb -gdwarf
 ASFLAGS := -g
 GCCFLAGS := -B/home/build
 
@@ -53,6 +59,8 @@ AS := /home/build/as
 LD := /home/build/ld
 OBJDUMP := /home/build/bin/i686-elf-objdump
 LIBDIR := /home/build/lib/gcc/i686-elf/7.1.0/
+
+CC_BIG := gcc
 
 .PHONY: grub_gen_cfg grub_gen_rescue grub_check_multiboot
 .PHONY: create_fat_fs
@@ -70,9 +78,10 @@ always:
 
 clean:
 	-rm -r $(OUT)/
+	-rm -r $(GENGEN_GEN_FILES)
 
 # Build related targets
-build: always $(OUT)/$(BIN) grub_gen_rescue gen_lst
+build: always $(GENGEN_GEN_FILES) $(OUT)/$(BIN) grub_gen_rescue gen_lst
 
 $(OUT)/%.c.o: $(KERNEL_SRC)/%.c
 	@mkdir -p $(dir $@)
@@ -96,6 +105,13 @@ $(OUT)/%.s.o: $(STDLIB_SRC)/%.s
 
 $(OUT)/$(BIN): $(C_OBJECTS) $(S_OBJECTS)
 	$(LD) -T linker.ld -o $@ -nostdlib $(S_OBJECTS) $(C_OBJECTS) -L$(LIBDIR) -lgcc
+
+# Build gengen
+$(OUT)/gengen: gengen.c
+	$(CC_BIG) -o $@ $^
+
+$(GENGEN_GEN_FILES): $(OUT)/gengen $(GENGEN_TPL_FILES)
+	./$(OUT)/gengen
 
 # Generate listing files
 gen_lst: $(C_LISTINGS) $(S_LISTINGS)
