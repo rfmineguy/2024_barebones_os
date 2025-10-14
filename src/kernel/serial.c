@@ -2,6 +2,7 @@
 #include "io.h"
 #include "log.h"
 #include "../stdlib/printf.h"
+#include "../stdlib/memset.h"
 
 #define PORT 0x3f8 // com1
 
@@ -48,13 +49,20 @@ int serial_write_str(char* ch){
     }
     return ch - start;
 }
+int serial_write_str_len(char* ch, int len){
+  for (int i = 0; i < len; i++) {
+	serial_write_ch(ch[i]);
+  }
+  return len;
+}
 int serial_printf(const char* fmt, ...) {
-    static char buf[1000] = {0};
+	char buf[1000];
+	memset(buf, 0, 1000);
     va_list alist;
     va_start(alist, fmt);
-    k_vsprintf(buf, fmt, alist);
+    int len = k_vsprintf(buf, fmt, alist);
     va_end(alist);
-    return serial_write_str(buf);
+    return serial_write_str_len(buf, len);
 }
 int serial_received(){
     return io_inb(PORT);
