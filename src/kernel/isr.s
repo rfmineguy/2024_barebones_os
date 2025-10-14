@@ -36,11 +36,11 @@ isr_err    14
 
 isr_no_err 15
 isr_no_err 16
-isr_no_err 17
+isr_err    17
 isr_no_err 18
 isr_no_err 19
 isr_no_err 20
-isr_no_err 21
+isr_err    21
 isr_no_err 22
 isr_no_err 23
 isr_no_err 24
@@ -48,12 +48,13 @@ isr_no_err 25
 isr_no_err 26
 isr_no_err 27
 isr_no_err 28
-isr_no_err 29
-isr_no_err 30
+isr_err    29
+isr_err    30
 isr_no_err 31
 isr_no_err 128
 isr_no_err 177
 
+.section .text
 .extern isr_handler
 isr_common_stub:
     pusha           // eax, ecx, edx, ebx, esp, ebp, esi, edi
@@ -84,14 +85,21 @@ isr_common_stub:
     iret
 
 isr_common_stub_test:
-    pusha
+  mov %eax, %eax
+										// cpu pushes 8 bytes
+	pusha 						// push 32 bytes
 
-    pushl %esp
-    call isr_handler
-    add $4, %esp
+	mov %cr2, %eax
+	push %eax 				// push 4 bytes
 
-    popa
+	push %esp 				// push 4 bytes (pointer to struct)
+	call isr_handler
+	add $4, %esp 			// pop  4 bytes
 
-    add $8, %esp
-    sti
-    iret
+	pop %eax
+	mov %eax, %cr2
+	popa 							// pop 32 bytes
+
+	add $8, %esp      // pop 8 bytes
+	sti
+	iret

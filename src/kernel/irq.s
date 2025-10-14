@@ -8,13 +8,14 @@
 .endm
     
 // irq 0,  0x20
-.global irq0
-irq0:
-    cli
-    push 0
-    push 0
-    jmp irq_common_stub_test
+// .global irq0
+// irq0:
+//     cli
+//     push 0
+//     push 0
+//     jmp irq_common_stub_test
 
+irq 0,  0x20
 irq 1,  0x21
 irq 2,  0x22
 irq 3,  0x23
@@ -60,14 +61,20 @@ irq_common_stub:
     iret
 
 irq_common_stub_test:
-    pusha
+  mov %eax, %eax
+	pusha
+
+	mov %cr2, %eax
+	push %eax 				// push 4 bytes
     
-    pushl %esp
-    call irq_handler
-    add $4, %esp
+	pushl %esp
+	call irq_handler
+	add $4, %esp
 
-    popa
+	pop %eax
+	mov %eax, %cr2
+	popa
 
-    add $8, %esp
-    sti
-    iret
+	add $8, %esp
+	sti
+	iret
