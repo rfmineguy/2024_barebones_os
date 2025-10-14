@@ -44,3 +44,15 @@ void paging_map(uint32_t phys_addr, uint32_t virt_addr, uint32_t flags) {
 	}
 	page_tables[pd_index][pt_index] = (phys_addr & ~0xfff) | (flags & 0xfff);
 }
+void paging_map_range(uint32_t lo, uint32_t hi, uint32_t flags) {
+	uint32_t lo_aligned = paging_align_down(lo, 0x1000);
+	uint32_t hi_aligned = paging_align_down(hi, 0x1000);
+	log_info("PagingMapRange", "%x -> %x (%x -> %x)", lo, hi, lo_aligned, hi_aligned);
+
+  uint32_t last_i = 0;
+	for (uint32_t i = lo_aligned; i <= hi_aligned; i += 0x1000) {
+    if ((int)last_i > (int)i) break;
+		paging_map(i, i, flags);
+    last_i = i;
+	}
+}
