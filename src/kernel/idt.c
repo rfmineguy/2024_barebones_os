@@ -113,6 +113,17 @@ void div_zero_handler(struct interrupt_registers_test* regs) {
 	for (;;);
 }
 
+void invalid_opcode_handler(struct interrupt_registers_test* regs) {
+  log_info("Handler", "Invalid opcode");
+  int_regs_log(regs, DECIMAL);
+}
+
+void double_fault_handler(struct interrupt_registers_test* regs) {
+	log_info("Handler", "Double fault");
+	int_regs_log(regs, HEX);
+	cpu_halt();
+}
+
 void page_fault_handler(struct interrupt_registers_test* regs) {
     log_info("Handler", "WIP");
 }
