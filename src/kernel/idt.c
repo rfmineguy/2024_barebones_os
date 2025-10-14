@@ -92,11 +92,17 @@ void idt_install() {
 
     idt_flush();
 
-		for (int i = 0; i < 32; i++) {
+		log_group_begin("Default ISR handler");
+		for (int i = 0; i < 32; i++)
 			isr_install_handler(i, unimplemented_handler);
-		}
-    isr_install_handler(0x00, div_zero_handler);
-    isr_install_handler(0x0E, page_fault_handler);
+		log_group_end("Default ISR handler");
+
+    isr_install_handler(0,  div_zero_handler);
+    isr_install_handler(6,  invalid_opcode_handler);
+		isr_install_handler(8,  double_fault_handler);
+    isr_install_handler(14, page_fault_handler);
+
+		log_info("IDTP", "%x", &idtp);
     log_group_end("IDT Install");
 }
 
@@ -109,7 +115,8 @@ void page_fault_handler(struct interrupt_registers_test* regs) {
 }
 
 void unimplemented_handler(struct interrupt_registers_test* regs) {
-    log_info("Handler", "Unimplemented");
+	log_info("Handler", "Unimplemented (%d)", regs->int_no);
+	cpu_halt();
 }
 
 // https://wiki.osdev.org/Exceptions
