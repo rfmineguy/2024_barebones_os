@@ -1,4 +1,5 @@
 #include "mouse.h"
+#include "event_system.h"
 
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Mouse driver
@@ -72,6 +73,38 @@ void mouse_handler(struct interrupt_registers_test *r) {
 		int8_t mouse_dx = mouse_byte[1];
 		int8_t mouse_dy = mouse_byte[2];
 
+		mousex += mouse_dx / 4;
+		mousey += mouse_dy / 4;
+		if (mousex <= 0) mousex = 0;
+		if (mousex >= 79) mousex = 79;
+		if (mousey <= 0) mousey = 0;
+		if (mousey >= 24) mousey = 24;
+
+		if ((info & 0b00000111) != 0) {
+			event_system_post((event){
+				.type = MOUSE,
+				.mouse = {
+					.moved = false,
+					.clicked = true,
+					.middlebtn = info & 0b00000100,
+					.rightbtn = info & 0b00000010,
+					.leftbtn = info & 0b00000001,
+				},
+			});
+		}
+		if (mouse_dx != 0 || mouse_dy != 0) {
+			log_info("Mouse", "%d, %d", mouse_dx, mouse_dy);
+			mouse_dx = 0;
+			mouse_dy = 0;
+			event_system_post((event) {
+				.type = MOUSE,
+				.mouse = {
+					.moved = true,
+					.clicked = false,
+					.x = mousex,
+					.y = mousey,
+				},
+			});
 		}
 	}
 }
