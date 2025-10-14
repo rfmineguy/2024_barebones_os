@@ -1,6 +1,7 @@
 #include "fat_drive.h"
 #include "ata.h"
 #include "log.h"
+#include "memory.h"
 #include "../stdlib/stdbool.h"
 #include "../stdlib/string.h"
 #include "../stdlib/stdint.h"
@@ -142,7 +143,8 @@ void fat_drive_debug_header() {
 
 bool fat_drive_read_header(){
     log_group_begin("ReadHeader");
-    uint8_t buf[512];
+    static uint8_t buf[512];
+		log_info("Buf", "%x", buf);
     ata_read(0xE0, 0, buf, 1);
 
     g_boot_sector.BytesPerSector = buf[11] | (buf[12] << 8);
@@ -168,9 +170,11 @@ bool fat_drive_read_sectors(uint32_t lba, uint32_t count, uint8_t* buf_out) {
     return true; // TODO: Add more complex error handling here
 }
 
-bool fat_drive_read(arena* arena){
+bool fat_drive_read(){
     log_group_begin("FatDriveRead");
-    g_Fat = arena_alloc(arena, g_boot_sector.SectorsPerFat * g_boot_sector.BytesPerSector);
+    log_info("g_boot_sector", "%x", &g_boot_sector);
+		if (!g_Fat)	g_Fat = memory_alloc(g_boot_sector.SectorsPerFat * g_boot_sector.BytesPerSector);
+		log_info("FatDriveRead", "&g_Fat = %x", g_Fat);
     ata_read(0xE0, g_boot_sector.ReservedSectors, g_Fat, g_boot_sector.SectorsPerFat);
     log_line_begin("Bytes");
     for (uint32_t i = 0; i < sizeof(g_boot_sector); i++) {
@@ -181,7 +185,7 @@ bool fat_drive_read(arena* arena){
     return true;
 }
 
-bool fat_drive_read_root_dir(arena* arena){
+bool fat_drive_read_root_dir(){
     log_group_begin("FatDriveReadRootDir");
 
     // variables
@@ -194,7 +198,7 @@ bool fat_drive_read_root_dir(arena* arena){
     if (size % g_boot_sector.BytesPerSector > 0)
         sectors++;
     g_root_directory_end = lba + sectors;
-    g_root_directory = (dir_entry*) arena_alloc(arena, sectors * g_boot_sector.BytesPerSector);
+    g_root_directory = (dir_entry*) memory_alloc(sectors * g_boot_sector.BytesPerSector);
     ata_read(0xE0, lba, (uint8_t*)g_root_directory, sectors);
 
     log_line_begin("Bytes");

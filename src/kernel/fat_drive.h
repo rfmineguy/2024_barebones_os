@@ -3,7 +3,6 @@
 #include "../stdlib/stdint.h"
 #include "../stdlib/stdbool.h"
 #include "../stdlib/string_view.h"
-#include "arena.h"
 
 typedef struct dir_entry {
     uint8_t Name[11];
@@ -110,15 +109,16 @@ bool fat_drive_read_header();
 bool fat_drive_read_sectors(uint32_t lba, uint32_t count, uint8_t* buf_out);
 
 /* Desc:     read data from drive required by FAT to function properly
- * Params:   1
- *  arena:   a valid arena used to store data
+ * Params:   0
  * Return:   success or not
  */
-bool fat_drive_read(arena*);
+bool fat_drive_read();
 
 /* Desc:     read the root directory of the fat
+ * Params:   0
+ * Return:   success or not
  */
-bool fat_drive_read_root_dir(arena*);
+bool fat_drive_read_root_dir();
 
 bool fat_drive_write_root_dir(dir_entry*);
 
