@@ -42,8 +42,6 @@ typedef enum {
     L_SHIFT   = 0x4,   // scancode 0x12
 } modifier_flags;
 
-void keyboard_add_listener(int(*)(char, uint8_t));
-
 void keyboard_init();
 void keyboard_irq(struct interrupt_registers_test*);
 

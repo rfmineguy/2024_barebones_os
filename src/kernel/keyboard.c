@@ -28,27 +28,13 @@ const uint32_t uppercase[128] = {
     UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN
 };
 
-// array of listeners
-int (*listeners[10])(char ch, uint8_t mods);
-int listeners_count;
 
 bool caps_on, capslock;
-void keyboard_add_listener(int(* listener)(char, uint8_t)) {
-    if (listeners_count >= 10) {
-        log_crit("KeyboardAddListener", "Couldn't add new keyboard listener");
-        return;
-    }
-    listeners[listeners_count] = listener;
-    listeners_count++;
-}
 void keyboard_init() {
     idt_cli();
     caps_on = false;
     capslock = false;
     irq_install_handler(1, &keyboard_irq);
-
-    for (int i = 0; i < 10; i++) listeners[i] = (void*)0;
-    listeners_count = 0;
 }
 void keyboard_irq(struct interrupt_registers_test* regs) {
     (void)(regs);
@@ -85,13 +71,6 @@ void keyboard_irq(struct interrupt_registers_test* regs) {
             // if (!capslock && press == 0) capslock = true;
             // else if (capslock && press == 0) capslock = false;
             break;
-        default:
-            for (int i = 0; i < listeners_count; i++) {
-                if (press == 0) {
-                    if (caps_on || capslock) listeners[i](uppercase[(int)scancode], modifier_flags);
-                    else listeners[i](lowercase[(int)scancode], modifier_flags);
-                }
-            }
             break;
             // if (press == 0) {
             //     if (caps_on || capslock) vga_putch(uppercase[(int)scancode]);
