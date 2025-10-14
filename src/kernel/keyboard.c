@@ -5,6 +5,7 @@
 #include "../stdlib/printf.h"
 #include "../stdlib/stdbool.h"
 #include "../stdlib/stdint.h"
+#include "event_system.h"
 
 const uint32_t lowercase[128] = {
     UNKNOWN,ESC,'1','2','3','4','5','6','7','8',
@@ -38,9 +39,8 @@ void keyboard_init() {
 }
 void keyboard_irq(struct interrupt_registers_test* regs) {
     (void)(regs);
-    char scancode = io_inb(0x60) & 0x7F; // scancode of key
-    char press    = io_inb(0x60) & 0x80;
-    // log_info("Key IRQ", "Press: %d, Scan code: %d\n", press, scancode);
+    unsigned char scancode = io_inb(0x60) & 0x7F; // scancode of key
+    unsigned char press    = io_inb(0x60) & 0x80;
 
     modifier_flags modifier_flags = 0x0;
     switch (scancode) {
@@ -49,7 +49,7 @@ void keyboard_irq(struct interrupt_registers_test* regs) {
                    break;
         // case 0x2A: modifier_flags |= L_SHIFT;
         //            break;
-        case 56: 
+        case 56:
         case 59:
         case 60:
         case 61:
@@ -71,10 +71,19 @@ void keyboard_irq(struct interrupt_registers_test* regs) {
             // if (!capslock && press == 0) capslock = true;
             // else if (capslock && press == 0) capslock = false;
             break;
+        default: {
+            bool caps = caps_on || capslock;
+            char ch = caps ? uppercase[(int)scancode] : lowercase[(int)scancode];
+            log_info("Key IRQ", "Press: %d, ch: %c\n", press, ch);
+            event_system_post(((event) {
+                .type = KEYBOARD, // keyboard
+                .keyboard = {
+                  .ch = ch,
+                  .modifier_flags = modifier_flags,
+                  .press = press,
+                }})
+            );
             break;
-            // if (press == 0) {
-            //     if (caps_on || capslock) vga_putch(uppercase[(int)scancode]);
-            //     else vga_putch(lowercase[(int)scancode]);
-            // }
+          };
     }
 }
