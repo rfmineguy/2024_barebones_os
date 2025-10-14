@@ -9,6 +9,7 @@
 
 char* base_chars = "0123456789abcdef";
 char* sprint_base(char* buf, uint32_t i, int base, bool uppercase) {
+		if (base == 0) return buf;
     char buf2[20] = {0};
     int digit = 0;
 
@@ -142,13 +143,16 @@ int stringify_base10_signed(char buf[20], int value, bool uppercase){
 			sign = -1;
 			digit_i++;
 		}
-    if (value == 0) internal_buf[digit_i++] = '0';
-    while (value != 0) {
-        int v = value % 10;
-        internal_buf[digit_i++] = uppercase ?
-            toupper(base_chars[v]) : base_chars[v];
-        value /= 10;
-    }
+    if (value == 0) {
+			internal_buf[digit_i++] = '0';
+		} else {
+			while (value != 0) {
+					int v = value % 10;
+					internal_buf[digit_i++] = uppercase ?
+							toupper(base_chars[v]) : base_chars[v];
+					value /= 10;
+			}
+		}
 		if (sign == 1) {
 			for (int i = digit_i - 1; i >= 0; i--) {
 					buf[digit_i - 1 - i] = internal_buf[i];
@@ -164,6 +168,7 @@ int stringify_base10_signed(char buf[20], int value, bool uppercase){
 }
 
 int stringify_base_unsigned(char buf[33], unsigned int value, int base, bool uppercase){
+	if (base == 0) return 0;
     static char internal_buf[33];
     int digit_i = 0;
     if (value == 0) internal_buf[digit_i++] = '0';
