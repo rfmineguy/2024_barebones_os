@@ -11,6 +11,8 @@
 uint8_t mouse_cycle = 0;
 int8_t  mouse_byte[3];
 
+int mousex = 0, mousey = 0;
+
 #define MOUSE_IRQ 12
 
 #define MOUSE_PORT   0x60
@@ -56,20 +58,17 @@ uint8_t mouse_read() {
 }
 
 void mouse_handler(struct interrupt_registers_test *r) {
-	mouse_byte[mouse_cycle++] = mouse_read();
+	uint8_t data = mouse_read();
+
+	if (mouse_cycle == 0 && (data & 0x08) == 0) {
+		return;
+	}
+	mouse_byte[mouse_cycle++] = data;
 
 	if (mouse_cycle == 3) {
 		mouse_cycle = 0;
 
 		int8_t info = mouse_byte[0];
-		if ((info & 0x8) != 0x8) {
-            // Shift buffer left by one byte and continue
-            mouse_byte[0] = mouse_byte[1];
-            mouse_byte[1] = mouse_byte[2];
-			mouse_cycle = 2;
-            return;
-		}
-		info = mouse_byte[0];
 		int8_t mouse_dx = mouse_byte[1];
 		int8_t mouse_dy = mouse_byte[2];
 
