@@ -10,12 +10,17 @@ struct interrupt_registers {
     uint32_t eip, cs, eflags, useresp, ss;           // pushed by cpu
 };
 struct interrupt_registers_test {
-    // uint32_t ds;                                  // 
-    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // pushed by pusha          8
-    uint32_t int_no, err_code;                       // pushed by isr_handler    2
-    uint32_t eip, cs, eflags, useresp, ss;           // pushed by cpu
+		uint32_t cr2;
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+		// uint32_t gs, fs, es, ds;
+    uint32_t int_no, err_code;
+    uint32_t eip, cs, eflags, useresp, ss;
 };
 
-void int_regs_show_serial(struct interrupt_registers_test*);
+enum print_type {
+	HEX, DECIMAL,
+};
+
+void int_regs_log(struct interrupt_registers_test*, enum print_type);
 
 #endif
