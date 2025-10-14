@@ -12,12 +12,16 @@
 #include "log.h"
 #include "shell_2.h"
 #include "ui.h"
+#include "cpu.h"
 #include "rfos_splash.h"            // related to the splashbox
 #include "tips.h"                   // related to the tipsbox
 #include "files.h"                  // related to the filebox
 #include "fat_drive.h"
+#include "event_system.h"
 #include "memory.h"
+#include "paging.h"
 #include "datastructures/ll_int.h"
+#include "linkedlist_memory_node.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -47,6 +51,7 @@ void kernel_main(int magic, struct multiboot_header* header) {
      idt_sti();
 		 log_info("Interrupts", "Enabled");
 
+     paging_init();
      memory_init(header);
 
 
@@ -55,6 +60,8 @@ void kernel_main(int magic, struct multiboot_header* header) {
      log_group_begin("Drive Setup %s", "hi");
      fat_drive_read_header(); // read drive MBR
      fat_drive_debug_header();
+     fat_drive_read();
+     fat_drive_read_root_dir();
      log_group_end("Drive Setup");
  
      // Setup uiboxes
