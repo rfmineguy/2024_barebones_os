@@ -32,3 +32,15 @@ uint32_t paging_align_down(uint32_t addr, uint32_t page_size) {
 	if (page_size == 0) return 0;
 	return (addr - (addr % page_size)) & 0xfffffff000;
 }
+
+// must call paging_load_pagedir() after mapping address
+// must specific PAGE_PRESENT(0x1) if enabling said page
+void paging_map(uint32_t phys_addr, uint32_t virt_addr, uint32_t flags) {
+	uint32_t pd_index = (virt_addr >> 22) & 0x03ff;
+	uint32_t pt_index = (virt_addr >> 12) & 0x03ff;
+
+	if (!(page_dir[pd_index] & PAGE_PRESENT)) {
+		page_dir[pd_index] = ((uint32_t)&page_tables[pd_index][0]) | (flags & 0xfff);
+	}
+	page_tables[pd_index][pt_index] = (phys_addr & ~0xfff) | (flags & 0xfff);
+}
