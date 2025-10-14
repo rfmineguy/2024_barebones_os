@@ -54,7 +54,43 @@ void kernel_main(int magic, struct multiboot_header* header) {
      paging_init();
      memory_init(header);
 
+     log_group_begin("linkedlist push test");
+     ll_memory_node ll = ll_memory_node_create();
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=0, .end=(void*)42, .free=0});
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=(void*)43, .end=(void*)100, .free=1});
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=(void*)101, .end=(void*)500, .free=1});
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=(void*)501, .end=(void*)600, .free=1});
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=(void*)601, .end=(void*)900, .free=1});
+     ll_memory_node_pushback(&ll, (memory_node){.begin=(void*)4279, .end=(void*)900, .free=1});
+     memory_debug();
+     for (ll_memory_node_node* n = ll.head; n; n = n->next) {
+       log_info("ll", "begin: %d, end: %d, free: %d", n->val.begin, n->val.end, n->val.free);
+     }
+     log_group_end("linkedlist push test");
 
+     log_group_begin("linkedlist pop test");
+     result_ll_memory_node_popback r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     log_group_end("linkedlist pop test");
+
+     log_group_begin("memory allocator test");
+     memory_debug();
+     log_group_end("memory allocator test");
+
+
+     log_warn("System", "Halting...");
+     // for (;;);
+     event_system_init();
 
      // Drive setup
      log_group_begin("Drive Setup %s", "hi");
