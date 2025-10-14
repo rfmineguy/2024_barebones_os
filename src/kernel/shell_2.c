@@ -24,9 +24,7 @@ void shell2_show_cursor_data(ui_box_t* box) {
 void shell2_show_cursor_pos(ui_box_t* box, char* last_frame) {
 	ui_putch_r(box, last_cursor_x, last_cursor_y, *last_frame);
 	*last_frame = ui_getch_r(box, cursor_x, cursor_y);
-	ui_putch_r(box, cursor_x, cursor_y, '#');
-	ui_refresh();
-	cursor_moved = false;
+	ui_putch_r(box, cursor_x, cursor_y, BLCK);
 }
 
 int shell2_run(ui_box_t* box) {
