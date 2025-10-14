@@ -34,37 +34,27 @@ void kernel_main(int magic, struct multiboot_header* header) {
  
      idt_cli();
  
-     gdt_init();            ui_putstr(&infobox, 2, 0, "GDT      [X]"); log_info("Kernel", "Initialized GDT");
-     idt_install();         ui_putstr(&infobox, 2, 1, "IDT      [X]"); log_info("Kernel", "Initialized IDT");
-     timer_init();          ui_putstr(&infobox, 2, 2, "Timer    [X]"); log_info("Kernel", "Initialized Timer");
-     keyboard_init();       ui_putstr(&infobox, 2, 3, "Keyboard [X]"); log_info("Kernel", "Initialized Keyboard");
-     mouse_install();       ui_putstr(&infobox, 2, 4, "Mouse    [_]"); log_info("Kernel", "Initialized Mouse (WIP)");
+     gdt_init();
+     idt_install();
+     timer_init();
+     keyboard_init();
+     mouse_install();
 
-		 idt_debug_setup();
+		 log_info("Kernel", "Setup GDT, IDT, Timer, Keyboard, Mouse");
+
+		 // idt_debug_setup();
  
      idt_sti();
+		 log_info("Interrupts", "Enabled");
 
      memory_init(header);
 
-		 ll_int ll;
-		 ll_int_pushback(&ll, 3);
-		 ll_int_pushback(&ll, -99742846);
-		 ll_int_pushback(&ll, 4);
-		 ll_int_delete(&ll, 4);
-		 ll_int_print(&ll);
 
-		 // for(;;) {}
 
-     log_info("Kernel", "Successfully initiliazed");
- 
-     kernel_arena = arena_new(0x500000, 0x500000 + 0x7ee0000);
- 
      // Drive setup
      log_group_begin("Drive Setup %s", "hi");
      fat_drive_read_header(); // read drive MBR
      fat_drive_debug_header();
-     fat_drive_read(&kernel_arena);
-     fat_drive_read_root_dir(&kernel_arena);
      log_group_end("Drive Setup");
  
      // Setup uiboxes
@@ -88,29 +78,23 @@ void kernel_main(int magic, struct multiboot_header* header) {
      ui_set_body_color(&filebox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
      ui_set_border_color(&filebox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
 
-		 mainbox = ui_new(0, 0, 79, 24, "Main");
-     ui_set_body_color(&mainbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
-     ui_set_border_color(&mainbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
- 
-     // Display uiboxes
-     // ui_box(&splashbox);
-     // ui_box(&infobox);
-     // ui_box(&shellbox);
-     // ui_box(&tipsbox);
-     // ui_box(&filebox);
+     // // Display uiboxes
+     ui_box(&splashbox);
+     ui_box(&infobox);
+     ui_box(&shellbox);
+     ui_box(&tipsbox);
+     ui_box(&filebox);
      // rfos_splash(&splashbox);
      // tips_populate(&tipsbox);
      // files_populate(&filebox);
-		 ui_box(&mainbox);
-		 ui_refresh();
+
+		 mainbox = ui_new(0, 0, 79, 24, "Main");
+     ui_set_body_color(&mainbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+     ui_set_border_color(&mainbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+		 log_info("Kernel", "Setup mainbox");
  
-     // Initialize shell stuff
-     keyboard_add_listener(shell2_keyboard_listener);
-		 mouse_add_listener(shell2_mouse_listener);
-     // timer_add_listener(shell_timer_listener, 20);
      shell2_run(&mainbox);
- 
-     for(;;) {}
- 
-     arena_free_all(&kernel_arena);
+
+		 log_info("CPU", "Halting");
+		 cpu_halt();
 }
