@@ -32,4 +32,6 @@ void                 ll_$T_insert_after(ll_$T*, ll_$T_node*, ^T);
 
 void                 ll_$T_delete_node(ll_$T*, ll_$T_node*);
 
+void                 ll_$T_helper_add_to_freelist(ll_$T*, ll_$T_node*);
+
 #endif

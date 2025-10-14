@@ -3,7 +3,7 @@
 
 
 // helper functions
-static void ll_$T_helper_add_to_freelist(ll_$T* ll, ll_$T_node* node) {
+void ll_$T_helper_add_to_freelist(ll_$T* ll, ll_$T_node* node) {
   ll_$T_node* oldhead = ll->freelist;
   ll->freelist = node;
   ll->freelist->next = oldhead;
