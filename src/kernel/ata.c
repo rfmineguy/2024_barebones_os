@@ -3,8 +3,9 @@
 #include "log.h"
 
 // credit to https://wiki.osdev.org/ATA_read/write_sectors
-void ata_wait_ready(){
-    while (io_inb(ATA_STATUS) & 0x80) {}
+void ata_wait_ready() {
+	uint8_t b = 0;
+	while ((b = io_inb(ATA_STATUS)) & 0x80) {}
 }
 void ata_select_drive(uint8_t drive) {
     io_outb(ATA_DRIVE_HEAD, drive);
@@ -51,6 +52,7 @@ void ata_read(int drive, int lba, uint8_t* buffer, uint32_t sectors){
         buffer[i * 2] = (uint8_t)(data & 0xFF);
         buffer[i * 2 + 1] = (uint8_t)((data >> 8) & 0xFF);  // Store the lower byte in the buffer
     }
+    log_group_end("ATA Read");
 }
 
 void ata_write(int drive, int lba, uint8_t* buffer, uint32_t sectors) {
