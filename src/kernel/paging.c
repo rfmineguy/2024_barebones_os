@@ -85,3 +85,31 @@ void paging_map_memory_allocator() {
   // identity maps arena ranges
   paging_map_range(0x400000, 0x600000, 0x2 | PAGE_PRESENT);
 }
+
+void paging_refresh() {
+	paging_load_pagedir(page_dir);
+}
+
+void paging_init() {
+	paging_unmap_all();
+	paging_map_kernel();
+	log_info("Paging", "Mapped kernel range");
+
+  paging_map_vga();
+  log_info("Paging", "Mapped vga");
+
+  paging_map_memory_allocator();
+  log_info("Paging", "Mapped memory allocator");
+
+	paging_load_pagedir(page_dir);
+	paging_enable();
+	log_info("Paging", "Enabled paging");
+
+
+	// uint32_t page = paging_get_page(0xc06573ac);
+	// log_info("Page", "%x", page);
+
+	uint32_t page = paging_get_page(0x0);
+	log_info("Page", "%x", page);
+	log_group_end("PagingInit");
+}
