@@ -107,7 +107,10 @@ void idt_install() {
 }
 
 void div_zero_handler(struct interrupt_registers_test* regs) {
-    log_info("Handler", "Division by zero error", regs->int_no);
+	// log_info("Handler", "Division by zero error. Unrecoverable. Looping forever...");
+	// int_regs_log(regs, DECIMAL);
+
+	for (;;);
 }
 
 void page_fault_handler(struct interrupt_registers_test* regs) {
