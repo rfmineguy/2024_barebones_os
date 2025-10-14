@@ -2,115 +2,108 @@
 #include "arena.h"
 #include "printf.h"
 #include "log.h"
+#include "linkedlist_memory_node.h"
 
-llist_node* root = (void*)0;
-llist_node* freelist = (void*)0;
 arena llist_arena;
 arena malloc_arena;
+ll_memory_node memory_list;
 
-void memory_init(struct multiboot_header* info) {
-	llist_arena  = arena_new(0x400000, 0x4fffff);
-	malloc_arena = arena_new(0x500000, 0x5fffff);
-	root = arena_alloc(&llist_arena, sizeof(llist_node));
-	root->next = (void*)0;
-	root->prev = (void*)0;
-	root->begin = malloc_arena.base;
-	root->end = malloc_arena.limit;
-	root->free = true;
-
-	freelist = (void*)0;
+void* allocator_malloc(int size) {
+  return 0;
+}
+void* allocator_calloc(int count, int size) {
+  return arena_alloc(&llist_arena, count * size);
+}
+void allocator_free(void* ptr) {
 }
 
-bool is_block_sufficient(llist_node* n, uint32_t byte_size) {
-	return n->free && ((n->end - n->begin) >= byte_size);
+void memory_init(struct multiboot_header* info) {
+
+  memory_list = ll_memory_node_create_w_allocator((allocator){
+    .malloc = allocator_malloc,      // normal malloc not used, strictly calloc
+    .calloc = allocator_calloc,
+    .free = allocator_free,
+  });
+
+	llist_arena  = arena_new(0x400000, 0x4fffff);
+	malloc_arena = arena_new(0x500000, 0x5fffff);
+
+  ll_memory_node_pushfront(&memory_list, (memory_node) {.begin = (void*)malloc_arena.base, .end = (void*)malloc_arena.limit, .free = true});
+}
+
+bool is_block_sufficient(memory_node n, uint32_t byte_size) {
+	return n.free && ((uint32_t)(n.end - n.begin) >= byte_size);
 }
 
 void* memory_alloc(uint32_t byte_size) {
 	//1. Find block big enough
-	llist_node* n = root;
-	while (n && !is_block_sufficient(n, byte_size)) {
-		n = n->next;
-	}
-	log_info("MemAlloc", "Size: %x", byte_size);
+  ll_memory_node_node* n = memory_list.head;
+  while (n && !is_block_sufficient(n->val, byte_size)) n = n->next;
+  if (!n) {
+    return NULL; // failed to find block big enough
+  }
 
-	//2. Split node into two, one that has the new allocation and one for the remaining free space
-	//   Fixme: Implement freelist to encourage memory reuse
-	llist_node* new = 0;
-	if (freelist != 0) {
-		new = freelist;
-		freelist = freelist->next;
-	}
-	else {
-		new = arena_alloc(&llist_arena, sizeof(llist_node));
-	}
-	new->begin = n->begin;
-	new->end = new->begin + byte_size;
-	new->free = false;
-	n->prev->next = new;
-	new->next = n;
-	n->begin = new->end + 1;
+  //2. Create a new memory node representing the new node
+  memory_node newmem = {
+    .begin = n->val.begin,
+    .end = n->val.begin + byte_size,
+    .free = false,
+  };
+  ll_memory_node_insert_after(&memory_list, n, newmem);
 
-	// n = the free node to split
-	if (n == root) {
-		root = new;
-		root->prev = 0;
-		root->next = n;
-		n->prev = root;
-	}
-	else {
-		new->next = n;
-		new->prev = n->prev;
-		n->prev = new;
-	}
+  //3. Modify the split node to reflect its new free size
+  n->val.begin = newmem.end + 1;
 
-	return new->begin;
+	return newmem.begin;
 }
 
 void* memory_calloc(uint32_t count, uint32_t size) {
 	void* p = memory_alloc(count * size);
+  if (!p) return NULL;
 	for (uint32_t i = 0; i < count * size; i ++) {
 		*(char*)p = 0;
 	}
 	return p;
 }
 
-void merge_free_nodes_rec(llist_node* n) {
+void merge_free_nodes_rec(ll_memory_node_node* n) {
 	// Can't merge null node
 	if (n == (void*)0) return;
 
 	// Merge previous
-	if (n->prev && n->prev->free) {
-		llist_node* to_free = n->prev;
+	if (n->prev && n->prev->val.free) {
+		ll_memory_node_node* to_free = n->prev;
 
 		// Rewire allocation list
-		n->begin = n->prev->begin;
-		if (n->prev == root) root = n;
+		n->val.begin = n->prev->val.begin;
+		if (n->prev == memory_list.head) memory_list.head = n;
 		else n->prev = n->prev->prev;
 		n->prev->next = n;
 
 		// Add to freelist
-		llist_node* oldhead = freelist;
-		llist_node** headp = &freelist;
-		*headp = to_free;
-		(*headp)->next = oldhead;
-		oldhead->prev = *headp;
+    ll_memory_node_helper_add_to_freelist(&memory_list, to_free);
+		//ll_memory_node_node* oldhead = memory_list.freelist;
+		//ll_memory_node_node** headp = &memory_list.freelist;
+		//*headp = to_free;
+		//(*headp)->next = oldhead;
+		//oldhead->prev = *headp;
 
 		merge_free_nodes_rec(n);
 		return;
 	}
 
 	// Merge next
-	if (n->next && n->next->free){
-		llist_node* to_free = n->next;
+	if (n->next && n->next->val.free){
+		ll_memory_node_node* to_free = n->next;
 
 		// Rewire allocation list
-		n->end = n->next->end;
+		n->val.end = n->next->val.end;
 		n->next = n->next->next;
 		n->next->prev = n;
 
 		// Add to freelist
-		llist_node* oldhead = freelist;
-		llist_node** headp = &freelist;
+		ll_memory_node_node* oldhead = memory_list.freelist;
+		ll_memory_node_node** headp = &memory_list.freelist;
 		*headp = to_free;
 		(*headp)->next = oldhead;
 		oldhead->prev = *headp;
@@ -123,42 +116,43 @@ void merge_free_nodes_rec(llist_node* n) {
 void memory_free_int(void* addr, const char* name) {
 	log_group_begin("MemFree");
 	// 1. Find allocation for addr
-	llist_node* n = root;
+	ll_memory_node_node* n = memory_list.head;
 	while (n) {
-		if (n->begin == addr) break;
+		if (n->val.begin == addr) break;
 		n = n->next;
 	}
 	if (!n) {
 		log_crit("Error", "'%s' | %x not allocated by memory_alloc", name, addr);
+		log_group_end("MemFree");
 		return; // address not allocated by memory_alloc
 	}
 	log_info("__", "'%s' | %x", name, addr);
 
 	// 2. Mark as free and merge neighbors
-	n->free = true;
+	n->val.free = true;
 	log_info("__", "Marked free");
 	merge_free_nodes_rec(n);
 
 	// 3. Clear out region
-	for (char* i = malloc_arena.base + n->begin; i < malloc_arena.base + n->end; i++) {
-		uint32_t* addr = (uint32_t*)(malloc_arena.base + i);
-		*addr = 0;
-	}
-	log_info("MemFree", "Freed %x, size=%x", addr, n->end - n->begin);
+	log_info("MemFree", "Freed %x, size=%x", addr, n->val.end - n->val.begin);
 	log_group_end("MemFree");
 }
 
+void memory_free(void* n) {
+  memory_free_int(n, ".");
+}
+
 void memory_debug() {
-	llist_node* n = root;
+  ll_memory_node_node* n = memory_list.head;
 	log_group_begin("MemDebug");
 		log_line_begin("Allocation List");
 		while (n) {
-			log_line("{%s, %x - %x} <-> ", n->free ? "Free" : "Used", n->begin, n->end);
+			log_line("{%s, %x - %x} <-> ", n->val.free ? "Free" : "Used", n->val.begin, n->val.end);
 			n = n->next;
 		}
 		log_line_end("Allocation List");
 		log_line_begin("Free list");
-		n = freelist;
+		n = memory_list.freelist;
 		if (!n) {
 			log_line("Empty");
 		}
