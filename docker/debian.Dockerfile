@@ -5,8 +5,9 @@ workdir /home/build
 
 run apt update
 run apt install -y grub-pc
-run apt install -y grub xorriso wget bash make
+run apt install -y xorriso wget bash make
 run apt install -y mtools dosfstools unzip
+run apt install -y gcc
 # run apt install -y qemu-utils
 
 # Setup cross compilers
