@@ -3,6 +3,7 @@
 #include "vga.h"
 #include "log.h"
 #include "io.h"
+#include "cpu.h"
 #include "../stdlib/printf.h"
 #include "../stdlib/memset.h"
 #include <stdbool.h>
@@ -125,7 +126,22 @@ void double_fault_handler(struct interrupt_registers_test* regs) {
 }
 
 void page_fault_handler(struct interrupt_registers_test* regs) {
-    log_info("Handler", "WIP");
+	log_info("Handler", "Page fault, looping infinitely (for now)");
+	int_regs_log(regs, HEX);
+  uint32_t errcode = regs->err_code;
+  log_info("Handler", "Error code binary: %b", errcode);
+  switch (errcode & 0x1) {
+  case 0: log_info("Handler", "Non present page accessed"); break;
+  case 1: log_info("Handler", "Page protection violation"); break;
+  }
+  switch ((errcode >> 1) & 0x1) {
+    case 0: log_info("Handler", "Caused by invalid write"); break;
+    case 1: log_info("Handler", "Caused by invalid read"); break;
+  }
+  log_info("Handler", "Fault address: %x", regs->cr2);
+  log_info("Handler", "Fault instruction: %x", regs->eip);
+  for (;;);
+	cpu_halt();
 }
 
 void unimplemented_handler(struct interrupt_registers_test* regs) {
