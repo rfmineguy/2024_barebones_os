@@ -70,8 +70,9 @@ void ui_putch(ui_box_t* box, int x, int y, unsigned char c){
     ui_putch_int(box, x + 1, y + 1, c);
 }
 void ui_putstr_int(ui_box_t* box, int x, int y, const char* str) {
-    for (int i = 0; i < strlen(str); i++) {
-        ui_putch_int(box, x + i, y, str[i]);
+    int len = strlen(str);
+    for (int i = 0; i < len; i++) {
+      ui_putch_int(box, x + i, y, str[i]);
     }
 }
 int ui_putstr(ui_box_t* box, int x, int y, const char* str){
