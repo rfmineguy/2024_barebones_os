@@ -75,16 +75,18 @@ int vga_put_cursor_at(size_t x, size_t y) {
     return 0;
 }
 
-void vga_put_entry_at(char ch, uint8_t color, size_t x, size_t y) {
-    buffer[y * VGA_WIDTH + x] = vga_entry(ch, color);
-}
-
 void vga_put_entry_at_v(uint16_t entry, size_t x, size_t y) {
+    if (x < 0 && x > VGA_WIDTH) return;
+    if (y < 0 && y > VGA_HEIGHT) return;
     buffer[y * VGA_WIDTH + x] = entry;
 }
 
+void vga_put_entry_at(char ch, uint8_t color, size_t x, size_t y) {
+  vga_put_entry_at_v(vga_entry(ch, color), x, y);
+}
+
 void vga_put_ch_at(char ch, size_t x, size_t y) {
-    buffer[y * VGA_WIDTH + x] = vga_entry(ch, term_color);
+    vga_put_entry_at_v(vga_entry(ch, term_color), x, y);
 }
 
 void vga_putch(char ch) {
