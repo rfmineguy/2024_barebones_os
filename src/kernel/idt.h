@@ -35,7 +35,9 @@ void irq_uninstall_handler(int);
 void irq_handler(struct interrupt_registers_test*);
 
 void div_zero_handler(struct interrupt_registers_test*);
+void invalid_opcode_handler(struct interrupt_registers_test*);
 void page_fault_handler(struct interrupt_registers_test*);
+void double_fault_handler(struct interrupt_registers_test*);
 void unimplemented_handler(struct interrupt_registers_test*);
 
 extern void isr0();
