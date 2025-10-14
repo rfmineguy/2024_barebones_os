@@ -1,0 +1,57 @@
+#include "queue_$T.h"
+#include "memory.h"
+#include "log.h"
+#include "memset.h"
+
+queue_$T queue_$T_create() {
+  queue_$T q = (queue_$T){0};
+  return q;
+}
+void queue_$T_free(queue_$T* q) {
+  queue_$T_node* n = q->front;
+  while (n) {
+    queue_$T_node* t = n;
+    n = n->next;
+    memory_free(t);
+  }
+}
+void queue_$T_enqueue(queue_$T* q, ^T val) {
+  queue_$T_node* node = 0;
+  log_info("Enqueue", "%x", q->freelist);
+  if (q->freelist) {
+    node = q->freelist;
+    q->freelist = q->freelist->next;
+    memset(node, 0, sizeof(*node));
+    log_info("Enqueue", "Taking from freelist");
+  }
+  else {
+    node = memory_calloc(1, sizeof(queue_$T_node));
+    log_info("Enqueue", "Allocating new node");
+  }
+  node->next = 0;
+  node->val = val;
+  if (!q->back) {
+    q->back = node;
+    q->front = node;
+  }
+  else {
+    q->back->next = node;
+    q->back = node;
+  }
+  q->size++;
+}
+result_queue_$T_dequeue queue_$T_dequeue(queue_$T* q) {
+  if (q->size == 0) return result_err(queue_$T_dequeue, "empty queue");
+  queue_$T_node* front = q->front;
+  ^T val = front->val;
+  q->front = front->next;
+  if (q->front == 0) q->back = 0;
+  q->size--;
+
+  if (front) {
+    front->next = q->freelist;
+    q->freelist = front;
+  }
+  log_info("Dequeue", "Added to freelist");
+  return result_ok(queue_$T_dequeue, val);
+}

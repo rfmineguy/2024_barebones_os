@@ -1,0 +1,165 @@
+#include "linkedlist_$T.h"
+#include "memory.h"
+
+
+// helper functions
+static void ll_$T_helper_add_to_freelist(ll_$T* ll, ll_$T_node* node) {
+  ll_$T_node* oldhead = ll->freelist;
+  ll->freelist = node;
+  ll->freelist->next = oldhead;
+  if (oldhead)
+    oldhead->prev = node;
+}
+
+// main functions
+ll_$T ll_$T_create() {
+  ll_$T ll = {0};
+  ll.allocator = (allocator) {
+    .malloc = memory_alloc,
+    .calloc = memory_calloc,
+    .free = memory_free,
+  };
+  return ll;
+}
+ll_$T ll_$T_create_w_allocator(allocator allocator) {
+  ll_$T ll = {0};
+  ll.allocator = allocator;
+  return ll;
+}
+void ll_$T_free(ll_$T* ll) {
+  ll_$T_node* n = ll->head;
+  while (n) {
+    ll_$T_node* t = n;
+    n = n->next;
+    ll->allocator.free(t);
+  }
+}
+void ll_$T_pushback(ll_$T* ll, ^T v) {
+  // Create or reuse an existing node
+  ll_$T_node* node = 0;
+  if (ll->freelist != 0) {
+    node = ll->freelist;
+    ll->freelist = ll->freelist->next;
+  }
+  else {
+    node = ll->allocator.calloc(1, sizeof(ll_$T_node));
+  }
+
+  if (!ll->head) {
+    ll->head = node;
+    ll->tail = ll->head;
+    ll->head->val = v;
+    return;
+  }
+  ll_$T_node* n = node;
+  ll_$T_node* oldtail = ll->tail;
+  n->val = v;
+  oldtail->next = n;
+  n->prev = oldtail;
+  ll->tail = n;
+}
+void ll_$T_pushfront(ll_$T* ll, ^T v) {
+  // Create or reuse an existing node
+  ll_$T_node* node = 0;
+  if (ll->freelist != 0) {
+    node = ll->freelist;
+    ll->freelist = ll->freelist->next;
+  }
+  else {
+    node = ll->allocator.calloc(1, sizeof(ll_$T_node));
+  }
+
+  // Put the node where it goes
+  if (!ll->head) {
+    ll->head = node;
+    ll->tail = ll->head;
+    ll->head->val = v;
+    return;
+  }
+  ll_$T_node* n = node;
+  ll_$T_node* oldhead = ll->head;
+  n->val = v;
+  oldhead->prev = n;
+  n->next = oldhead;
+  ll->head = n;
+}
+result_ll_$T_popback ll_$T_popback(ll_$T* ll) {
+  ll_$T_node* n = ll_$T_popback_node(ll);
+  if (!n) return result_err(ll_$T_popback, "Failed to pop");
+
+  // add to freelist
+  ll_$T_helper_add_to_freelist(ll, n);
+  // ll_$T_node* oldhead = ll->freelist;
+  // ll_$T_node** headp = &ll->freelist;
+  // *headp = n;
+  // (*headp)->next = oldhead;
+  // oldhead->prev = *headp;
+
+  return result_ok(ll_$T_popback, n->val);
+}
+result_ll_$T_popfront ll_$T_popfront(ll_$T* ll) {
+  ll_$T_node* n = ll_$T_popfront_node(ll);
+  if (!n) return result_err(ll_$T_popfront, "Failed to pop");
+
+  // add to freelist
+  ll_$T_helper_add_to_freelist(ll, n);
+  // ll_$T_node* oldhead = ll->freelist;
+  // ll_$T_node** headp = &ll->freelist;
+  // *headp = n;
+  // (*headp)->next = oldhead;
+  // oldhead->prev = *headp;
+
+  // return result
+  return result_ok(ll_$T_popfront, n->val);
+}
+ll_$T_node* ll_$T_popback_node(ll_$T* ll) {
+  if (!ll->tail) return 0;
+
+  ll_$T_node* to_free = ll->tail;
+  if (ll->head == ll->tail) {
+    ll->head = 0;
+    ll->tail = 0;
+  } else {
+    ll->tail = ll->tail->prev;
+    ll->tail->next = 0;
+  }
+  to_free->prev = 0;
+
+  // ll_$T_node* oldhead = ll->freelist;
+  // ll->freelist = to_free;
+  // ll->freelist->next = oldhead;
+  // if (oldhead)
+  //   oldhead->prev = to_free;
+
+  return to_free;
+}
+ll_$T_node* ll_$T_popfront_node(ll_$T* ll) {
+  if (!ll->head) return 0;
+
+  ll_$T_node* to_free = ll->head;
+  if (ll->head == ll->tail) {
+    ll->head = 0;
+    ll->tail = 0;
+  } else {
+    ll->head = ll->head->next;
+    ll->head->prev = 0;
+  }
+  to_free->prev = 0;
+
+  // ll_$T_node* oldhead = ll->freelist;
+  // ll->freelist = to_free;
+  // ll->freelist->next = oldhead;
+  // if (oldhead)
+  //   oldhead->prev = to_free;
+
+  return to_free;
+}
+void ll_$T_insert_after(ll_$T* ll, ll_$T_node* node, ^T v) {
+  
+}
+
+void ll_$T_delete_node(ll_$T* ll, ll_$T_node* node) {
+  if (node == ll->head) {
+    ll->head = ll->head->next;
+  }
+}

@@ -1,0 +1,35 @@
+#ifndef LLIST_$T_H
+#define LLIST_$T_H
+#include "SUPPORT_1"
+#include "result.h"
+#include "allocator.h"
+
+define_result(ll_$T_popback, ^T, const char*);
+define_result(ll_$T_popfront, ^T, const char*);
+
+typedef struct ll_$T_node {
+  ^T val;
+  struct ll_$T_node *prev, *next;
+} ll_$T_node;
+
+typedef struct ll_$T {
+  ll_$T_node *freelist;
+  ll_$T_node *head, *tail;
+
+  allocator allocator;
+} ll_$T;
+
+ll_$T                ll_$T_create();
+ll_$T                ll_$T_create_w_allocator(allocator);
+void                 ll_$T_free(ll_$T*);
+void                 ll_$T_pushback(ll_$T*, ^T);
+void                 ll_$T_pushfront(ll_$T*, ^T);
+result_ll_$T_popback ll_$T_popback(ll_$T*);
+result_ll_$T_popfront ll_$T_popfront(ll_$T*);
+ll_$T_node*          ll_$T_popback_node(ll_$T*);
+ll_$T_node*          ll_$T_popfront_node(ll_$T*);
+void                 ll_$T_insert_after(ll_$T*, ll_$T_node*, ^T);
+
+void                 ll_$T_delete_node(ll_$T*, ll_$T_node*);
+
+#endif
