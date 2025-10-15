@@ -7,7 +7,9 @@ function usage {
     Write-Host "usage: build <subcommand>"
     Write-Host "Subcommands:"
     Write-Host "  docker_get          : Build the required docker container"
-    Write-Host "  build               : Use the container to build the kernel"
+    Write-Host "  build_all           : Use the container to build the norm_kernel and test_kernel"
+    Write-Host "  build_norm          : Use the container to build the norm kernel"
+    Write-Host "  build_test          : Use the container to build the test kernel"
     Write-Host "  clean               : Use the container to clean the build files"
     Write-Host "  checkmboot          : Check if the generated binary is multiboot"
     Write-Host "  qemu                : Run generated kernel in qemu"
@@ -16,11 +18,23 @@ function usage {
     Write-Host "$docker_cmd"
 }
 
-function handle_build {
+function handle_build_test {
     New-Item -ItemType Directory -Force -Path out
-    $params = 'sh -c "make build -f ./scripts/debian.Makefile"'
+    $params = 'sh -c "make build_test -f ./scripts/debian.Makefile"'
     Write-Host "$docker_cmd $params"
     Invoke-Expression "$docker_cmd $params"
+}
+
+function handle_build_norm {
+    New-Item -ItemType Directory -Force -Path out
+    $params = 'sh -c "make build_norm -f ./scripts/debian.Makefile"'
+    Write-Host "$docker_cmd $params"
+    Invoke-Expression "$docker_cmd $params"
+}
+
+function handle_build_all {
+  handle_build_test
+  handle_build_norm
 }
 
 function handle_clean {
@@ -66,6 +80,9 @@ if ($args.Count -eq 0) {
 
     switch ($command) {
         'docker_get' { handle_docker_get }
+        'build_all' { handle_build_all }
+        'build_test' { handle_build_test }
+        'build_norm' { handle_build_norm }
         'build' { handle_build }
         'clean' { handle_clean }
         'checkmboot' { handle_checkmboot }

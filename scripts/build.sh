@@ -5,7 +5,9 @@ function usage {
     echo "usage: build <subcommand>";
     echo "Subcommands:";
     echo "  docker_get          : Build the required docker container" 
-    echo "  build               : Use the container to build the kernel"
+    echo "  build_all           : Use the container to build the norm_kernel and test_kernel"
+    echo "  build_norm          : Use the container to build the norm kernel"
+    echo "  build_test          : Use the container to build the test kernel"
     echo "  clean               : Use the container to clean the build files"
     echo "  checkmboot          : Check if the generated binary is multiboot"
     echo "  qemu                : Run generated kernel in qemu"
@@ -15,9 +17,19 @@ function usage {
     echo "  help                : Display this menu"
 }
 
-function handle_build {
+function handle_build_test {
     mkdir -p out
-    eval $docker_cmd 'sh -c "make build -f scripts/debian.Makefile"'
+    eval $docker_cmd 'sh -c "make build_test -f scripts/debian.Makefile"'
+}
+
+function handle_build_norm {
+    mkdir -p out
+    eval $docker_cmd 'sh -c "make build_norm -f scripts/debian.Makefile"'
+}
+
+function handle_build_all {
+  handle_build_test
+  handle_build_norm
 }
 
 function handle_clean {
@@ -52,7 +64,9 @@ function handle_lldb {
 
 case "$1" in
     docker_get ) shift 1; handle_docker_get $@ ;;
-    build )      shift 1; handle_build $@ ;;
+    build_all )  shift 1; handle_build_all $@ ;;
+    build_test ) shift 1; handle_build_test $@ ;;
+    build_norm ) shift 1; handle_build_norm $@ ;;
     clean )      shift 1; handle_clean $@ ;;
     checkmboot ) shift 1; handle_checkmboot $@ ;;
     qemu )       shift 1; handle_qemu $@ ;;
