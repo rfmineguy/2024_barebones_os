@@ -12,7 +12,10 @@ function usage {
     Write-Host "  build_test          : Use the container to build the test kernel"
     Write-Host "  clean               : Use the container to clean the build files"
     Write-Host "  checkmboot          : Check if the generated binary is multiboot"
-    Write-Host "  qemu                : Run generated kernel in qemu"
+    Write-Host "  qemu_norm           : Run generated norm kernel in qemu"
+    Write-Host "  qemu_test           : Run generated test kernel in qemu"
+    Write-Host "  qemu_debug_norm     : Run generated norm kernel in qemu debug mode"
+    Write-Host "  qemu_debug_test     : Run generated test kernel in qemu debug mode"
     Write-Host "  create_disk         : Create FAT12 disk image with default files on it"
     Write-Host "  help                : Display this menu"
     Write-Host "$docker_cmd"
@@ -54,13 +57,21 @@ function handle_docker_get {
     docker build -f debian.Dockerfile -t debian-test . --platform=linux/amd64
 }
 
-function handle_qemu {
+function handle_qemu_norm {
     # qemu-system-i386 -drive file=out/main.img,format=raw -cdrom out/os.iso -boot d -vga std -serial file:output.txt
-    qemu-system-i386 -cdrom out/os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt
+    qemu-system-i386 -monitor stdio -cdrom out/norm_os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -d mmu
 }
 
-function handle_qemu_debug {
-    qemu-system-i386 -drive file=drives/main.img,format=raw,if=ide -cdrom out/os.iso -boot d -vga std -serial file:output.txt -S -s
+function handle_qemu_norm_debug {
+    qemu-system-i386 -cdrom out/norm_os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -S -s
+}
+
+function handle_qemu_test {
+    qemu-system-i386 -monitor stdio -cdrom out/test_os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -d mmu
+}
+
+function handle_qemu_test_debug {
+    qemu-system-i386 -cdrom out/test_os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -S -s
 }
 
 function handle_create_disk {
@@ -86,8 +97,10 @@ if ($args.Count -eq 0) {
         'build' { handle_build }
         'clean' { handle_clean }
         'checkmboot' { handle_checkmboot }
-        'qemu' { handle_qemu }
-        'qemu_debug' { handle_qemu_debug }
+        'qemu_norm' { handle_qemu_norm }
+        'qemu_norm_debug' { handle_qemu_norm_debug }
+        'qemu_test' { handle_qemu_test }
+        'qemu_test_debug' { handle_qemu_test_debug }
         'create_disk' { handle_create_disk }
         'help' { usage }
         default {

@@ -10,8 +10,10 @@ function usage {
     echo "  build_test          : Use the container to build the test kernel"
     echo "  clean               : Use the container to clean the build files"
     echo "  checkmboot          : Check if the generated binary is multiboot"
-    echo "  qemu                : Run generated kernel in qemu"
-    echo "  qemu_debug          : Run generated kernel in qemu debug mode"
+    echo "  qemu_norm           : Run generated norm kernel in qemu"
+    echo "  qemu_test           : Run generated test kernel in qemu"
+    echo "  qemu_debug_norm     : Run generated norm kernel in qemu debug mode"
+    echo "  qemu_debug_test     : Run generated test kernel in qemu debug mode"
     echo "  lldb                : Run lldb with a special lldb init script"
     echo "  create_disk         : Create FAT12 disk image with default files on it"
     echo "  help                : Display this menu"
@@ -45,13 +47,21 @@ function handle_docker_get {
     docker build -f debian.Dockerfile -t debian-test . --platform=linux/amd64
 }
 
-function handle_qemu {
+function handle_qemu_norm {
     # qemu-system-i386 -drive file=out/main.img,format=raw -cdrom out/os.iso -boot d -vga std -serial file:output.txt
-    qemu-system-i386 -monitor stdio -cdrom out/os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -d mmu
+    qemu-system-i386 -monitor stdio -cdrom out/norm_os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -d mmu
 }
 
-function handle_qemu_debug {
-    qemu-system-i386 -cdrom out/os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -S -s
+function handle_qemu_norm_debug {
+    qemu-system-i386 -cdrom out/norm_os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -S -s
+}
+
+function handle_qemu_test {
+    qemu-system-i386 -monitor stdio -cdrom out/test_os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -d mmu
+}
+
+function handle_qemu_test_debug {
+    qemu-system-i386 -cdrom out/test_os.iso -drive file=drives/main.img,format=raw,if=ide -boot d -vga std -serial file:output.txt -S -s
 }
 
 function handle_create_disk {
@@ -63,14 +73,16 @@ function handle_lldb {
 }
 
 case "$1" in
-    docker_get ) shift 1; handle_docker_get $@ ;;
-    build_all )  shift 1; handle_build_all $@ ;;
-    build_test ) shift 1; handle_build_test $@ ;;
-    build_norm ) shift 1; handle_build_norm $@ ;;
-    clean )      shift 1; handle_clean $@ ;;
-    checkmboot ) shift 1; handle_checkmboot $@ ;;
-    qemu )       shift 1; handle_qemu $@ ;;
-    qemu_debug ) shift 1; handle_qemu_debug $@ ;;
+    docker_get )       shift 1; handle_docker_get $@ ;;
+    build_all )        shift 1; handle_build_all $@ ;;
+    build_test )       shift 1; handle_build_test $@ ;;
+    build_norm )       shift 1; handle_build_norm $@ ;;
+    clean )            shift 1; handle_clean $@ ;;
+    checkmboot )       shift 1; handle_checkmboot $@ ;;
+    qemu_norm )        shift 1; handle_qemu_norm $@ ;;
+    qemu_norm_debug )  shift 1; handle_qemu_norm_debug $@ ;;
+    qemu_test )        shift 1; handle_qemu_test $@ ;;
+    qemu_test_debug )  shift 1; handle_qemu_test_debug $@ ;;
     create_disk )shift 1; handle_create_disk $@ ;;
     lldb )       shift 1; handle_lldb $@ ;;
     help )       usage ;;
