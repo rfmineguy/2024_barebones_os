@@ -9,15 +9,39 @@
 
 KERNEL_SRC := src/kernel
 STDLIB_SRC := src/stdlib
+TPL_SRC 	 := src/tpl
+
+KERNEL_INC := src/include/kernel
+STDLIB_INC := src/include/stdlib
+
+KERNEL_DATASTRUCTURE_SRC     := $(KERNEL_SRC)/datastructures
+KERNEL_DATASTRUCTURE_INCLUDE := $(KERNEL_INC)/datastructures
+
+KERNEL_MAIN_ENTRY := $(KERNEL_SRC)/entrypoints/kernel.c
+KERNEL_TEST_ENTRY := $(KERNEL_SRC)/entrypoints/kernel_test.c
+
 TEST_SRC   := src/tests
 OUT        := out
 
-GENGEN_TPL_FILES := src/tpl/queue.htpl src/tpl/queue.ctpl \
-										src/tpl/linkedlist.htpl src/tpl/linkedlist.ctpl
-GENGEN_GEN_FILES := src/kernel/queue_event.c src/kernel/queue_event.h \
-										src/kernel/linkedlist_memory_node.c src/kernel/linkedlist_memory_node.h
+# ===================================
+#  Generics generator variables
+# ===================================
+GENGEN_TPL_FILES := $(TPL_SRC)/queue.htpl \
+										$(TPL_SRC)/queue.ctpl \
+										$(TPL_SRC)/linkedlist.htpl \
+										$(TPL_SRC)/linkedlist.ctpl
+
+GENGEN_GEN_FILES := $(KERNEL_DATASTRUCTURE_SRC)/queue_event.c \
+										$(KERNEL_DATASTRUCTURE_INCLUDE)/queue_event.h \
+										$(KERNEL_DATASTRUCTURE_SRC)/linkedlist_memory_node.c \
+										$(KERNEL_DATASTRUCTURE_INCLUDE)/linkedlist_memory_node.h
+
 GENGEN_SOURCE_FILES := $(filter %.c,$(GENGEN_GEN_FILES))
 
+
+# ===================================
+#  Generics generator variables
+# ===================================
 C_KERNEL_BLACKLIST := src/kernel/kernel_test.c src/kernel/kernel_no_test.c
 #C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/**/*.c))
 C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(shell find $(KERNEL_SRC)/ -type f -name "*.c"))
@@ -85,15 +109,15 @@ build: always $(GENGEN_GEN_FILES) $(OUT)/$(BIN) grub_gen_rescue gen_lst
 
 $(OUT)/%.c.o: $(KERNEL_SRC)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
+	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_INC) -I$(STDLIB_INC) -I$(TEST_INC) -I$(OUT)/
 
 $(OUT)/%.c.o: $(STDLIB_SRC)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
+	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_INC) -I$(STDLIB_INC) -I$(TEST_INC) -I$(OUT)/
 
 $(OUT)/%.c.o: $(TEST_SRC)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_SRC) -I$(STDLIB_SRC) -I$(TEST_SRC) -I$(OUT)/
+	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_INC) -I$(STDLIB_INC) -I$(TEST_INC) -I$(OUT)/
 
 $(OUT)/%.s.o: $(KERNEL_SRC)/%.s
 	@mkdir -p $(dir $@)
