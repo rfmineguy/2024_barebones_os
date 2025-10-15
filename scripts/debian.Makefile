@@ -37,12 +37,13 @@ GENGEN_GEN_FILES := $(KERNEL_DATASTRUCTURE_SRC)/queue_event.c \
 										$(KERNEL_DATASTRUCTURE_INCLUDE)/linkedlist_memory_node.h
 
 GENGEN_SOURCE_FILES := $(filter %.c,$(GENGEN_GEN_FILES))
+GENGEN_OBJECTS := $(patsubst $(KERNEL_DATASTRUCTURE_SRC)/%.c, $(OUT)/datastructures/%.c.o, $(GENGEN_SOURCE_FILES))
 
 
 # ===================================
 #  Generics generator variables
 # ===================================
-C_KERNEL_BLACKLIST := src/kernel/kernel_test.c src/kernel/kernel_no_test.c
+C_KERNEL_BLACKLIST := $(KERNEL_MAIN_ENTRY) $(KERNEL_TEST_ENTRY) $(GENGEN_SOURCE_FILES)
 #C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(wildcard $(KERNEL_SRC)/**/*.c))
 C_KERNEL_SOURCE := $(filter-out $(C_KERNEL_BLACKLIST), $(shell find $(KERNEL_SRC)/ -type f -name "*.c"))
 C_STDLIB_SOURCE := $(shell find $(STDLIB_SRC)/ -type f -name "*.c")
@@ -59,7 +60,8 @@ C_SOURCES := $(C_KERNEL_SOURCE) $(C_STDLIB_SOURCE)
 S_SOURCES := $(S_KERNEL_SOURCE) $(S_STDLIB_SOURCE)
 
 C_OBJECTS := $(patsubst $(KERNEL_SRC)/%.c, $(OUT)/%.c.o, $(C_KERNEL_SOURCE)) \
-			 $(patsubst $(STDLIB_SRC)/%.c, $(OUT)/%.c.o, $(C_STDLIB_SOURCE))
+			 $(patsubst $(STDLIB_SRC)/%.c, $(OUT)/%.c.o, $(C_STDLIB_SOURCE))\
+			 $(GENGEN_OBJECTS)
 			 #$(patsubst $(TEST_SRC)/%.c, $(OUT)/%.c.o, $(C_TEST_SOURCE))
 
 S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) \
