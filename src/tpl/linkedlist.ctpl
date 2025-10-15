@@ -1,5 +1,5 @@
-#include "linkedlist_$T.h"
-#include "memory.h"
+#include "datastructures/linkedlist_$T.h"
+#include "memory/memory.h"
 
 
 // helper functions

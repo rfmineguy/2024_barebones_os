@@ -1,6 +1,6 @@
-#include "queue_$T.h"
-#include "memory.h"
-#include "log.h"
+#include "datastructures/queue_$T.h"
+#include "memory/memory.h"
+#include "io/log.h"
 #include "memset.h"
 
 queue_$T queue_$T_create() {

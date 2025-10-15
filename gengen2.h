@@ -94,7 +94,7 @@ typedef const char* path;
 typedef struct generator_settings {
 	path *search_paths;
 	size_t path_count;
-	const char* outdir;
+	const char *source_outdir, *header_outdir;
 	bool verbose;
 	bool dryrun;
 	bool embed_deps; // ?
@@ -825,12 +825,32 @@ void generator_run(generator_settings settings, ctemplate tplt, replacement repl
 			return;
     });
 #else
-		assert_(realpath(settings.outdir, outfilepath_realpath) != NULL, {
-			fprintf(stderr, "Failed to realpath. '%s' doesn't exist\n", settings.outdir);
-			return;
-		});
+    const char* dot = strrchr(tplt.template_files[i].outfilename_fmt, '.');
+    if (!dot) {
+      fprintf(stderr, "Failed to find dot in filename\n");
+      continue;
+    }
+    printf("DOT: %s\n", dot);
+    if (strcmp(dot, ".h") == 0) {
+      printf("[GENGEN] header generator\n");
+      assert_(realpath(settings.header_outdir, outfilepath_realpath) != NULL, {
+        fprintf(stderr, "Failed to realpath. '%s' doesn't exist\n", settings.header_outdir);
+        return;
+      });
+    }
+    else if (strcmp(dot, ".c") == 0) {
+      printf("[GENGEN] source generator\n");
+      assert_(realpath(settings.source_outdir, outfilepath_realpath) != NULL, {
+        fprintf(stderr, "Failed to realpath. '%s' doesn't exist\n", settings.source_outdir);
+        return;
+      });
+    }
+    else {
+      strncpy(outfilepath_realpath, "No realpath", PATH_MAX);
+    }
 #endif
 		strncpy(outfilepath_actual, outfilepath_realpath, PATH_MAX);
+    printf("%s\n", outfilepath_actual);
 #ifdef _WIN32
 		strncat(outfilepath_actual, "\\", PATH_MAX);
 #else

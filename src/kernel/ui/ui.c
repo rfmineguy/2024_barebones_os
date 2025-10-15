@@ -1,0 +1,225 @@
+#include "ui/ui.h"
+#include "drivers/vga.h"
+#include "util/extascii.h"
+#include "stdarg.h"
+#include "string.h"
+#include "printf.h"
+#include "ctype.h"
+#include "stdbool.h"
+
+// store state of entire screen here
+//    the uibox's will index into their subregions
+uint16_t ui_screen_buf[VGA_WIDTH * VGA_HEIGHT];
+
+// Example:
+//   list: []                         Add {0 , 0, 10, 10}
+//   list: [{0,0,10,10}]              Add {11, 0, 10, 10}
+//   list: [{0,0,10,10},{11,0,10,10}]
+ui_region update_list[1000] = {0};
+int update_list_len = 0;
+
+// Box Ids
+int next_valid_box_id = 0;
+
+bool ui_is_on_border(ui_box_t* box, int x, int y) {
+    ui_region r = box->region;
+    return x == r.x || x == r.x + r.w || y == r.y || y == r.y + r.h; 
+}
+
+ui_box_t ui_new(int _x, int _y, int _w, int _h, const char* _title) {
+    return (ui_box_t) {
+        .region = (ui_region) {
+            .x=_x,.y=_y,.w=_w,.h=_h
+        },
+        .title = _title,
+        .boxid = next_valid_box_id++,
+        .body_color = vga_make_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK),
+        .border_color = vga_make_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK),
+    };
+}
+void ui_set_border_color(ui_box_t* box, uint8_t fg, uint8_t bg){
+    box->border_color = vga_make_entry_color(fg, bg);
+}
+void ui_set_body_color(ui_box_t* box, uint8_t fg, uint8_t bg){
+    box->body_color = vga_make_entry_color(fg, bg);
+}
+void ui_putch_int(ui_box_t* box, int x, int y, unsigned char c) {
+    int bx = box->region.x + x;
+    int by = box->region.y + y;
+    switch (c) {
+        case '\n':
+        default: {
+            uint8_t color = ui_is_on_border(box, bx, by) ? box->border_color : box->body_color;
+            ui_screen_buf[by * VGA_WIDTH + bx] = vga_make_entry(c, color);
+         }
+    }
+    update_list[update_list_len++] = (ui_region){.x=bx, .y=by, .w=1, .h=1};
+}
+char ui_getch_r(ui_box_t* box, int x, int y) {
+	int bx = box->region.x + x;
+	int by = box->region.y + y;
+	return ui_screen_buf[by * VGA_WIDTH + bx] & 0xff;
+}
+char ui_getch(ui_box_t* box, int x, int y) {
+	return ui_getch_r(box, x + 1, y + 1);
+}
+void ui_putch_r(ui_box_t* box, int x, int y, unsigned char c) {
+    ui_putch_int(box, x, y, c);
+}
+void ui_putch(ui_box_t* box, int x, int y, unsigned char c){
+    ui_putch_int(box, x + 1, y + 1, c);
+}
+void ui_putstr_int(ui_box_t* box, int x, int y, const char* str) {
+    int len = strlen(str);
+    for (int i = 0; i < len; i++) {
+      ui_putch_int(box, x + i, y, str[i]);
+    }
+}
+int ui_putstr(ui_box_t* box, int x, int y, const char* str){
+    int line = 0;
+    for (int i = 0; i < strlen(str); i++) {
+        if ((x + i) % (box->region.w - 1) == 0) {
+            line++;
+        }
+        ui_putch(box, (x + i) % (box->region.w - 1), (y + line) % (box->region.h - 2), str[i]);
+    }
+    return line + 1;
+}
+void ui_printf(ui_box_t* box, int x, int y, const char* fmt, ...){
+    if (x < 0 || x >= box->region.w) return;
+    if (y < 0 || y >= box->region.h) return;
+
+    static char buf[500] = {0};
+    va_list alist;
+    va_start(alist, fmt);
+    k_vsprintf(buf, fmt, alist);
+    va_end(alist);
+
+    char* bufptr = buf;
+    int linespan = strlen(buf) % (box->region.w - 2); // how many lines will this string span
+    for (int i = 0; i <= linespan; i++) {
+        int linelen = strlen(buf) < box->region.w - 2 ? strlen(buf) : box->region.w -2;
+        for (int i = 0; i < linelen; i++) {
+            ui_putch(box, x + i, y, bufptr[i]);
+            bufptr += linelen;
+        }
+        y++;
+        x = 0;
+    }
+}
+void ui_fill(ui_box_t* box, char c) {
+    ui_region r = box->region;
+    for (int i = r.x + 1; i < r.x + r.w; i++) {
+        for (int j = r.y + 1; j < r.y + r.h; j++) {
+            int index = j * VGA_WIDTH + i;
+            if (index > VGA_WIDTH * VGA_HEIGHT) return;
+            ui_screen_buf[index] = vga_make_entry(c, box->body_color);
+        }
+    }
+    update_list[update_list_len++] = r;
+}
+void ui_clear_r(ui_box_t* box, ui_region r) {
+    for (int i = r.x; i < r.x + r.w; i++) {
+        for (int j = r.y; j < r.y + r.h; j++) {
+            ui_putch(box, i, j, ' ');
+        }
+    }
+    update_list[update_list_len++] = r;
+}
+void ui_clear(ui_box_t* box){
+    ui_region r = (ui_region) {
+       .x = box->region.x + 1,
+       .y = box->region.y + 1,
+       .w = box->region.w - 2,
+       .h = box->region.h - 2 
+    };
+    ui_clear_r(box, r);
+}
+void ui_clear_rv(ui_box_t* box, int x, int y, int w, int h){
+    ui_region r = (ui_region){.x=x, .y=y, .w=w, .h=h};
+    ui_clear_r(box, r);
+}
+
+int ui_scroll_vertical_n(ui_box_t* b, int n) {
+    ui_region r = b->region;
+    if (n <= 0) return 0;
+    if (n >= r.h - 1) return 0;
+    for (int i = 0; i < n; i++)
+        ui_scroll_vertical(b);
+    return n;
+}
+
+int ui_scroll_vertical(ui_box_t* b) {
+    ui_refresh();
+    ui_region r = b->region;
+    for (int j = r.y + 1; j < r.y + (r.h - 1 - 1); j++) {
+        // swap character at j + 1, with j
+        for (int i = r.x + 1; i < r.x + r.w - 1; i++) {
+            uint16_t n_below = ui_screen_buf[(j + 1) * VGA_WIDTH + i];
+            ui_screen_buf[j * VGA_WIDTH + i] = n_below;
+            ui_screen_buf[(j + 1) * VGA_WIDTH + i] = vga_make_entry(' ', b->body_color);
+        }
+    }
+    update_list[update_list_len++] = r;
+    ui_refresh();
+    return 1;
+}
+
+void ui_box(ui_box_t* box) {
+    ui_region r = box->region;
+    ui_putch_int(box, 0, 0, CTL);
+    ui_putch_int(box, r.w, 0, CTR);
+    ui_putch_int(box, 0, r.h, CBL);
+    ui_putch_int(box, r.w, r.h, CBR);
+    for (int i = 1; i < r.w; i++) {
+        ui_putch_int(box, i, 0, HOR);
+        ui_putch_int(box, i, r.h, HOR);
+    }
+    for (int i = 1; i < r.h; i++) {
+        ui_putch_int(box, 0, i, VERT);
+        ui_putch_int(box, r.w, i, VERT);
+    }
+    ui_putstr_int(box, 1, 0, box->title);
+
+    // fill in with blanks to fill in the window color
+    ui_fill(box, ' ');
+}
+
+// go through update queue and show the changes to the real vga buffer
+//  from the ui_screen_buf
+void ui_refresh() {
+    if (update_list_len == 0) return;
+    for (int i = 0; i < update_list_len; i++) {
+        ui_region r = update_list[i];
+        for (int j = r.y; j <= r.y + r.h; j++) {
+            for (int i = r.x; i <= r.x + r.w; i++) {
+                uint16_t new_entry = ui_screen_buf[j * VGA_WIDTH + i];
+                vga_put_entry_at_v(new_entry, i, j);
+            }
+        }
+    }
+    update_list_len = 0; // we handled all the updates
+}
+
+// NOTE: The update list being a linked list would be significantly more
+// effective. But for now I have no good way to allocate list nodes
+//
+// This function doesn't remove the updates associated with `b` and thus
+// they will be re-updated when ui2_refresh() is called.
+//
+// Linked list would solve this as I could easily remove the update from 
+// the list
+// (FUTURE)
+void ui_refresh_b(ui_box_t* b) {
+    if (update_list_len == 0) return;
+    for (int i = 0; i < update_list_len; i++) {
+        ui_region r = update_list[i];
+        if (r.parent_boxid != b->boxid) continue; // skip this update
+        for (int j = r.y; j <= r.y + r.h; j++) {
+            for (int i = r.x; i <= r.x + r.w; i++) {
+                uint16_t new_entry = ui_screen_buf[j * VGA_WIDTH + i];
+                vga_put_entry_at_v(new_entry, i, j);
+            }
+        }
+    }
+}

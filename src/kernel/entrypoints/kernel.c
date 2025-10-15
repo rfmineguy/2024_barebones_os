@@ -1,0 +1,143 @@
+// This file is intended to be included in kernel.c when the KERNEL_TESTING
+//  macro is defined
+#include "drivers/vga.h"
+#include "arch/x86/gdt.h"
+#include "arch/x86/idt.h"
+#include "io/serial.h"
+#include "drivers/timer.h"
+#include "drivers/keyboard.h"
+#include "drivers/mouse.h"
+#include "arch/x86/multiboot2.h"
+#include "memory/arena.h"
+#include "io/log.h"
+#include "shell/shell_2.h"
+#include "ui/ui.h"
+#include "arch/x86/cpu.h"
+#include "ui/rfos_splash.h"            // related to the splashbox
+#include "ui/tips.h"                   // related to the tipsbox
+#include "ui/files.h"                  // related to the filebox
+#include "filesystem/fat_drive.h"
+#include "event/event_system.h"
+#include "memory/memory.h"
+#include "memory/paging.h"
+#include "datastructures/linkedlist_memory_node.h"
+
+#define UNUSED(x) (void)(x)
+
+arena kernel_arena;
+
+void kernel_main(int magic, struct multiboot_header* header) {
+     UNUSED(magic);
+     ui_box_t splashbox, infobox, shellbox, tipsbox, filebox;
+		 ui_box_t mainbox;
+ 
+     serial_init();
+     vga_init();
+     vga_writestring("Kernel loading... please be patient");
+ 
+     idt_cli();
+ 
+     gdt_init();
+     idt_install();
+     timer_init();
+     keyboard_init();
+     mouse_install();
+
+		 log_info("Kernel", "Setup GDT, IDT, Timer, Keyboard, Mouse");
+
+		 // idt_debug_setup();
+ 
+     idt_sti();
+		 log_info("Interrupts", "Enabled");
+
+     paging_init();
+     memory_init(header);
+
+     log_group_begin("linkedlist push test");
+     ll_memory_node ll = ll_memory_node_create();
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=0, .end=(void*)42, .free=0});
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=(void*)43, .end=(void*)100, .free=1});
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=(void*)101, .end=(void*)500, .free=1});
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=(void*)501, .end=(void*)600, .free=1});
+     ll_memory_node_pushfront(&ll, (memory_node){.begin=(void*)601, .end=(void*)900, .free=1});
+     ll_memory_node_pushback(&ll, (memory_node){.begin=(void*)4279, .end=(void*)900, .free=1});
+     memory_debug();
+     for (ll_memory_node_node* n = ll.head; n; n = n->next) {
+       log_info("ll", "begin: %d, end: %d, free: %d", n->val.begin, n->val.end, n->val.free);
+     }
+     log_group_end("linkedlist push test");
+
+     log_group_begin("linkedlist pop test");
+     result_ll_memory_node_popback r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     r = ll_memory_node_popback(&ll);
+     if (r.isok) log_info("OK", "begin: %d, end: %d, free: %d", r.ok.begin, r.ok.end, r.ok.free);
+     log_group_end("linkedlist pop test");
+
+     log_group_begin("memory allocator test");
+     memory_debug();
+     log_group_end("memory allocator test");
+
+
+     log_info("something", "\x1b[32mSome text\x1b[0m");
+     // log_warn("System", "Halting...");
+     // for (;;);
+     event_system_init();
+
+     // Drive setup
+     log_group_begin("Drive Setup %s", "hi");
+     fat_drive_read_header(); // read drive MBR
+     fat_drive_debug_header();
+     fat_drive_read();
+     fat_drive_read_root_dir();
+     log_group_end("Drive Setup");
+ 
+     // Setup uiboxes
+     splashbox = ui_new(0,  0,  37, 10, "Splash");
+     ui_set_body_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+     ui_set_border_color(&splashbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+ 
+     infobox = ui_new(38, 0,  17, 10, "Info");
+     ui_set_body_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+     ui_set_border_color(&infobox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+ 
+     tipsbox = ui_new(56, 0, 23, 10, "Tips");
+     ui_set_body_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+     ui_set_border_color(&tipsbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+ 
+     shellbox = ui_new(0,  11, 59, 13, "Shell");
+     ui_set_body_color(&shellbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+     ui_set_border_color(&shellbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+ 
+     filebox = ui_new(60, 11, 19, 13, "Files");
+     ui_set_body_color(&filebox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+     ui_set_border_color(&filebox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+
+     // // Display uiboxes
+     ui_box(&splashbox);
+     ui_box(&infobox);
+     ui_box(&shellbox);
+     ui_box(&tipsbox);
+     ui_box(&filebox);
+     // rfos_splash(&splashbox);
+     // tips_populate(&tipsbox);
+     // files_populate(&filebox);
+
+		 mainbox = ui_new(0, 0, 79, 24, "Main");
+     ui_set_body_color(&mainbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLUE);
+     ui_set_border_color(&mainbox, VGA_COLOR_LIGHT_GREY, VGA_COLOR_LIGHT_BLUE);
+		 log_info("Kernel", "Setup mainbox");
+ 
+     shell2_run(&mainbox);
+
+		 log_info("CPU", "Halting");
+		 cpu_halt();
+}

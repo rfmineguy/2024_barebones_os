@@ -2,7 +2,7 @@
 #define LLIST_$T_H
 #include "SUPPORT_1"
 #include "result.h"
-#include "allocator.h"
+#include "memory/allocator.h"
 
 define_result(ll_$T_popback, ^T, const char*);
 define_result(ll_$T_popfront, ^T, const char*);
