@@ -11,8 +11,8 @@ qemu_log.txt
 compile_commands.json
 
 # Generic datastructure files
-src/kernel/linkedlist*
-src/kernel/queue*
+src/include/kernel/datastructures
+src/kernel/datastructures
 
 tools/printf/printf_test
 
