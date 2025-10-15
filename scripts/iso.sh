@@ -1,6 +1,6 @@
 # Arguments
 function grub_gen_config() {
-echo << EOF
+cat <<EOF
 set timeout=5
 set default=0
 
@@ -39,7 +39,7 @@ function grub_gen_rescue() {
 	dd if=drives/main.img of=isodir/main.img
 	grub-mkrescue -o $iso_outpath isodir
 	rm grub.cfg
-	rm -r isodir
+	# rm -r isodir
 }
 
 # Arguments
