@@ -159,54 +159,11 @@ $(OUT)/%.c.o.lst: $(OUT)/%.c.o
 $(OUT)/%.s.o.lst: $(OUT)/%.s.o
 	$(OBJDUMP) -d -S $^ > $@
 
-# Grub related targets
-grub_gen_cfg_fs:
-	@{ \
-		echo "set timeout=5"; \
-		echo "set default=0"; \
-		echo ""; \
-		echo "menuentry \"myos\" {"; \
-		echo "    multiboot2 /boot/os.bin"; \
-		echo "    boot"; \
-		echo "}"; \
-	} > grub.cfg
+$(OUT)/$(NORM_BIN_NAME).iso: $(OUT)/$(NORM_BIN_NAME).bin
+	source $(CURDIR)/scripts/iso.sh && grub_gen_rescue "$^" "$@"
 
-grub_gen_cfg_nofs:
-	@{ \
-		echo "set timeout=5"; \
-		echo "set default=0"; \
-		echo ""; \
-		echo ""; \
-		echo "menuentry \"myos\" {"; \
-		echo "    multiboot2 /boot/os.bin";\
-		echo "    boot";\
-		echo "}"; \
-	} > grub.cfg
-
-grub_gen_rescue: grub_gen_cfg_fs
-	mkdir -p isodir/boot/grub
-	dd if=out/os.bin of=isodir/boot/os.bin
-	dd if=grub.cfg of=isodir/boot/grub/grub.cfg
-	dd if=drives/main.img of=isodir/main.img
-	grub-mkrescue -o out/os.iso isodir
-	rm grub.cfg
-	rm -r isodir
-
-grub_check_multiboot: checkmboot1 checkmboot2
-checkmboot1:
-	@echo "Checking multiboot"
-	@if grub-file --is-x86-multiboot out/os.bin; then \
-		echo "Multiboot confirmed"; \
-	else \
-		echo "Multiboot not present "; \
-	fi
-checkmboot2:
-	@echo "Checking multiboot2"
-	@if grub-file --is-x86-multiboot2 out/os.bin; then \
-		echo "Multiboot2 confirmed"; \
-	else \
-		echo "Multiboot2 not present "; \
-	fi
+$(OUT)/$(TEST_BIN_NAME).iso: $(OUT)/$(TEST_BIN_NAME).bin
+	source $(CURDIR)/scripts/iso.sh && grub_gen_rescue "$^" "$@"
 
 # File system targets
 create_fat_fs:
