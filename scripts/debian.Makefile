@@ -64,6 +64,9 @@ C_OBJECTS := $(patsubst $(KERNEL_SRC)/%.c, $(OUT)/%.c.o, $(C_KERNEL_SOURCE)) \
 			 $(GENGEN_OBJECTS)
 			 #$(patsubst $(TEST_SRC)/%.c, $(OUT)/%.c.o, $(C_TEST_SOURCE))
 
+C_ENTRY_NORM_OBJECT := $(patsubst $(KERNEL_SRC)/entrypoints/%.c, $(OUT)/entrypoints/%.c.o, $(KERNEL_MAIN_ENTRY))
+C_ENTRY_TEST_OBJECT := $(patsubst $(KERNEL_SRC)/entrypoints/%.c, $(OUT)/entrypoints/%.c.o, $(KERNEL_TEST_ENTRY))
+
 S_OBJECTS := $(patsubst $(KERNEL_SRC)/%.s, $(OUT)/%.s.o, $(S_KERNEL_SOURCE)) \
 						 $(patsubst $(STDLIB_SRC)/%.s, $(OUT)/%.s.o, $(S_STDLIB_SOURCE))
 
@@ -73,7 +76,8 @@ S_LISTINGS:= $(patsubst $(OUT)/%.s.o, $(OUT)/%.s.o.lst, $(S_OBJECTS))
 ALL_OBJS := $(C_OBJECTS) $(S_OBJECTS)
 OBJ_DIRS := $(patsubst %, $(OUT)/%, $(C_OBJECTS) $(S_OBJECTS))
 
-BIN := os.bin
+NORM_BIN_NAME := norm_os
+TEST_BIN_NAME := test_os
 OPTIMIZATION_FLAGS := -O0
 CFLAGS := -std=gnu99 -ffreestanding -nostdlib -m32 -ggdb -gdwarf
 ASFLAGS := -g
@@ -90,7 +94,7 @@ CC_BIG := gcc
 
 .PHONY: grub_gen_cfg grub_gen_rescue grub_check_multiboot
 .PHONY: create_fat_fs
-.PHONY: always clean build
+.PHONY: always clean build_test build_norm
 .PHONY: gen_lst
 # create_fat_fs
 always:
@@ -101,13 +105,19 @@ always:
 	@echo "S Object Files"
 	@echo $(S_OBJECTS)
 	@echo "S Object Files End"
+	@echo "gengen sources: $(GENGEN_SOURCE_FILES)"
 
 clean:
 	-rm -r $(OUT)/
 	-rm -r $(GENGEN_GEN_FILES)
 
 # Build related targets
-build: always $(GENGEN_GEN_FILES) $(OUT)/$(BIN) grub_gen_rescue gen_lst
+build_norm: always $(GENGEN_GEN_FILES) $(OUT)/$(NORM_BIN_NAME).iso grub_gen_rescue gen_lst
+build_test: always $(GENGEN_GEN_FILES) $(OUT)/$(TEST_BIN_NAME).iso grub_gen_rescue gen_lst
+
+$(OUT)/entrypoints/%.c.o: $(KERNEL_SRC)/entrypoints/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_INC) -I$(STDLIB_INC) -I$(TEST_INC) -I$(OUT)/
 
 $(OUT)/%.c.o: $(KERNEL_SRC)/%.c
 	@mkdir -p $(dir $@)
@@ -129,8 +139,11 @@ $(OUT)/%.s.o: $(STDLIB_SRC)/%.s
 	@mkdir -p $(dir $@)
 	$(AS) $(ASFLAGS) $^ -o $@
 
-$(OUT)/$(BIN): $(C_OBJECTS) $(S_OBJECTS)
-	$(LD) -T linker.ld -o $@ -nostdlib $(S_OBJECTS) $(C_OBJECTS) -L$(LIBDIR) -lgcc
+$(OUT)/$(NORM_BIN_NAME).bin: $(C_OBJECTS) $(S_OBJECTS) $(C_ENTRY_NORM_OBJECT)
+	$(LD) -T linker.ld -o $@ -nostdlib $(S_OBJECTS) $(C_OBJECTS) $(C_ENTRY_NORM_OBJECT) -L$(LIBDIR) -lgcc
+
+$(OUT)/$(TEST_BIN_NAME).bin: $(C_OBJECTS) $(S_OBJECTS) $(C_ENTRY_TEST_OBJECT)
+	$(LD) -T linker.ld -o $@ -nostdlib $(S_OBJECTS) $(C_OBJECTS) $(C_ENTRY_TEST_OBJECT) -L$(LIBDIR) -lgcc
 
 # Build gengen
 $(OUT)/gengen: gengen.c
