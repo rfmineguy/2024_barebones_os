@@ -92,7 +92,6 @@ LIBDIR := /home/build/lib/gcc/i686-elf/7.1.0/
 
 CC_BIG := gcc
 
-.PHONY: grub_gen_cfg grub_gen_rescue grub_check_multiboot
 .PHONY: create_fat_fs
 .PHONY: always clean build_test build_norm
 .PHONY: gen_lst
@@ -106,36 +105,37 @@ always:
 	@echo $(S_OBJECTS)
 	@echo "S Object Files End"
 	@echo "gengen sources: $(GENGEN_SOURCE_FILES)"
+	@echo "gengen gens: $(GENGEN_GEN_FILES)"
 
 clean:
 	-rm -r $(OUT)/
 	-rm -r $(GENGEN_GEN_FILES)
 
 # Build related targets
-build_norm: always $(GENGEN_GEN_FILES) $(OUT)/$(NORM_BIN_NAME).iso grub_gen_rescue gen_lst
-build_test: always $(GENGEN_GEN_FILES) $(OUT)/$(TEST_BIN_NAME).iso grub_gen_rescue gen_lst
+build_norm: always $(GENGEN_GEN_FILES) $(OUT)/$(NORM_BIN_NAME).iso gen_lst
+build_test: always $(GENGEN_GEN_FILES) $(OUT)/$(TEST_BIN_NAME).iso gen_lst
 
-$(OUT)/entrypoints/%.c.o: $(KERNEL_SRC)/entrypoints/%.c
+$(OUT)/entrypoints/%.c.o: $(KERNEL_SRC)/entrypoints/%.c | $(GENGEN_GEN_FILES)
 	@mkdir -p $(dir $@)
 	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_INC) -I$(STDLIB_INC) -I$(TEST_INC) -I$(OUT)/
 
-$(OUT)/%.c.o: $(KERNEL_SRC)/%.c
+$(OUT)/%.c.o: $(KERNEL_SRC)/%.c | $(GENGEN_GEN_FILES)
 	@mkdir -p $(dir $@)
 	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_INC) -I$(STDLIB_INC) -I$(TEST_INC) -I$(OUT)/
 
-$(OUT)/%.c.o: $(STDLIB_SRC)/%.c
+$(OUT)/%.c.o: $(STDLIB_SRC)/%.c | $(GENGEN_GEN_FILES)
 	@mkdir -p $(dir $@)
 	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_INC) -I$(STDLIB_INC) -I$(TEST_INC) -I$(OUT)/
 
-$(OUT)/%.c.o: $(TEST_SRC)/%.c
+$(OUT)/%.c.o: $(TEST_SRC)/%.c | $(GENGEN_GEN_FILES)
 	@mkdir -p $(dir $@)
 	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_INC) -I$(STDLIB_INC) -I$(TEST_INC) -I$(OUT)/
 
-$(OUT)/%.s.o: $(KERNEL_SRC)/%.s
+$(OUT)/%.s.o: $(KERNEL_SRC)/%.s | $(GENGEN_GEN_FILES)
 	@mkdir -p $(dir $@)
 	$(AS) $(ASFLAGS) $^ -o $@
 
-$(OUT)/%.s.o: $(STDLIB_SRC)/%.s
+$(OUT)/%.s.o: $(STDLIB_SRC)/%.s | $(GENGEN_GEN_FILES)
 	@mkdir -p $(dir $@)
 	$(AS) $(ASFLAGS) $^ -o $@
 
@@ -149,8 +149,11 @@ $(OUT)/$(TEST_BIN_NAME).bin: $(C_OBJECTS) $(S_OBJECTS) $(C_ENTRY_TEST_OBJECT)
 $(OUT)/gengen: gengen.c
 	$(CC_BIG) -o $@ $^
 
-$(GENGEN_GEN_FILES): $(OUT)/gengen $(GENGEN_TPL_FILES)
+.PHONY: generate
+generate: $(OUT)/gengen $(GENGEN_TPL_FILES)
 	./$(OUT)/gengen
+
+$(GENGEN_GEN_FILES): generate
 
 # Generate listing files
 gen_lst: $(C_LISTINGS) $(S_LISTINGS)
