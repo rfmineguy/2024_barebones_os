@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-docker_cmd='docker run -e HOST_PATH=$(pwd) --rm -it -w /root/workspace -v $(pwd):/root/workspace debian-test'
-
 function usage {
     echo "usage: build <subcommand>";
     echo "Subcommands:";
@@ -18,15 +16,20 @@ function usage {
     echo "  create_disk         : Create FAT12 disk image with default files on it"
     echo "  help                : Display this menu"
 }
+# usage
+#   run_docker 'some command here $(nproc)'
+function run_docker {
+  docker run -e HOST_PATH="$(pwd)" --rm -it -w /root/workspace -v "$(pwd)":/root/workspace debian-test sh -c "$@"
+}
 
 function handle_build_test {
     mkdir -p out
-    eval $docker_cmd 'sh -c "make build_test -f scripts/debian.Makefile"'
+    run_docker 'make -j $(nproc) build_test -f scripts/debian.Makefile'
 }
 
 function handle_build_norm {
     mkdir -p out
-    eval $docker_cmd 'sh -c "make build_norm -f scripts/debian.Makefile"'
+    run_docker 'make -j $(nproc) build_norm -f scripts/debian.Makefile'
 }
 
 function handle_build_all {
@@ -35,11 +38,11 @@ function handle_build_all {
 }
 
 function handle_clean {
-    eval $docker_cmd 'sh -c "make clean -f scripts/debian.Makefile"'
+  run_docker 'make -j $(nproc) clean -f scripts/debian.Makefile'
 }
 
 function handle_checkmboot {
-    eval $docker_cmd 'sh -c "make grub_check_multiboot -f scripts/debian.Makefile"'
+  $(eval $docker_cmd) 'sh -c "make grub_check_multiboot -f scripts/debian.Makefile"'
 }
 
 function handle_docker_get {
