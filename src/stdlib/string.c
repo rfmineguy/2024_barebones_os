@@ -68,3 +68,27 @@ char *strrchr(const char *s, int c) {
     }
     return (void*)0; // return NULL if the character is not found
 }
+
+int str_visiblelen(const char* s) {
+  int len = 0;
+  for (; *s; s++) {
+    if (*s == '\x1b') { // Start of ANSI escape
+      while (*s && *s != 'm') s++; // skip until end
+      if (!*s) break;              // end of string early
+    } else {
+      len++;
+    }
+  }
+  return len;
+}
+int str_visiblelen_n(const char* s, int n) {
+  int len = 0;
+  for (int i = 0; i < n && s[i]; i++) {
+    if (s[i] == '\x1b') { // Start of ANSI escape
+      while (i < n && s[i] && s[i] != 'm') i++; // skip until end
+    } else {
+      len++;
+    }
+  }
+  return len;
+}

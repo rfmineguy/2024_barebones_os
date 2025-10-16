@@ -11,4 +11,7 @@ int   strncmp(const char* str1, const char* str2, int n);
 
 char* strrchr(const char*, int);
 
+int   str_visiblelen(const char*);
+int   str_visiblelen_n(const char*, int n);
+
 #endif
