@@ -19,6 +19,7 @@ KERNEL_DATASTRUCTURE_INCLUDE := $(KERNEL_INC)/datastructures
 
 KERNEL_MAIN_ENTRY := $(KERNEL_SRC)/entrypoints/kernel.c
 KERNEL_TEST_ENTRY := $(KERNEL_SRC)/entrypoints/kernel_test.c
+KERNEL_ENTRY_POINTS := $(KERNEL_MAIN_ENTRY) $(KERNEL_TEST_ENTRY)
 
 TEST_SRC   := src/tests
 OUT        := out
@@ -139,10 +140,10 @@ $(OUT)/%.s.o: $(STDLIB_SRC)/%.s | $(GENGEN_GEN_FILES)
 	@mkdir -p $(dir $@)
 	$(AS) $(ASFLAGS) $^ -o $@
 
-$(OUT)/$(NORM_BIN_NAME).bin: $(C_OBJECTS) $(S_OBJECTS) $(C_ENTRY_NORM_OBJECT)
+$(OUT)/$(NORM_BIN_NAME).bin: $(C_OBJECTS) $(S_OBJECTS) | $(C_ENTRY_NORM_OBJECT)
 	$(LD) -T linker.ld -o $@ -nostdlib $(S_OBJECTS) $(C_OBJECTS) $(C_ENTRY_NORM_OBJECT) -L$(LIBDIR) -lgcc
 
-$(OUT)/$(TEST_BIN_NAME).bin: $(C_OBJECTS) $(S_OBJECTS) $(C_ENTRY_TEST_OBJECT)
+$(OUT)/$(TEST_BIN_NAME).bin: $(C_OBJECTS) $(S_OBJECTS) | $(C_ENTRY_TEST_OBJECT)
 	$(LD) -T linker.ld -o $@ -nostdlib $(S_OBJECTS) $(C_OBJECTS) $(C_ENTRY_TEST_OBJECT) -L$(LIBDIR) -lgcc
 
 # Build gengen
