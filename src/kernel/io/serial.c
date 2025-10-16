@@ -3,6 +3,7 @@
 #include "io/log.h"
 #include "printf.h"
 #include "memset.h"
+#include "string.h"
 
 #define PORT 0x3f8 // com1
 
@@ -62,7 +63,8 @@ int serial_printf(const char* fmt, ...) {
     va_start(alist, fmt);
     int len = k_vsprintf(buf, fmt, alist);
     va_end(alist);
-    return serial_write_str_len(buf, len);
+    serial_write_str_len(buf, len);
+    return str_visiblelen_n(buf, len);
 }
 int serial_received(){
     return io_inb(PORT);
