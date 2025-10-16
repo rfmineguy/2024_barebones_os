@@ -1,7 +1,6 @@
 #include "io/log.h"
 #include "stdarg.h"
 #include "printf.h"
-#include "string.h"
 
 int group_level = 0;
 int line_length = 0; // used for line groups
@@ -53,7 +52,6 @@ void log_line_end_internal(const char* name, ...) {
 void log_info_internal(const char* type, const char* cat, const char* fmt, ...) {
     //1. format the print into a buffer
     static char buf[1000] = {0};
-    static char buf2[1000] = {0};
     va_list args;
     va_start(args, fmt);
     k_vsprintf(buf, fmt, args);
@@ -69,7 +67,6 @@ void log_line_internal(const char* fmt, ...) {
     k_vsprintf(buf, fmt, args);
     va_end(args); 
 
-    int len = strlen(buf);
     if (line_length >= 50) {
         serial_printf("\n");
         line_length = 0;
