@@ -76,3 +76,10 @@ void write_tss(uint32_t n, uint16_t ss0, uint32_t esp0) {
     log_info("GDT WriteTSS", "cs = %x, ss = %x, ds = %x", tss_entry_inst.cs, tss_entry_inst.ss, tss_entry_inst.ds);
     log_info("GDT WriteTSS", "fs = %x, es = %x, gs = %x", tss_entry_inst.fs, tss_entry_inst.es, tss_entry_inst.gs);
 }
+#define TEST_ENABLE
+#ifdef TEST_ENABLE
+const struct gdt_entry* gdt_get_entry(uint32_t n) {
+  if (n >= GDT_SIZE) return 0;
+  return &gdt_entries[n];
+}
+#endif
