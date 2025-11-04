@@ -3,8 +3,6 @@
 #include "stdint.h"
 #include "limits.h"
 
-#define PAGE_PRESENT 0x1
-
 extern void paging_enable();
 extern void paging_load_pagedir(uint32_t*);
 
