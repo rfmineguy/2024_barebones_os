@@ -24,7 +24,7 @@ function run_docker {
 
 function handle_build_test {
     mkdir -p out
-    run_docker 'make -j $(nproc) build_test -f scripts/debian.Makefile'
+    run_docker 'make -j $(nproc) LOG_DISABLE=1 TEST_ENABLE=1 build_test -f scripts/debian.Makefile'
 }
 
 function handle_build_norm {
