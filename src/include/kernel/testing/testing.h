@@ -6,6 +6,7 @@
 #define RED "\x1b[31m"
 #define GREEN "\x1b[32m"
 #define CYAN "\x1b[36m"
+#define YELLOW "\x1b[33m"
 
 #define PURPLE_BOLD "\x1b[1;35m"
 #define DEF "\x1b[0m"
@@ -14,6 +15,10 @@
 
 #ifndef TESTPATH_LENGTH
 #define TESTPATH_LENGTH 30
+#endif
+
+#ifndef TESTNUM_LENGTH
+#define TESTNUM_LENGTH 3
 #endif
 
 #ifndef ASSERT_CONTENT_LENGTH
@@ -38,6 +43,23 @@
     block\
     ctx.groups_count--;\
   }
+
+#define rft_mark(label_)\
+  serial_printf("-----------------\n");\
+  serial_printf(COLORED(YELLOW, "%s\n"), label_);\
+  serial_printf("-----------------\n");\
+
+#define rft_print_test_number()\
+{\
+  serial_write_str("[");\
+  int current_line_length = serial_printf("%d", ctx.total + 1);\
+  if (current_line_length < TESTNUM_LENGTH) {\
+    for (int i = 0; i < TESTNUM_LENGTH - current_line_length; i++) {\
+      serial_write_ch(' ');\
+    }\
+  }\
+  serial_write_str("]");\
+}
 
 #define rft_print_groupstring()\
 {\
@@ -65,14 +87,16 @@
 }\
 
 #define rft_pass(assert_string, ...)\
+  rft_print_test_number()\
   rft_print_groupstring()\
   rft_print_assert_content(assert_string, __VA_ARGS__);\
   serial_printf(COLORED(GREEN, "[OK  ]") "\n");
 
 #define rft_fail(assert_string, ...)\
+  rft_print_test_number()\
   rft_print_groupstring()\
   rft_print_assert_content(assert_string, __VA_ARGS__);\
-  serial_printf(COLORED(RED, "[FAIL]") "\n");
+  serial_printf(COLORED(RED, "[FAIL]") "\n");\
 
 #define rft_assert_int(a, op, b) {\
   if (!((a) op (b))) { \
@@ -93,6 +117,18 @@
 
 #define rft_assert_false(a) {\
   if ((a)) { rft_fail(COLORED(PURPLE_BOLD, "%s"), #a); }\
+  else { rft_pass(COLORED(PURPLE_BOLD, "%s"), #a); ctx.passing += 1;}\
+  ctx.total += 1;\
+}
+
+#define rft_assert_non_null(a) {\
+  if ((a) == 0) { rft_fail(COLORED(PURPLE_BOLD, "%s"), #a); }\
+  else { rft_pass(COLORED(PURPLE_BOLD, "%s"), #a); ctx.passing += 1; }\
+  ctx.total += 1;\
+}
+
+#define rft_assert_null(a) {\
+  if ((a) != 0) { rft_fail(COLORED(PURPLE_BOLD, "%s"), #a); }\
   else { rft_pass(COLORED(PURPLE_BOLD, "%s"), #a); ctx.passing += 1; }\
   ctx.total += 1;\
 }
