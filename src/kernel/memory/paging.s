@@ -1,5 +1,6 @@
 .global paging_enable
 .global paging_load_pagedir
+.global paging_reload
 
 paging_enable:
 	mov %cr0, %eax
@@ -15,3 +16,8 @@ paging_load_pagedir:
 	mov %ebp, %esp
 	pop %ebp
 	ret
+
+paging_reload:
+  mov	%cr3,%eax
+	mov	%eax,%cr3
+  ret
