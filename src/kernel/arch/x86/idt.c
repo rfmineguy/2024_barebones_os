@@ -4,8 +4,12 @@
 #include "io/log.h"
 #include "io/io.h"
 #include "arch/x86/cpu.h"
+#include "memory/paging.h"
 #include "memset.h"
 #include "stdbool.h"
+#ifdef TEST_ENABLE
+#include "testing/testing.h"
+#endif
 
 // https://wiki.osdev.org/Interrupts_Tutorial
 // https://wiki.osdev.org/Interrupts
@@ -109,8 +113,11 @@ void idt_install() {
 void div_zero_handler(struct interrupt_registers_test* regs) {
 	// log_info("Handler", "Division by zero error. Unrecoverable. Looping forever...");
 	// int_regs_log(regs, DECIMAL);
-
+#ifdef TEST_ENABLE
+  test_harness_trigger_divzero_fault(*regs);
+#else
 	for (;;);
+#endif
 }
 
 void invalid_opcode_handler(struct interrupt_registers_test* regs) {
@@ -130,17 +137,28 @@ void page_fault_handler(struct interrupt_registers_test* regs) {
   uint32_t errcode = regs->err_code;
   log_info("Handler", "Error code binary: %b", errcode);
   switch (errcode & 0x1) {
-  case 0: log_info("Handler", "Non present page accessed"); break;
-  case 1: log_info("Handler", "Page protection violation"); break;
+  case 0:
+    paging_map(regs->cr2, regs->cr2, 0x2 | PAGE_PRESENT);
+    paging_refresh();
+    log_info("Handler", "Non present page accessed");
+    break;
+  case 1:
+    log_info("Handler", "Page protection violation");
+    break;
   }
   switch ((errcode >> 1) & 0x1) {
-    case 0: log_info("Handler", "Caused by invalid write"); break;
+    case 0: 
+      log_info("Handler", "Caused by invalid write"); break;
     case 1: log_info("Handler", "Caused by invalid read"); break;
   }
   log_info("Handler", "Fault address: %x", regs->cr2);
   log_info("Handler", "Fault instruction: %x", regs->eip);
+#ifdef TEST_ENABLE
+  test_harness_trigger_page_fault(*regs);
+#else
   for (;;);
 	cpu_halt();
+#endif
 }
 
 void unimplemented_handler(struct interrupt_registers_test* regs) {
