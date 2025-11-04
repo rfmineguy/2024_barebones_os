@@ -25,3 +25,9 @@ bool event_system_get(event* e) {
   }
   return false;
 }
+
+#ifdef TEST_ENABLE
+const queue_event* event_system_get_event_queue() {
+  return &event_queue;
+}
+#endif
