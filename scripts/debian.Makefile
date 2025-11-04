@@ -80,7 +80,15 @@ OBJ_DIRS := $(patsubst %, $(OUT)/%, $(C_OBJECTS) $(S_OBJECTS))
 NORM_BIN_NAME := norm_os
 TEST_BIN_NAME := test_os
 OPTIMIZATION_FLAGS := -O0
+LOG_DISABLE ?= 0
+TEST_ENABLE ?= 0
 CFLAGS := -std=gnu99 -ffreestanding -nostdlib -m32 -ggdb -gdwarf
+ifeq ($(LOG_DISABLE), 1)
+CFLAGS += -DLOG_DISABLE
+endif
+ifeq ($(TEST_ENABLE), 1)
+CFLAGS += -DTEST_ENABLE
+endif
 ASFLAGS := -g
 GCCFLAGS := -B/home/build
 
@@ -116,7 +124,7 @@ clean:
 build_norm: always $(GENGEN_GEN_FILES) $(OUT)/$(NORM_BIN_NAME).iso gen_lst
 build_test: always $(GENGEN_GEN_FILES) $(OUT)/$(TEST_BIN_NAME).iso gen_lst
 
-$(OUT)/entrypoints/%.c.o: $(KERNEL_SRC)/entrypoints/%.c | $(GENGEN_GEN_FILES)
+$(OUT)/entrypoints/%.c.o: $(KERNEL_SRC)/entrypoints/%.c | $(GENGEN_GEN_FILES) $(KERNEL_INC)/testing/testing.h
 	@mkdir -p $(dir $@)
 	$(CC) $(GCCFLAGS) -c $^ -o $@ $(CFLAGS) $(OPTIMIZATION_FLAGS) -Wall -Wextra -I$(KERNEL_INC) -I$(STDLIB_INC) -I$(TEST_INC) -I$(OUT)/
 
