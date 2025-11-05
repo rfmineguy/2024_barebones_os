@@ -3,11 +3,13 @@
 #include "stdint.h"
 #include "limits.h"
 
+#define PAGE_SIZE 4096
+
 extern void paging_enable();
 extern void paging_load_pagedir(uint32_t*);
 
-uint32_t page_dir[1024] __attribute__((aligned(4096)));
-uint32_t page_tables[1024][1024] __attribute__((aligned(4096)));
+uint32_t page_dir[1024] __attribute__((aligned(PAGE_SIZE)));
+uint32_t page_tables[1024][1024] __attribute__((aligned(PAGE_SIZE)));
 
 extern uint32_t kernel_start, kernel_end;
 
