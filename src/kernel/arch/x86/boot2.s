@@ -8,7 +8,7 @@
 
 /* MULTIBOOT 2 HEADER */
 .section .multiboot
-.align 8
+.align 4
 mboot_header:
 .long 0xE85250D6    /* magic */
 .long 0             /* architecture */
@@ -17,15 +17,12 @@ mboot_header:
 // .long 0x10          /* tags are 16 bytes from the start */
 
 mboot_tags:
-//.align 8          /* 8 byte alignment */
-//.long  0x05       /* 1=information request */
-//.long  0x20
-//.long  0
-//.long  0
-//.long  0
+/* Memory map request tag (type = 6) */
+.short 6                  /* type */
+.short 0                  /* flags */
+.long 16                  /* size (header + 8 bytes for tag) */
 
-# Tags are terminated by a tag of type ‘0’ and size ‘8’.
-.align  8
+// Tags are terminated by a tag of type ‘0’ and size ‘8’.
 .short  0
 .short  0
 .short  8
@@ -57,9 +54,9 @@ _start:
 
     /* enter high-level kernel */
     /* ebx and eax contain multiboot header flags */
-    lea mboot_header, %ecx
-    pushl %ecx /* header */
-    /* pushl %ebx /* info */
+    // lea mboot_header, %ecx
+    // pushl %ecx /* header */
+    pushl %ebx /* info */
     pushl %eax /* magic */ /* should be 0x36d76289 */
     call kernel_main
 

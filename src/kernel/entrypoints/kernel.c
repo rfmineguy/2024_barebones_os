@@ -8,6 +8,7 @@
 #include "drivers/keyboard.h"
 #include "drivers/mouse.h"
 #include "arch/x86/multiboot2.h"
+#include "arch/x86/multiboot2_helper.h"
 #include "memory/arena.h"
 #include "io/log.h"
 #include "shell/shell_2.h"
@@ -26,10 +27,12 @@
 
 arena kernel_arena;
 
-void kernel_main(int magic, struct multiboot_header* header) {
+void kernel_main(int magic, void* mb_info_ptr) {
      UNUSED(magic);
      ui_box_t splashbox, infobox, shellbox, tipsbox, filebox;
 		 ui_box_t mainbox;
+
+     mboot2_print(mb_info_ptr);
  
      serial_init();
      vga_init();
@@ -51,7 +54,7 @@ void kernel_main(int magic, struct multiboot_header* header) {
 		 log_info("Interrupts", "Enabled");
 
      paging_init();
-     memory_init(header);
+     memory_init(NULL);
 
      log_group_begin("linkedlist push test");
      ll_memory_node ll = ll_memory_node_create();
