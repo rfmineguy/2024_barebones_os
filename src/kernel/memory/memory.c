@@ -164,3 +164,9 @@ void memory_debug() {
 		log_line_end("Free list");
 	log_group_end("MemDebug");
 }
+
+#ifdef TEST_ENABLE
+const memory_node* memory_root() {
+  return memory_list.head;
+}
+#endif
