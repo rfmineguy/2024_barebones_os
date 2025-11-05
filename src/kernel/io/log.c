@@ -14,7 +14,7 @@ void log_group_begin_internal(const char* name, ...){
     k_vsprintf(log_buf, name, args);
     va_end(args);
 
-    serial_printf("%*s[%s]\n", (group_level * 4), "", log_buf);
+    serial_printf("GROUP: %*s[%s]\n", (group_level * 4), "", log_buf);
     group_level++;
 }
 void log_group_end_internal(const char* name, ...){
@@ -24,7 +24,7 @@ void log_group_end_internal(const char* name, ...){
     va_end(args);
 
     group_level--;
-    serial_printf("%*s[%s]\n", (group_level * 4), "", log_buf);
+    serial_printf("GROUP: %*s[%s]\n", (group_level * 4), "", log_buf);
 }
 void log_line_begin_internal(const char* name, ...) {
     va_list args;
