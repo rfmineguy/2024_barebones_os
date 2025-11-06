@@ -110,14 +110,14 @@
 }
 
 #define rft_assert_true(a) {\
-  if (!(a)) { rft_fail(COLORED(PURPLE_BOLD, "%s"), #a); }\
-  else { rft_pass(COLORED(PURPLE_BOLD, "%s"), #a); ctx.passing += 1; }\
+  if (!(a)) { rft_fail(COLORED(PURPLE_BOLD, "%s") COLORED(CYAN, "==") COLORED(RED, "true"), #a); }\
+  else { rft_pass(COLORED(PURPLE_BOLD, "%s") COLORED(CYAN, "==") COLORED(RED, "true"), #a); ctx.passing += 1; }\
   ctx.total += 1;\
 }
 
 #define rft_assert_false(a) {\
-  if ((a)) { rft_fail(COLORED(PURPLE_BOLD, "%s"), #a); }\
-  else { rft_pass(COLORED(PURPLE_BOLD, "%s"), #a); ctx.passing += 1;}\
+  if ((a)) { rft_fail(COLORED(PURPLE_BOLD, "%s") COLORED(CYAN, "==") COLORED(RED, "false"), #a); }\
+  else { rft_pass(COLORED(PURPLE_BOLD, "%s") COLORED(CYAN, "==") COLORED(RED, "false"), #a); ctx.passing += 1;}\
   ctx.total += 1;\
 }
 
@@ -131,6 +131,16 @@
   if ((a) != 0) { rft_fail(COLORED(PURPLE_BOLD, "%s"), #a); }\
   else { rft_pass(COLORED(PURPLE_BOLD, "%s"), #a); ctx.passing += 1; }\
   ctx.total += 1;\
+}
+
+#define rft_assert_mem_zeroed(ptr, size) {\
+  const char* bptr = (char*)ptr;\
+  int i;\
+  for (i = 0; i < size; i++) {\
+    if (bptr[i] != 0) { break; }\
+  }\
+  if (i != size) { rft_fail("mem(" COLORED(CYAN, "%x") ") is not zeroed.. ptr[i] = %x", ptr, ptr[i]); }\
+  else { rft_pass("mem(" COLORED(CYAN, "%x") ") is zeroed", ptr); ctx.passing += 1; }\
 }
 
 typedef struct {
