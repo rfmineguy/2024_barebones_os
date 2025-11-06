@@ -7,6 +7,7 @@
 #include "arch/x86/idt.h"
 #include "memory/paging.h"
 #include "memory/arena.h"
+#include "memory/frame_allocator.h"
 #include "event/event_system.h"
 #include "printf.h"
 #include "stdbool.h"
@@ -200,6 +201,34 @@ void kernel_main(int magic, struct multiboot_header* header) {
       rft_assert_int(a.base, ==, 0x0);
       rft_assert_int(a.limit, ==, 0x4000);
       rft_assert_int(a.used, ==, 0);
+    })
+  })
+  rft_begin("frame_allocator", {
+    rft_begin("frame_init", {
+      frame_init();
+      rft_assert_mem_zeroed(frame_get_bitmap(), FRAME_BITMAP_SIZE);
+    })
+
+    rft_begin("alloc/free", {
+      uint32_t frame = frame_alloc();
+      rft_assert_int(frame, ==, 0x0);
+      rft_assert_true(frame_is_used(0x0));
+      rft_assert_int(frame_count_allocated(), ==, 1);
+
+      frame = frame_alloc();
+      rft_assert_int(frame, ==, 0x1000);
+      rft_assert_true(frame_is_used(0x1000));
+      rft_assert_false(frame_is_used(0x2000));
+
+      rft_assert_int(frame_count_allocated(), ==, 2);
+
+      frame_free(0x1000);
+      rft_assert_false(frame_is_used(0x1000));
+      rft_assert_int(frame_count_allocated(), ==, 1);
+
+      frame_free(0x0);
+      rft_assert_false(frame_is_used(0x0));
+      rft_assert_int(frame_count_allocated(), ==, 0);
     })
   })
   rft_report();
